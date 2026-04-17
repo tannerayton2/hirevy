@@ -69,7 +69,7 @@ export default function Explore() {
     return () => { cancel = true; };
   }, [filters.type, filters.freeOnly, filters.categories.join(","), filters.q]);
 
-  const visible = useMemo(() => applyClientFilters(offers as never, filters), [offers, filters]);
+  const visible = useMemo(() => applyClientFilters(offers as unknown as (OfferCardData & { created_at?: string })[], filters), [offers, filters]);
   const count = activeFilterCount(filters);
 
   const onSearch = (e: React.FormEvent) => {
