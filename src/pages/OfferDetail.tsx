@@ -64,6 +64,12 @@ export default function OfferDetail() {
     window.location.href = `/messages?t=${data}`;
   };
 
+  const copyShareLink = async () => {
+    if (!offer) return;
+    await navigator.clipboard.writeText(shareOfferUrl(offer.provider.username, offer.slug));
+    toast({ title: "Share link copied", description: "It unfurls with the offer cover and details." });
+  };
+
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!offer) return <div className="p-8"><h1 className="font-display text-2xl font-semibold">Offer not found</h1></div>;
 
