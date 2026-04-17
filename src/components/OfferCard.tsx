@@ -1,8 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
+import { Pencil, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export interface OfferCardData {
   id: string;
@@ -26,10 +33,21 @@ function formatPrice(cents: number | null) {
   return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-export function OfferCard({ offer }: { offer: OfferCardData }) {
+export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; owner?: boolean; onChanged?: () => void }) {
   const tier = tierForReviewCount(offer.provider.review_count);
   const avgRating = offer.provider.review_count > 0 ? offer.provider.rating_sum / offer.provider.review_count : 0;
   const providerName = offer.provider.display_name || `@${offer.provider.username}`;
+  const nav = useNavigate();
+
+  const handleDelete = async () => {
+    const { error } = await supabase.from("offers").delete().eq("id", offer.id);
+    if (error) {
+      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Offer deleted" });
+    onChanged?.();
+  };
 
   return (
     <Link

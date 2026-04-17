@@ -131,10 +131,6 @@ export default function OfferEditor() {
         .eq("is_active", true);
       const count = existing?.length ?? 0;
       const isCountingThis = isEdit && existing?.some((o) => o.id === offerId);
-      if (count - (isCountingThis ? 1 : 0) >= (profile as { paid_offer_limit?: number }).paid_offer_limit ?? 1) {
-        // fallback to 1 if undefined
-      }
-      // Hard 1-paid limit on free plan
       const limit = 1;
       if (count - (isCountingThis ? 1 : 0) >= limit) {
         toast({
