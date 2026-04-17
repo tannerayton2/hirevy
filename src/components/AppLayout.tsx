@@ -6,16 +6,20 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
-const items = [
-  { to: "/messages", icon: MessageSquare, label: "Messages" },
+type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean };
+
+const baseItems: NavItem[] = [
+  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
   { to: "/", icon: Compass, label: "Explore", end: true },
-  { to: "/me", icon: User, label: "Profile" },
+  { to: "/me", icon: User, label: "Profile", authOnly: true },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
 
-  const profilePath = profile ? `/@${profile.username}` : "/me";
+  const items = baseItems.filter((i) => (i.authOnly ? !!user : true));
+  const profilePath = profile?.username ? `/@${profile.username}` : "/me";
+  const mobileCols = items.length === 3 ? "grid-cols-3" : items.length === 2 ? "grid-cols-2" : "grid-cols-1";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -73,7 +77,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-border bg-background/95 backdrop-blur md:hidden">
+      <nav className={cn("fixed inset-x-0 bottom-0 z-40 grid border-t border-border bg-background/95 backdrop-blur md:hidden", mobileCols)}>
         {items.map((item) => {
           const to = item.to === "/me" ? profilePath : item.to;
           return (
