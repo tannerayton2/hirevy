@@ -33,6 +33,8 @@ const App = () => (
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
 
+            <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
+            <Route path="/@:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
             <Route path="/:username" element={<AppLayout><Profile /></AppLayout>} />
             <Route path="/:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
 
