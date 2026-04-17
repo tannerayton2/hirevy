@@ -1,0 +1,200 @@
+import { useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATEGORIES } from "@/lib/categories";
+import { toast } from "@/hooks/use-toast";
+import { Upload } from "lucide-react";
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
+export default function ProfileEdit() {
+  const { user, profile, loading, refreshProfile } = useAuth();
+  const nav = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [category, setCategory] = useState<string>("");
+  const [aboutWhat, setAboutWhat] = useState("");
+  const [aboutWho, setAboutWho] = useState("");
+  const [aboutResults, setAboutResults] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+    setDisplayName(profile.display_name ?? "");
+    setBio(profile.bio ?? "");
+    setCategory(profile.service_category ?? "");
+    setAvatarUrl(profile.avatar_url);
+    // load extended about fields
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("about_what, about_who, about_results")
+        .eq("id", profile.id)
+        .maybeSingle();
+      if (data) {
+        setAboutWhat(data.about_what ?? "");
+        setAboutWho(data.about_who ?? "");
+        setAboutResults(data.about_results ?? "");
+      }
+    })();
+  }, [profile]);
+
+  if (!loading && !user) return <Navigate to="/auth" replace />;
+  if (loading || !profile) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+
+  const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please choose an image.", variant: "destructive" });
+      return;
+    }
+    if (f.size > MAX_AVATAR_BYTES) {
+      toast({ title: "Too large", description: "Max 2MB.", variant: "destructive" });
+      return;
+    }
+    setAvatarFile(f);
+    setPreview(URL.createObjectURL(f));
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (displayName.length > 60) return toast({ title: "Display name too long", variant: "destructive" });
+    if (bio.length > 300) return toast({ title: "Bio too long", variant: "destructive" });
+
+    setBusy(true);
+    try {
+      let nextAvatar = avatarUrl;
+      if (avatarFile) {
+        const ext = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${profile.id}/${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, {
+          upsert: true,
+          contentType: avatarFile.type,
+        });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+        nextAvatar = pub.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: displayName.trim() || profile.username,
+          bio: bio.trim() || null,
+          service_category: category || null,
+          about_what: aboutWhat.trim() || null,
+          about_who: aboutWho.trim() || null,
+          about_results: aboutResults.trim() || null,
+          avatar_url: nextAvatar,
+        })
+        .eq("id", profile.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast({ title: "Profile saved" });
+      nav(`/@${profile.username}`);
+    } catch (err) {
+      toast({
+        title: "Couldn't save",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const previewSrc = preview || avatarUrl;
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Settings</p>
+      <h1 className="font-display text-3xl font-bold">Edit profile</h1>
+
+      <form onSubmit={submit} className="mt-8 space-y-6">
+        {/* Avatar */}
+        <div>
+          <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Avatar</Label>
+          <div className="mt-2 flex items-center gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary font-display text-2xl text-muted-foreground">
+              {previewSrc ? (
+                <img src={previewSrc} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (displayName || profile.username).slice(0, 1).toUpperCase()
+              )}
+            </div>
+            <div className="space-y-1">
+              <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> Upload image
+              </Button>
+              <p className="text-xs text-muted-foreground">Square crop recommended. Max 2MB.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Display name */}
+        <Field label="Display name" hint={`${displayName.length}/60`}>
+          <Input value={displayName} onChange={(e) => setDisplayName(e.target.value.slice(0, 60))} maxLength={60} />
+        </Field>
+
+        {/* Service category */}
+        <Field label="Service category">
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
+
+        {/* Bio */}
+        <Field label="Short bio" hint={`${bio.length}/300`}>
+          <Textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 300))} rows={3} maxLength={300} />
+        </Field>
+
+        {/* About */}
+        <div className="space-y-4 rounded-md border border-border bg-card/40 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">About</p>
+          <Field label="What I do">
+            <Textarea value={aboutWhat} onChange={(e) => setAboutWhat(e.target.value)} rows={2} />
+          </Field>
+          <Field label="Who it's for">
+            <Textarea value={aboutWho} onChange={(e) => setAboutWho(e.target.value)} rows={2} />
+          </Field>
+          <Field label="Results">
+            <Textarea value={aboutResults} onChange={(e) => setAboutResults(e.target.value)} rows={2} />
+          </Field>
+        </div>
+
+        <div className="flex gap-2">
+          <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
+          <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between">
+        <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</Label>
+        {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}

@@ -1,8 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
+import { Pencil, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export interface OfferCardData {
   id: string;
@@ -26,10 +33,21 @@ function formatPrice(cents: number | null) {
   return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-export function OfferCard({ offer }: { offer: OfferCardData }) {
+export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; owner?: boolean; onChanged?: () => void }) {
   const tier = tierForReviewCount(offer.provider.review_count);
   const avgRating = offer.provider.review_count > 0 ? offer.provider.rating_sum / offer.provider.review_count : 0;
   const providerName = offer.provider.display_name || `@${offer.provider.username}`;
+  const nav = useNavigate();
+
+  const handleDelete = async () => {
+    const { error } = await supabase.from("offers").delete().eq("id", offer.id);
+    if (error) {
+      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Offer deleted" });
+    onChanged?.();
+  };
 
   return (
     <Link
@@ -76,6 +94,42 @@ export function OfferCard({ offer }: { offer: OfferCardData }) {
           <StarRating value={avgRating} count={offer.provider.review_count} showValue size={12} />
         </div>
       </div>
+      {owner && (
+        <div className="flex border-t border-border" onClick={(e) => e.preventDefault()}>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
+            className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <Pencil className="h-3 w-3" /> Edit
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" /> Delete
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{offer.title}" will be removed permanently. This can't be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </Link>
   );
 }
