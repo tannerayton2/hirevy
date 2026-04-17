@@ -14,13 +14,315 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_threads: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          category: string
+          cover_url: string | null
+          created_at: string
+          description: string
+          free_for_testimonial: boolean
+          id: string
+          is_active: boolean
+          price_cents: number | null
+          priority: number
+          provider_id: string
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          free_for_testimonial?: boolean
+          id?: string
+          is_active?: boolean
+          price_cents?: number | null
+          priority?: number
+          provider_id: string
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          free_for_testimonial?: boolean
+          id?: string
+          is_active?: boolean
+          price_cents?: number | null
+          priority?: number
+          provider_id?: string
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          about_results: string | null
+          about_what: string | null
+          about_who: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          follower_count: number
+          id: string
+          paid_offer_limit: number
+          plan: string
+          rating_sum: number
+          review_count: number
+          service_category: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          about_results?: string | null
+          about_what?: string | null
+          about_who?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          follower_count?: number
+          id: string
+          paid_offer_limit?: number
+          plan?: string
+          rating_sum?: number
+          review_count?: number
+          service_category?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          about_results?: string | null
+          about_what?: string | null
+          about_who?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          follower_count?: number
+          id?: string
+          paid_offer_limit?: number
+          plan?: string
+          rating_sum?: number
+          review_count?: number
+          service_category?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          provider_id: string
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          provider_id: string
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          provider_id?: string
+          rating?: number
+          reviewer_email?: string
+          reviewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      public_reviews: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          id: string | null
+          provider_id: string | null
+          rating: number | null
+          reviewer_name: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_or_create_thread: { Args: { other_user: string }; Returns: string }
+      tier_for_review_count: { Args: { c: number }; Returns: string }
     }
     Enums: {
       [_ in never]: never
