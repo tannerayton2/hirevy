@@ -6,8 +6,9 @@ import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { shareOfferUrl } from "@/lib/shareLinks";
 
 interface OfferDetail {
   id: string; slug: string; title: string; description: string; cover_url: string | null;
