@@ -68,6 +68,7 @@ export default function OfferEditor() {
       setVideoUrl(data.video_url ?? "");
       setTags(data.tags ?? []);
       setCoverUrl(data.cover_url);
+      setIsActive(data.is_active);
       setHydrating(false);
     })();
   }, [isEdit, offerId, user, nav]);
