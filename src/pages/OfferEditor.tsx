@@ -38,6 +38,7 @@ export default function OfferEditor() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
   const [busy, setBusy] = useState(false);
   const [hydrating, setHydrating] = useState(isEdit);
 
