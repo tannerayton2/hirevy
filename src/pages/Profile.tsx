@@ -43,42 +43,42 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
 
+  const loadAll = async () => {
+    setLoading(true);
+    const { data: p } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("username", handle)
+      .maybeSingle();
+    const prof = p as ProfileFull | null;
+    setProfile(prof);
+    if (!prof) { setLoading(false); return; }
+
+    const [offersRes, reviewsRes, followRes] = await Promise.all([
+      supabase
+        .from("offers")
+        .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category,
+                 provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
+        .eq("provider_id", prof.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false }),
+      supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
+      user
+        ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", prof.id).maybeSingle()
+        : Promise.resolve({ data: null } as { data: null }),
+    ]);
+
+    setOffers((offersRes.data as unknown as OfferCardData[]) ?? []);
+    setReviews((reviewsRes.data as unknown as Review[]) ?? []);
+    setFollowing(!!followRes.data);
+    setLoading(false);
+  };
+
   useEffect(() => {
     let cancel = false;
-    const run = async () => {
-      setLoading(true);
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("username", handle)
-        .maybeSingle();
-      if (cancel) return;
-      const prof = p as ProfileFull | null;
-      setProfile(prof);
-      if (!prof) { setLoading(false); return; }
-
-      const [offersRes, reviewsRes, followRes] = await Promise.all([
-        supabase
-          .from("offers")
-          .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category,
-                   provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
-          .eq("provider_id", prof.id)
-          .eq("is_active", true)
-          .order("created_at", { ascending: false }),
-        supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
-        user
-          ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", prof.id).maybeSingle()
-          : Promise.resolve({ data: null } as { data: null }),
-      ]);
-
-      if (cancel) return;
-      setOffers((offersRes.data as unknown as OfferCardData[]) ?? []);
-      setReviews((reviewsRes.data as unknown as Review[]) ?? []);
-      setFollowing(!!followRes.data);
-      setLoading(false);
-    };
-    void run();
+    void (async () => { if (!cancel) await loadAll(); })();
     return () => { cancel = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handle, user]);
 
   const isMe = me?.id === profile?.id;
@@ -154,7 +154,8 @@ export default function Profile() {
           {isMe ? (
             <>
               <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
-              <Button asChild><Link to="/me/edit">Edit profile</Link></Button>
+              <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
+              <Button asChild><Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create offer</Link></Button>
             </>
           ) : (
             <>
@@ -199,9 +200,9 @@ export default function Profile() {
 
       {/* Offers */}
       <Section title="Paid offers" count={paidOffers.length}>
-        {paidOffers.length === 0 ? <Empty msg="No paid offers yet." /> : (
+        {paidOffers.length === 0 ? <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} /> : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {paidOffers.map((o) => <OfferCard key={o.id} offer={o} />)}
+            {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
           </div>
         )}
       </Section>
@@ -209,7 +210,7 @@ export default function Profile() {
       <Section title="Free for testimonial" count={freeOffers.length}>
         {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {freeOffers.map((o) => <OfferCard key={o.id} offer={o} />)}
+            {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
           </div>
         )}
       </Section>
