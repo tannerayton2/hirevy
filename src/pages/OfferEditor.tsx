@@ -206,6 +206,7 @@ export default function OfferEditor() {
           cover_url: nextCover,
           video_url: videoUrl.trim() || null,
           tags,
+          is_active: isActive,
         });
         if (error) throw error;
         finalSlug = slug;
