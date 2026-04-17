@@ -175,6 +175,7 @@ export default function OfferEditor() {
             video_url: videoUrl.trim() || null,
             tags,
             cover_url: nextCover,
+            is_active: isActive,
           })
           .eq("id", offerId!);
         if (error) throw error;
