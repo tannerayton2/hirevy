@@ -316,6 +316,19 @@ export default function OfferEditor() {
           </div>
         </Field>
 
+        {/* Active / Inactive */}
+        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-card/40 p-4">
+          <div className="space-y-1">
+            <Label className="text-sm font-semibold text-foreground">{isActive ? "Active" : "Inactive"}</Label>
+            <p className="text-xs text-muted-foreground">
+              {isActive
+                ? "Visible on Explore and your public profile."
+                : "Hidden from Explore and your public profile. Inactive paid offers don't count toward your free-tier limit."}
+            </p>
+          </div>
+          <Switch checked={isActive} onCheckedChange={setIsActive} />
+        </div>
+
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save changes" : "Create offer"}</Button>
           <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>
