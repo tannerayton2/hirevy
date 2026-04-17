@@ -102,9 +102,12 @@ export default function OfferDetail() {
             <StarRating value={avg} count={offer.provider.review_count} showValue size={13} />
           </div>
 
-          <div className="mt-5 flex items-center justify-between gap-4 border-y border-border py-4">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
             <div className="font-display text-2xl font-bold">{priceLabel}</div>
-            <Button onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message Provider</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={copyShareLink}><Share2 className="mr-1.5 h-4 w-4" /> Share</Button>
+              <Button onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message Provider</Button>
+            </div>
           </div>
 
           {embed && (
