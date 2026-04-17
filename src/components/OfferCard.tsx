@@ -94,6 +94,42 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
           <StarRating value={avgRating} count={offer.provider.review_count} showValue size={12} />
         </div>
       </div>
+      {owner && (
+        <div className="flex border-t border-border" onClick={(e) => e.preventDefault()}>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
+            className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <Pencil className="h-3 w-3" /> Edit
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" /> Delete
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{offer.title}" will be removed permanently. This can't be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </Link>
   );
 }
