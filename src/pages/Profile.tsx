@@ -182,9 +182,9 @@ export default function Profile() {
       {isMe && (
         <div className="mt-6 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <p className="font-semibold text-foreground">Your review link</p>
-              <p className="font-mono text-xs text-muted-foreground">{reviewLink}</p>
+              <p className="truncate font-mono text-xs text-muted-foreground">{`${window.location.origin}/r/${profile.username}`}</p>
             </div>
             <Button size="sm" variant="outline" onClick={copyReviewLink}><Copy className="mr-1.5 h-3.5 w-3.5" /> Copy</Button>
           </div>
