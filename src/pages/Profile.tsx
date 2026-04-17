@@ -7,8 +7,9 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Copy, Link as LinkIcon, MessageSquare, Plus, Users } from "lucide-react";
+import { Copy, Link as LinkIcon, MessageSquare, Plus, Share2, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 
 interface ProfileFull {
   id: string;
@@ -90,11 +91,16 @@ export default function Profile() {
   const paidOffers = offers.filter((o) => !o.free_for_testimonial);
   const freeOffers = offers.filter((o) => o.free_for_testimonial);
 
-  const reviewLink = profile ? `${window.location.origin}/r/${profile.username}` : "";
+  const reviewLink = profile ? shareReviewUrl(profile.username) : "";
+  const profileShareLink = profile ? shareProfileUrl(profile.username) : "";
 
   const copyReviewLink = async () => {
     await navigator.clipboard.writeText(reviewLink);
     toast({ title: "Link copied", description: "Share it with past clients to collect a verified review." });
+  };
+  const copyProfileLink = async () => {
+    await navigator.clipboard.writeText(profileShareLink);
+    toast({ title: "Profile link copied", description: "Share it anywhere — it unfurls with your tier and reviews." });
   };
 
   const toggleFollow = async () => {
@@ -156,6 +162,7 @@ export default function Profile() {
         <div className="flex flex-wrap gap-2">
           {isMe ? (
             <>
+              <Button variant="outline" onClick={copyProfileLink}><Share2 className="mr-1.5 h-4 w-4" /> Share profile</Button>
               <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
               <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
               <Button asChild><Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create offer</Link></Button>
@@ -166,6 +173,7 @@ export default function Profile() {
                 {following ? "Following" : "Follow"}
               </Button>
               <Button variant="outline" onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message</Button>
+              <Button variant="outline" size="icon" onClick={copyProfileLink} title="Copy share link"><Share2 className="h-4 w-4" /></Button>
             </>
           )}
         </div>
@@ -174,9 +182,9 @@ export default function Profile() {
       {isMe && (
         <div className="mt-6 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <p className="font-semibold text-foreground">Your review link</p>
-              <p className="font-mono text-xs text-muted-foreground">{reviewLink}</p>
+              <p className="truncate font-mono text-xs text-muted-foreground">{`${window.location.origin}/r/${profile.username}`}</p>
             </div>
             <Button size="sm" variant="outline" onClick={copyReviewLink}><Copy className="mr-1.5 h-3.5 w-3.5" /> Copy</Button>
           </div>
