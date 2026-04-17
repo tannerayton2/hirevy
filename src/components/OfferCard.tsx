@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
@@ -19,6 +19,7 @@ export interface OfferCardData {
   price_cents: number | null;
   free_for_testimonial: boolean;
   category: string;
+  is_active?: boolean;
   provider: {
     username: string;
     display_name: string | null;
@@ -38,6 +39,8 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
   const avgRating = offer.provider.review_count > 0 ? offer.provider.rating_sum / offer.provider.review_count : 0;
   const providerName = offer.provider.display_name || `@${offer.provider.username}`;
   const nav = useNavigate();
+  const inactive = offer.is_active === false;
+  const href = `/@${offer.provider.username}/${offer.slug}`;
 
   const handleDelete = async () => {
     const { error } = await supabase.from("offers").delete().eq("id", offer.id);
@@ -49,12 +52,20 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
     onChanged?.();
   };
 
+  const goToOffer = (e: React.MouseEvent) => {
+    // Avoid navigating when clicking interactive children
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-no-nav]")) return;
+    nav(href);
+  };
+
   return (
-    <Link
-      to={`/@${offer.provider.username}/${offer.slug}`}
+    <div
+      onClick={goToOffer}
       className={cn(
-        "group block overflow-hidden rounded-md border border-border bg-card transition-all",
+        "group block cursor-pointer overflow-hidden rounded-md border border-border bg-card transition-all",
         "hover:border-primary/40 hover:elev",
+        inactive && "opacity-60",
       )}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
@@ -73,7 +84,11 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
         <span className="absolute left-2 top-2 rounded-[3px] bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
           {offer.category}
         </span>
-        {offer.free_for_testimonial && (
+        {inactive ? (
+          <span className="absolute right-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            Inactive
+          </span>
+        ) : offer.free_for_testimonial && (
           <span className="absolute right-2 top-2 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
             Free · Testimonial
           </span>
@@ -95,10 +110,10 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
         </div>
       </div>
       {owner && (
-        <div className="flex border-t border-border" onClick={(e) => e.preventDefault()}>
+        <div data-no-nav className="flex border-t border-border">
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
+            onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
             className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <Pencil className="h-3 w-3" /> Edit
@@ -107,13 +122,13 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
             <AlertDialogTrigger asChild>
               <button
                 type="button"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onClick={(e) => e.stopPropagation()}
                 className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 className="h-3 w-3" /> Delete
               </button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -130,6 +145,6 @@ export function OfferCard({ offer, owner, onChanged }: { offer: OfferCardData; o
           </AlertDialog>
         </div>
       )}
-    </Link>
+    </div>
   );
 }
