@@ -125,7 +125,8 @@ export default function OfferEditor() {
     }
 
     // Free-tier paid limit (only enforce on create OR when switching free→paid)
-    if (offerType === "paid") {
+    // Free-tier paid limit (active paid offers only). Inactive paid offers don't count.
+    if (offerType === "paid" && isActive) {
       const { data: existing } = await supabase
         .from("offers")
         .select("id")
