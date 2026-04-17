@@ -14,6 +14,8 @@ import OfferDetail from "./pages/OfferDetail.tsx";
 import Messages from "./pages/Messages.tsx";
 import ReviewSubmit from "./pages/ReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
+import ProfileEdit from "./pages/ProfileEdit.tsx";
+import OfferEditor from "./pages/OfferEditor.tsx";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,11 @@ const App = () => (
 
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
+
+            {/* Settings — must be above the catch-all username routes */}
+            <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
+            <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
+            <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />
 
             <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
             <Route path="/@:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
