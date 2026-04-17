@@ -77,7 +77,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-border bg-background/95 backdrop-blur md:hidden">
+      <nav className={cn("fixed inset-x-0 bottom-0 z-40 grid border-t border-border bg-background/95 backdrop-blur md:hidden", mobileCols)}>
         {items.map((item) => {
           const to = item.to === "/me" ? profilePath : item.to;
           return (
