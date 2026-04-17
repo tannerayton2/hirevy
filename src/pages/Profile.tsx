@@ -193,20 +193,28 @@ export default function Profile() {
         </div>
       )}
 
-      {/* About */}
-      {(profile.bio || profile.about_what || profile.about_who || profile.about_results) && (
+      {/* Bio */}
+      {profile.bio && (
+        <section className="mt-8 max-w-2xl">
+          <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">About</h2>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{profile.bio}</p>
+        </section>
+      )}
+
+      {/* Extended About */}
+      {(profile.about_what || profile.about_who || profile.about_results) && (
         <section className="mt-8 grid gap-6 md:grid-cols-3">
           <div>
             <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">What I do</h2>
-            <p className="text-sm text-muted-foreground">{profile.about_what || profile.bio || "—"}</p>
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_what || "—"}</p>
           </div>
           <div>
             <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Who it's for</h2>
-            <p className="text-sm text-muted-foreground">{profile.about_who || "—"}</p>
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_who || "—"}</p>
           </div>
           <div>
             <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Results</h2>
-            <p className="text-sm text-muted-foreground">{profile.about_results || "—"}</p>
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_results || "—"}</p>
           </div>
         </section>
       )}
