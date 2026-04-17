@@ -162,6 +162,7 @@ export default function Profile() {
         <div className="flex flex-wrap gap-2">
           {isMe ? (
             <>
+              <Button variant="outline" onClick={copyProfileLink}><Share2 className="mr-1.5 h-4 w-4" /> Share profile</Button>
               <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
               <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
               <Button asChild><Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create offer</Link></Button>
@@ -172,6 +173,7 @@ export default function Profile() {
                 {following ? "Following" : "Follow"}
               </Button>
               <Button variant="outline" onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message</Button>
+              <Button variant="outline" size="icon" onClick={copyProfileLink} title="Copy share link"><Share2 className="h-4 w-4" /></Button>
             </>
           )}
         </div>
