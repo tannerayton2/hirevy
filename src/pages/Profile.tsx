@@ -54,14 +54,17 @@ export default function Profile() {
     setProfile(prof);
     if (!prof) { setLoading(false); return; }
 
+    const isOwner = user?.id === prof.id;
+    let offersQuery = supabase
+      .from("offers")
+      .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category, is_active,
+               provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
+      .eq("provider_id", prof.id)
+      .order("created_at", { ascending: false });
+    if (!isOwner) offersQuery = offersQuery.eq("is_active", true);
+
     const [offersRes, reviewsRes, followRes] = await Promise.all([
-      supabase
-        .from("offers")
-        .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category,
-                 provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
-        .eq("provider_id", prof.id)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false }),
+      offersQuery,
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
       user
         ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", prof.id).maybeSingle()

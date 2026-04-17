@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { CATEGORIES, isValidVideoUrl, slugify } from "@/lib/categories";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X } from "lucide-react";
@@ -37,6 +38,7 @@ export default function OfferEditor() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
   const [busy, setBusy] = useState(false);
   const [hydrating, setHydrating] = useState(isEdit);
 
@@ -66,6 +68,7 @@ export default function OfferEditor() {
       setVideoUrl(data.video_url ?? "");
       setTags(data.tags ?? []);
       setCoverUrl(data.cover_url);
+      setIsActive(data.is_active);
       setHydrating(false);
     })();
   }, [isEdit, offerId, user, nav]);
@@ -122,7 +125,8 @@ export default function OfferEditor() {
     }
 
     // Free-tier paid limit (only enforce on create OR when switching free→paid)
-    if (offerType === "paid") {
+    // Free-tier paid limit (active paid offers only). Inactive paid offers don't count.
+    if (offerType === "paid" && isActive) {
       const { data: existing } = await supabase
         .from("offers")
         .select("id")
@@ -171,6 +175,7 @@ export default function OfferEditor() {
             video_url: videoUrl.trim() || null,
             tags,
             cover_url: nextCover,
+            is_active: isActive,
           })
           .eq("id", offerId!);
         if (error) throw error;
@@ -201,6 +206,7 @@ export default function OfferEditor() {
           cover_url: nextCover,
           video_url: videoUrl.trim() || null,
           tags,
+          is_active: isActive,
         });
         if (error) throw error;
         finalSlug = slug;
@@ -309,6 +315,19 @@ export default function OfferEditor() {
             />
           </div>
         </Field>
+
+        {/* Active / Inactive */}
+        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-card/40 p-4">
+          <div className="space-y-1">
+            <Label className="text-sm font-semibold text-foreground">{isActive ? "Active" : "Inactive"}</Label>
+            <p className="text-xs text-muted-foreground">
+              {isActive
+                ? "Visible on Explore and your public profile."
+                : "Hidden from Explore and your public profile. Inactive paid offers don't count toward your free-tier limit."}
+            </p>
+          </div>
+          <Switch checked={isActive} onCheckedChange={setIsActive} />
+        </div>
 
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save changes" : "Create offer"}</Button>
