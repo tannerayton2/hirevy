@@ -284,44 +284,21 @@ export type Database = {
       }
     }
     Views: {
-      public_reviews: {
-        Row: {
-          body: string | null
-          created_at: string | null
-          id: string | null
-          provider_id: string | null
-          rating: number | null
-          reviewer_name: string | null
-        }
-        Insert: {
-          body?: string | null
-          created_at?: string | null
-          id?: string | null
-          provider_id?: string | null
-          rating?: number | null
-          reviewer_name?: string | null
-        }
-        Update: {
-          body?: string | null
-          created_at?: string | null
-          id?: string | null
-          provider_id?: string | null
-          rating?: number | null
-          reviewer_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       get_or_create_thread: { Args: { other_user: string }; Returns: string }
+      list_provider_reviews: {
+        Args: { p_provider: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          provider_id: string
+          rating: number
+          reviewer_name: string
+        }[]
+      }
       tier_for_review_count: { Args: { c: number }; Returns: string }
     }
     Enums: {
