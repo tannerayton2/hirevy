@@ -7,8 +7,9 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Copy, Link as LinkIcon, MessageSquare, Plus, Users } from "lucide-react";
+import { Copy, Link as LinkIcon, MessageSquare, Plus, Share2, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 
 interface ProfileFull {
   id: string;
@@ -90,11 +91,16 @@ export default function Profile() {
   const paidOffers = offers.filter((o) => !o.free_for_testimonial);
   const freeOffers = offers.filter((o) => o.free_for_testimonial);
 
-  const reviewLink = profile ? `${window.location.origin}/r/${profile.username}` : "";
+  const reviewLink = profile ? shareReviewUrl(profile.username) : "";
+  const profileShareLink = profile ? shareProfileUrl(profile.username) : "";
 
   const copyReviewLink = async () => {
     await navigator.clipboard.writeText(reviewLink);
     toast({ title: "Link copied", description: "Share it with past clients to collect a verified review." });
+  };
+  const copyProfileLink = async () => {
+    await navigator.clipboard.writeText(profileShareLink);
+    toast({ title: "Profile link copied", description: "Share it anywhere — it unfurls with your tier and reviews." });
   };
 
   const toggleFollow = async () => {
