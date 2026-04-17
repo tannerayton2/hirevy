@@ -112,15 +112,11 @@ function renderHtml(m: MetaPayload): string {
 }
 
 function metaResponse(m: MetaPayload): Response {
-  return new Response(renderHtml(m), {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      // Crawlers re-fetch on a short cadence; CDN caches for 5 min, browsers don't cache.
-      "Cache-Control": "public, max-age=0, s-maxage=300",
-      "X-Robots-Tag": "noindex", // don't compete with the real SPA URL in search
-    },
-  });
+  const headers = new Headers();
+  headers.set("Content-Type", "text/html; charset=utf-8");
+  headers.set("Cache-Control", "public, max-age=0, s-maxage=300");
+  headers.set("X-Robots-Tag", "noindex");
+  return new Response(renderHtml(m), { status: 200, headers });
 }
 
 function redirectResponse(url: string): Response {
