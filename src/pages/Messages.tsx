@@ -245,6 +245,8 @@ export default function Messages() {
     return id;
   }, [otherRead, msgs, user]);
 
+  if (!loading && !user) return <Navigate to="/auth" replace />;
+
   return (
     <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[280px_1fr]">
       {/* Inbox */}
