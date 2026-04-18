@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const BIO_MAX = 500;
 
 export default function ProfileEdit() {
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -21,9 +22,6 @@ export default function ProfileEdit() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [category, setCategory] = useState<string>("");
-  const [aboutWhat, setAboutWhat] = useState("");
-  const [aboutWho, setAboutWho] = useState("");
-  const [aboutResults, setAboutResults] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -35,19 +33,6 @@ export default function ProfileEdit() {
     setBio(profile.bio ?? "");
     setCategory(profile.service_category ?? "");
     setAvatarUrl(profile.avatar_url);
-    // load extended about fields
-    void (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("about_what, about_who, about_results")
-        .eq("id", profile.id)
-        .maybeSingle();
-      if (data) {
-        setAboutWhat(data.about_what ?? "");
-        setAboutWho(data.about_who ?? "");
-        setAboutResults(data.about_results ?? "");
-      }
-    })();
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
@@ -71,7 +56,7 @@ export default function ProfileEdit() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (displayName.length > 60) return toast({ title: "Display name too long", variant: "destructive" });
-    if (bio.length > 300) return toast({ title: "Bio too long", variant: "destructive" });
+    if (bio.length > BIO_MAX) return toast({ title: "Bio too long", variant: "destructive" });
 
     setBusy(true);
     try {
@@ -94,9 +79,6 @@ export default function ProfileEdit() {
           display_name: displayName.trim() || profile.username,
           bio: bio.trim() || null,
           service_category: category || null,
-          about_what: aboutWhat.trim() || null,
-          about_who: aboutWho.trim() || null,
-          about_results: aboutResults.trim() || null,
           avatar_url: nextAvatar,
         })
         .eq("id", profile.id);
@@ -160,23 +142,15 @@ export default function ProfileEdit() {
         </Field>
 
         {/* Bio */}
-        <Field label="Short bio" hint={`${bio.length}/300`}>
-          <Textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 300))} rows={3} maxLength={300} />
+        <Field label="Bio" hint={`${bio.length}/${BIO_MAX}`}>
+          <Textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
+            rows={6}
+            maxLength={BIO_MAX}
+            placeholder="Tell people what you do, who you help, and what results they can expect. Line breaks are preserved."
+          />
         </Field>
-
-        {/* About */}
-        <div className="space-y-4 rounded-md border border-border bg-card/40 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">About</p>
-          <Field label="What I do">
-            <Textarea value={aboutWhat} onChange={(e) => setAboutWhat(e.target.value)} rows={2} />
-          </Field>
-          <Field label="Who it's for">
-            <Textarea value={aboutWho} onChange={(e) => setAboutWho(e.target.value)} rows={2} />
-          </Field>
-          <Field label="Results">
-            <Textarea value={aboutResults} onChange={(e) => setAboutResults(e.target.value)} rows={2} />
-          </Field>
-        </div>
 
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
