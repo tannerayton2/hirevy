@@ -47,6 +47,42 @@ export type Database = {
           },
         ]
       }
+      message_reads: {
+        Row: {
+          last_read_at: string
+          last_read_message_id: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          last_read_message_id?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          last_read_at?: string
+          last_read_message_id?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reads_last_read_message_id_fkey"
+            columns: ["last_read_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reads_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_threads: {
         Row: {
           created_at: string
@@ -88,22 +124,31 @@ export type Database = {
       }
       messages: {
         Row: {
-          body: string
+          attachment_type: string | null
+          attachment_url: string | null
+          body: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           sender_id: string
           thread_id: string
         }
         Insert: {
-          body: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           sender_id: string
           thread_id: string
         }
         Update: {
-          body?: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           sender_id?: string
           thread_id?: string
@@ -189,9 +234,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          about_results: string | null
-          about_what: string | null
-          about_who: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -207,9 +249,6 @@ export type Database = {
           username: string
         }
         Insert: {
-          about_results?: string | null
-          about_what?: string | null
-          about_who?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -225,9 +264,6 @@ export type Database = {
           username: string
         }
         Update: {
-          about_results?: string | null
-          about_what?: string | null
-          about_who?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
