@@ -18,9 +18,6 @@ interface ProfileFull {
   avatar_url: string | null;
   bio: string | null;
   service_category: string | null;
-  about_what: string | null;
-  about_who: string | null;
-  about_results: string | null;
   review_count: number;
   rating_sum: number;
   follower_count: number;
@@ -198,24 +195,6 @@ export default function Profile() {
         <section className="mt-8 max-w-2xl">
           <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">About</h2>
           <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{profile.bio}</p>
-        </section>
-      )}
-
-      {/* Extended About */}
-      {(profile.about_what || profile.about_who || profile.about_results) && (
-        <section className="mt-8 grid gap-6 md:grid-cols-3">
-          <div>
-            <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">What I do</h2>
-            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_what || "—"}</p>
-          </div>
-          <div>
-            <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Who it's for</h2>
-            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_who || "—"}</p>
-          </div>
-          <div>
-            <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Results</h2>
-            <p className="whitespace-pre-line text-sm text-muted-foreground">{profile.about_results || "—"}</p>
-          </div>
         </section>
       )}
 
