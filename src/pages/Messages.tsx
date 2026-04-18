@@ -152,7 +152,7 @@ export default function Messages() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [msgs]);
 
-  if (!loading && !user) return <Navigate to="/auth" replace />;
+  
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
