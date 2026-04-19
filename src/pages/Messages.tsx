@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Reply, Send, SmilePlus, X } from "lucide-react";
+import { ImagePlus, Reply, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -230,14 +230,17 @@ export default function Messages() {
     if (!activeId || !user) return;
     setSending(true);
     try {
-      const ext = mimeType.includes("mp4") ? "m4a" : "webm";
-      const url = await uploadAttachment(blob, ext, mimeType);
+      // Normalize codec-suffixed mime types (e.g. "audio/webm;codecs=opus") to the base type
+      // since some storage backends match the exact string against the allow-list.
+      const baseMime = mimeType.split(";")[0].trim() || "audio/webm";
+      const ext = baseMime.includes("mp4") ? "m4a" : baseMime.includes("ogg") ? "ogg" : baseMime.includes("wav") ? "wav" : "webm";
+      const url = await uploadAttachment(blob, ext, baseMime);
       const { error } = await supabase.from("messages").insert({
         thread_id: activeId,
         sender_id: user.id,
         body: "",
         attachment_url: url,
-        attachment_type: mimeType,
+        attachment_type: baseMime,
         voice_duration_ms: Math.round(durationMs),
         reply_to_id: replyTo?.id ?? null,
       });
@@ -291,13 +294,23 @@ export default function Messages() {
     window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1500);
   };
 
+  const pressMovedRef = useRef(false);
+  const pressTriggeredRef = useRef(false);
   const onMsgPressStart = (msgId: string) => {
+    pressMovedRef.current = false;
+    pressTriggeredRef.current = false;
     if (longPressRef.current) window.clearTimeout(longPressRef.current);
-    longPressRef.current = window.setTimeout(() => setPickerForMsg(msgId), 450);
+    longPressRef.current = window.setTimeout(() => {
+      if (!pressMovedRef.current) {
+        pressTriggeredRef.current = true;
+        setPickerForMsg(msgId);
+      }
+    }, 400);
   };
   const onMsgPressEnd = () => {
     if (longPressRef.current) { window.clearTimeout(longPressRef.current); longPressRef.current = null; }
   };
+  const onMsgPressMove = () => { pressMovedRef.current = true; onMsgPressEnd(); };
 
   const activeThread = threads.find((t) => t.id === activeId);
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
@@ -414,23 +427,21 @@ export default function Messages() {
                       >
                         <Reply className="h-3.5 w-3.5" />
                       </button>
-                      {/* Hover-react button (desktop) */}
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setPickerForMsg(pickerForMsg === m.id ? null : m.id); }}
-                        className="hidden h-6 w-6 items-center justify-center rounded-full text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100 md:flex"
-                        aria-label="Add reaction"
-                      >
-                        <SmilePlus className="h-3.5 w-3.5" />
-                      </button>
+                      {/* Hover-react button removed — long-press the bubble (mobile + desktop) opens the picker */}
 
                       <div
                         ref={(el) => { if (el) msgRefs.current.set(m.id, el); else msgRefs.current.delete(m.id); }}
+                        onMouseDown={(e) => { if (e.button === 0) onMsgPressStart(m.id); }}
+                        onMouseUp={onMsgPressEnd}
+                        onMouseLeave={onMsgPressEnd}
+                        onMouseMove={(e) => { if (e.buttons) pressMovedRef.current = true; }}
                         onTouchStart={() => onMsgPressStart(m.id)}
                         onTouchEnd={onMsgPressEnd}
-                        onTouchMove={onMsgPressEnd}
+                        onTouchMove={onMsgPressMove}
+                        onContextMenu={(e) => { if (pressTriggeredRef.current) e.preventDefault(); }}
+                        onClick={(e) => { if (pressTriggeredRef.current) { e.stopPropagation(); pressTriggeredRef.current = false; } }}
                         className={cn(
-                          "relative max-w-[78%] rounded-2xl text-sm transition-shadow",
+                          "relative max-w-[78%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
                           mine ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
                           (m.attachment_url && !isVoice) ? "p-1" : "px-3 py-2",
                         )}
