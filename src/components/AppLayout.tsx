@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <NavLink to="/" className="flex items-center gap-2">
+          <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
             <Logo />
           </NavLink>
           <div className="flex items-center gap-2">
