@@ -294,13 +294,23 @@ export default function Messages() {
     window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1500);
   };
 
+  const pressMovedRef = useRef(false);
+  const pressTriggeredRef = useRef(false);
   const onMsgPressStart = (msgId: string) => {
+    pressMovedRef.current = false;
+    pressTriggeredRef.current = false;
     if (longPressRef.current) window.clearTimeout(longPressRef.current);
-    longPressRef.current = window.setTimeout(() => setPickerForMsg(msgId), 450);
+    longPressRef.current = window.setTimeout(() => {
+      if (!pressMovedRef.current) {
+        pressTriggeredRef.current = true;
+        setPickerForMsg(msgId);
+      }
+    }, 400);
   };
   const onMsgPressEnd = () => {
     if (longPressRef.current) { window.clearTimeout(longPressRef.current); longPressRef.current = null; }
   };
+  const onMsgPressMove = () => { pressMovedRef.current = true; onMsgPressEnd(); };
 
   const activeThread = threads.find((t) => t.id === activeId);
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
