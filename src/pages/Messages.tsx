@@ -240,7 +240,7 @@ export default function Messages() {
         sender_id: user.id,
         body: "",
         attachment_url: url,
-        attachment_type: mimeType,
+        attachment_type: baseMime,
         voice_duration_ms: Math.round(durationMs),
         reply_to_id: replyTo?.id ?? null,
       });
