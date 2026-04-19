@@ -230,8 +230,11 @@ export default function Messages() {
     if (!activeId || !user) return;
     setSending(true);
     try {
-      const ext = mimeType.includes("mp4") ? "m4a" : "webm";
-      const url = await uploadAttachment(blob, ext, mimeType);
+      // Normalize codec-suffixed mime types (e.g. "audio/webm;codecs=opus") to the base type
+      // since some storage backends match the exact string against the allow-list.
+      const baseMime = mimeType.split(";")[0].trim() || "audio/webm";
+      const ext = baseMime.includes("mp4") ? "m4a" : baseMime.includes("ogg") ? "ogg" : baseMime.includes("wav") ? "wav" : "webm";
+      const url = await uploadAttachment(blob, ext, baseMime);
       const { error } = await supabase.from("messages").insert({
         thread_id: activeId,
         sender_id: user.id,
