@@ -427,23 +427,21 @@ export default function Messages() {
                       >
                         <Reply className="h-3.5 w-3.5" />
                       </button>
-                      {/* Hover-react button (desktop) */}
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setPickerForMsg(pickerForMsg === m.id ? null : m.id); }}
-                        className="hidden h-6 w-6 items-center justify-center rounded-full text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100 md:flex"
-                        aria-label="Add reaction"
-                      >
-                        <SmilePlus className="h-3.5 w-3.5" />
-                      </button>
+                      {/* Hover-react button removed — long-press the bubble (mobile + desktop) opens the picker */}
 
                       <div
                         ref={(el) => { if (el) msgRefs.current.set(m.id, el); else msgRefs.current.delete(m.id); }}
+                        onMouseDown={(e) => { if (e.button === 0) onMsgPressStart(m.id); }}
+                        onMouseUp={onMsgPressEnd}
+                        onMouseLeave={onMsgPressEnd}
+                        onMouseMove={(e) => { if (e.buttons) pressMovedRef.current = true; }}
                         onTouchStart={() => onMsgPressStart(m.id)}
                         onTouchEnd={onMsgPressEnd}
-                        onTouchMove={onMsgPressEnd}
+                        onTouchMove={onMsgPressMove}
+                        onContextMenu={(e) => { if (pressTriggeredRef.current) e.preventDefault(); }}
+                        onClick={(e) => { if (pressTriggeredRef.current) { e.stopPropagation(); pressTriggeredRef.current = false; } }}
                         className={cn(
-                          "relative max-w-[78%] rounded-2xl text-sm transition-shadow",
+                          "relative max-w-[78%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
                           mine ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
                           (m.attachment_url && !isVoice) ? "p-1" : "px-3 py-2",
                         )}
