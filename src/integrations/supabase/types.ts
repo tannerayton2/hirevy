@@ -47,6 +47,38 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reads: {
         Row: {
           last_read_at: string
@@ -128,32 +160,42 @@ export type Database = {
           attachment_url: string | null
           body: string | null
           created_at: string
-          deleted_at: string | null
           id: string
+          reply_to_id: string | null
           sender_id: string
           thread_id: string
+          voice_duration_ms: number | null
         }
         Insert: {
           attachment_type?: string | null
           attachment_url?: string | null
           body?: string | null
           created_at?: string
-          deleted_at?: string | null
           id?: string
+          reply_to_id?: string | null
           sender_id: string
           thread_id: string
+          voice_duration_ms?: number | null
         }
         Update: {
           attachment_type?: string | null
           attachment_url?: string | null
           body?: string | null
           created_at?: string
-          deleted_at?: string | null
           id?: string
+          reply_to_id?: string | null
           sender_id?: string
           thread_id?: string
+          voice_duration_ms?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
