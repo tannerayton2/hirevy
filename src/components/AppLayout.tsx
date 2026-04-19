@@ -10,7 +10,7 @@ type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean;
 
 const baseItems: NavItem[] = [
   { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
-  { to: "/", icon: Compass, label: "Explore", end: true },
+  { to: "/explore", icon: Compass, label: "Explore", end: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
 ];
 
