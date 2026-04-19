@@ -7,7 +7,7 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Copy, Link as LinkIcon, MessageSquare, Plus, Share2, Users } from "lucide-react";
+import { Link as LinkIcon, MessageSquare, Plus, Share2, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 
