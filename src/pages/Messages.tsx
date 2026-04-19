@@ -1,25 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Send, Trash2, X } from "lucide-react";
+import { ImagePlus, Reply, Send, SmilePlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { VoiceRecorder } from "@/components/messages/VoiceRecorder";
+import { VoiceNotePlayer } from "@/components/messages/VoiceNotePlayer";
+import { ReactionPicker } from "@/components/messages/ReactionPicker";
 
-interface ThreadRow {
-  id: string;
-  user_a: string;
-  user_b: string;
-  last_message_at: string;
-}
-interface OtherProfile {
-  id: string;
-  username: string;
-  display_name: string | null;
-  avatar_url: string | null;
-}
+interface ThreadRow { id: string; user_a: string; user_b: string; last_message_at: string }
+interface OtherProfile { id: string; username: string; display_name: string | null; avatar_url: string | null }
 interface Msg {
   id: string;
   thread_id: string;
@@ -27,21 +21,18 @@ interface Msg {
   body: string | null;
   attachment_url: string | null;
   attachment_type: string | null;
-  deleted_at: string | null;
+  reply_to_id: string | null;
+  voice_duration_ms: number | null;
   created_at: string;
 }
-interface ReadMarker {
-  thread_id: string;
-  user_id: string;
-  last_read_message_id: string | null;
-  last_read_at: string;
-}
+interface ReadMarker { thread_id: string; user_id: string; last_read_message_id: string | null; last_read_at: string }
+interface Reaction { id: string; message_id: string; user_id: string; emoji: string }
 
 const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const TYPING_TTL_MS = 2500;
 
 function formatRelative(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
+  const d = new Date(iso); const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return "Just now";
@@ -53,10 +44,15 @@ function formatRelative(iso: string): string {
   const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   if (sameDay) return hours < 6 ? `${hours}h ago` : time;
   if (isYesterday) return `Yesterday ${time}`;
-  if (diffMs < 7 * 24 * 60 * 60 * 1000) {
-    return `${d.toLocaleDateString(undefined, { weekday: "short" })} ${time}`;
-  }
+  if (diffMs < 7 * 24 * 60 * 60 * 1000) return `${d.toLocaleDateString(undefined, { weekday: "short" })} ${time}`;
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + time;
+}
+
+function snippet(m: Msg | undefined): string {
+  if (!m) return "Original message";
+  if (m.voice_duration_ms != null) return "🎤 Voice note";
+  if (m.attachment_url) return "📷 Photo";
+  return (m.body || "").slice(0, 80);
 }
 
 export default function Messages() {
@@ -65,19 +61,29 @@ export default function Messages() {
   const activeId = params.get("t");
   const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null })[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
   const [reads, setReads] = useState<ReadMarker[]>([]);
   const [body, setBody] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<Msg | null>(null);
   const [sending, setSending] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [pickerForMsg, setPickerForMsg] = useState<string | null>(null);
+  const [otherTyping, setOtherTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
+  const lastTypingSentRef = useRef(0);
+  const otherTypingTimerRef = useRef<number | null>(null);
+  const longPressRef = useRef<number | null>(null);
+  const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Inbox load
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
+    void (async () => {
       const { data: ts } = await supabase
         .from("message_threads")
         .select("id, user_a, user_b, last_message_at")
@@ -87,20 +93,20 @@ export default function Messages() {
       const { data: profs } = otherIds.length
         ? await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", otherIds)
         : { data: [] as OtherProfile[] };
-      const profMap = new Map((profs as OtherProfile[]).map((p) => [p.id, p]));
+      const profMap = new Map(((profs as OtherProfile[]) ?? []).map((p) => [p.id, p]));
       setThreads(list.map((t) => ({ ...t, other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null })));
-    };
-    void load();
+    })();
   }, [user]);
 
-  // Messages + read markers + realtime per active thread
+  // Active thread: load messages, reactions, reads + subscribe
   useEffect(() => {
-    if (!activeId || !user) { setMsgs([]); setReads([]); return; }
-    const load = async () => {
+    if (!activeId || !user) { setMsgs([]); setReads([]); setReactions([]); setOtherTyping(false); return; }
+
+    void (async () => {
       const [msgRes, readRes] = await Promise.all([
         supabase
           .from("messages")
-          .select("id, thread_id, sender_id, body, attachment_url, attachment_type, deleted_at, created_at")
+          .select("id, thread_id, sender_id, body, attachment_url, attachment_type, reply_to_id, voice_duration_ms, created_at")
           .eq("thread_id", activeId)
           .order("created_at", { ascending: true })
           .limit(200),
@@ -109,50 +115,68 @@ export default function Messages() {
           .select("thread_id, user_id, last_read_message_id, last_read_at")
           .eq("thread_id", activeId),
       ]);
-      setMsgs((msgRes.data as Msg[]) ?? []);
+      const ms = (msgRes.data as unknown as Msg[]) ?? [];
+      setMsgs(ms);
       setReads((readRes.data as ReadMarker[]) ?? []);
-    };
-    void load();
+      if (ms.length) {
+        const { data: rx } = await supabase
+          .from("message_reactions")
+          .select("id, message_id, user_id, emoji")
+          .in("message_id", ms.map((m) => m.id));
+        setReactions((rx as Reaction[]) ?? []);
+      } else {
+        setReactions([]);
+      }
+    })();
 
     const channel = supabase
-      .channel(`thread:${activeId}`)
+      .channel(`thread:${activeId}`, { config: { broadcast: { self: false }, presence: { key: user.id } } })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `thread_id=eq.${activeId}` }, (payload) => {
-        setMsgs((prev) => prev.some((m) => m.id === (payload.new as Msg).id) ? prev : [...prev, payload.new as Msg]);
+        const m = payload.new as unknown as Msg;
+        setMsgs((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]);
       })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `thread_id=eq.${activeId}` }, (payload) => {
-        setMsgs((prev) => prev.map((m) => m.id === (payload.new as Msg).id ? (payload.new as Msg) : m));
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "message_reactions" }, (payload) => {
+        const r = payload.new as unknown as Reaction;
+        setReactions((prev) => prev.some((x) => x.id === r.id) ? prev : [...prev, r]);
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "message_reactions" }, (payload) => {
+        const r = payload.old as unknown as Reaction;
+        setReactions((prev) => prev.filter((x) => x.id !== r.id));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reads", filter: `thread_id=eq.${activeId}` }, (payload) => {
         const row = payload.new as ReadMarker;
         if (!row) return;
-        setReads((prev) => {
-          const others = prev.filter((r) => r.user_id !== row.user_id);
-          return [...others, row];
-        });
+        setReads((prev) => [...prev.filter((r) => r.user_id !== row.user_id), row]);
+      })
+      .on("broadcast", { event: "typing" }, ({ payload }: { payload: { user_id: string } }) => {
+        if (payload.user_id === user.id) return;
+        setOtherTyping(true);
+        if (otherTypingTimerRef.current) window.clearTimeout(otherTypingTimerRef.current);
+        otherTypingTimerRef.current = window.setTimeout(() => setOtherTyping(false), TYPING_TTL_MS);
       })
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    channelRef.current = channel;
+
+    return () => {
+      void supabase.removeChannel(channel);
+      channelRef.current = null;
+      if (otherTypingTimerRef.current) { window.clearTimeout(otherTypingTimerRef.current); otherTypingTimerRef.current = null; }
+    };
   }, [activeId, user]);
 
-  // Mark read whenever new messages arrive in the active thread
+  // Mark read when new messages arrive
   useEffect(() => {
     if (!activeId || !user || msgs.length === 0) return;
     const last = msgs[msgs.length - 1];
-    if (last.sender_id === user.id) return; // no need to mark our own
-    void supabase
-      .from("message_reads")
-      .upsert(
-        { thread_id: activeId, user_id: user.id, last_read_message_id: last.id, last_read_at: new Date().toISOString() },
-        { onConflict: "thread_id,user_id" },
-      );
+    if (last.sender_id === user.id) return;
+    void supabase.from("message_reads").upsert(
+      { thread_id: activeId, user_id: user.id, last_read_message_id: last.id, last_read_at: new Date().toISOString() },
+      { onConflict: "thread_id,user_id" },
+    );
   }, [activeId, user, msgs]);
 
   // Auto-scroll
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [msgs]);
-
-  
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [msgs, otherTyping]);
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -165,8 +189,16 @@ export default function Messages() {
   };
   const clearPending = () => { setPendingFile(null); if (pendingPreview) URL.revokeObjectURL(pendingPreview); setPendingPreview(null); };
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const uploadAttachment = async (file: Blob, ext: string, contentType: string) => {
+    if (!user || !activeId) throw new Error("not ready");
+    const path = `${user.id}/${activeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("message-attachments").upload(path, file, { contentType, upsert: false });
+    if (error) throw error;
+    return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
+  };
+
+  const send = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!activeId || !user) return;
     const text = body.trim();
     if (!text && !pendingFile) return;
@@ -176,14 +208,7 @@ export default function Messages() {
       let attachment_type: string | null = null;
       if (pendingFile) {
         const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const path = `${user.id}/${activeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("message-attachments").upload(path, pendingFile, {
-          contentType: pendingFile.type,
-          upsert: false,
-        });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from("message-attachments").getPublicUrl(path);
-        attachment_url = pub.publicUrl;
+        attachment_url = await uploadAttachment(pendingFile, ext, pendingFile.type);
         attachment_type = pendingFile.type;
       }
       const { error } = await supabase.from("messages").insert({
@@ -192,49 +217,117 @@ export default function Messages() {
         body: text,
         attachment_url,
         attachment_type,
+        reply_to_id: replyTo?.id ?? null,
       });
       if (error) throw error;
-      setBody("");
-      clearPending();
+      setBody(""); clearPending(); setReplyTo(null);
     } catch (err) {
       toast({ title: "Couldn't send", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
 
-  const deleteMsg = async (m: Msg) => {
-    if (m.sender_id !== user?.id || m.deleted_at) return;
-    if (!confirm("Delete this message? This cannot be undone.")) return;
-    const { error } = await supabase
-      .from("messages")
-      .update({ deleted_at: new Date().toISOString(), body: "", attachment_url: null, attachment_type: null })
-      .eq("id", m.id);
-    if (error) toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+  const sendVoice = async (blob: Blob, durationMs: number, mimeType: string) => {
+    if (!activeId || !user) return;
+    setSending(true);
+    try {
+      const ext = mimeType.includes("mp4") ? "m4a" : "webm";
+      const url = await uploadAttachment(blob, ext, mimeType);
+      const { error } = await supabase.from("messages").insert({
+        thread_id: activeId,
+        sender_id: user.id,
+        body: "",
+        attachment_url: url,
+        attachment_type: mimeType,
+        voice_duration_ms: Math.round(durationMs),
+        reply_to_id: replyTo?.id ?? null,
+      });
+      if (error) throw error;
+      setReplyTo(null);
+    } catch (err) {
+      toast({ title: "Couldn't send voice note", description: err instanceof Error ? err.message : "Unknown", variant: "destructive" });
+    } finally { setSending(false); }
+  };
+
+  // Typing broadcast (throttled)
+  const broadcastTyping = useCallback(() => {
+    if (!channelRef.current || !user) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    void channelRef.current.send({ type: "broadcast", event: "typing", payload: { user_id: user.id } });
+  }, [user]);
+
+  const onBodyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBody(e.target.value);
+    if (e.target.value) broadcastTyping();
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = window.setTimeout(() => { lastTypingSentRef.current = 0; }, TYPING_TTL_MS);
+  };
+
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    const mine = reactions.find((r) => r.message_id === messageId && r.user_id === user.id && r.emoji === emoji);
+    if (mine) {
+      setReactions((prev) => prev.filter((r) => r.id !== mine.id));
+      await supabase.from("message_reactions").delete().eq("id", mine.id);
+    } else {
+      const { data, error } = await supabase
+        .from("message_reactions")
+        .insert({ message_id: messageId, user_id: user.id, emoji })
+        .select()
+        .single();
+      if (!error && data) {
+        setReactions((prev) => prev.some((r) => r.id === data.id) ? prev : [...prev, data as Reaction]);
+      }
+    }
+    setPickerForMsg(null);
+  };
+
+  const scrollToMessage = (id: string) => {
+    const el = msgRefs.current.get(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary");
+    window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1500);
+  };
+
+  const onMsgPressStart = (msgId: string) => {
+    if (longPressRef.current) window.clearTimeout(longPressRef.current);
+    longPressRef.current = window.setTimeout(() => setPickerForMsg(msgId), 450);
+  };
+  const onMsgPressEnd = () => {
+    if (longPressRef.current) { window.clearTimeout(longPressRef.current); longPressRef.current = null; }
   };
 
   const activeThread = threads.find((t) => t.id === activeId);
+  const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
-  // Group messages by sender within 2-min windows; show timestamp on the LAST message of each group
   const grouped = useMemo(() => {
-    const out: { msg: Msg; showTimestamp: boolean; groupTail: boolean }[] = [];
+    const out: { msg: Msg; showTimestamp: boolean }[] = [];
     for (let i = 0; i < msgs.length; i++) {
       const m = msgs[i];
       const next = msgs[i + 1];
-      const sameGroup = next
-        && next.sender_id === m.sender_id
+      const sameGroup = next && next.sender_id === m.sender_id
         && (new Date(next.created_at).getTime() - new Date(m.created_at).getTime()) < 2 * 60 * 1000;
-      out.push({ msg: m, showTimestamp: !sameGroup, groupTail: !sameGroup });
+      out.push({ msg: m, showTimestamp: !sameGroup });
     }
     return out;
   }, [msgs]);
 
-  // "Seen" indicator: latest message OF MINE that the other party has read
+  const reactionsByMsg = useMemo(() => {
+    const map = new Map<string, Reaction[]>();
+    for (const r of reactions) {
+      const arr = map.get(r.message_id) ?? [];
+      arr.push(r);
+      map.set(r.message_id, arr);
+    }
+    return map;
+  }, [reactions]);
+
   const otherUserId = activeThread ? (activeThread.user_a === user?.id ? activeThread.user_b : activeThread.user_a) : null;
   const otherRead = otherUserId ? reads.find((r) => r.user_id === otherUserId) : null;
   const lastSeenMineId = useMemo(() => {
     if (!otherRead?.last_read_message_id || !user) return null;
-    // Find the latest of MY messages whose created_at <= that read marker's message timestamp
     const readMsg = msgs.find((m) => m.id === otherRead.last_read_message_id);
     if (!readMsg) return null;
     const readT = new Date(readMsg.created_at).getTime();
@@ -293,27 +386,80 @@ export default function Messages() {
               <button onClick={() => setParams({}, { replace: true })} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground md:hidden">Back</button>
             </header>
 
-            <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+            <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4" onClick={() => setPickerForMsg(null)}>
               {grouped.map(({ msg: m, showTimestamp }) => {
                 const mine = m.sender_id === user!.id;
-                const isDeleted = !!m.deleted_at;
                 const showSeen = mine && lastSeenMineId === m.id;
+                const rx = reactionsByMsg.get(m.id) ?? [];
+                const grouping = new Map<string, { count: number; mine: boolean }>();
+                for (const r of rx) {
+                  const cur = grouping.get(r.emoji) ?? { count: 0, mine: false };
+                  cur.count += 1;
+                  if (r.user_id === user!.id) cur.mine = true;
+                  grouping.set(r.emoji, cur);
+                }
+                const replied = m.reply_to_id ? msgById.get(m.reply_to_id) : undefined;
+                const isVoice = m.voice_duration_ms != null && m.attachment_url;
+
                 return (
-                  <div key={m.id} className={cn("group flex flex-col", mine ? "items-end" : "items-start")}>
-                    <div className={cn("flex items-end gap-1.5", mine ? "flex-row-reverse" : "flex-row")}>
+                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start")}>
+                    <div className={cn("flex w-full items-end gap-1.5", mine ? "flex-row-reverse" : "flex-row")}>
+                      {/* Hover-reply button (desktop) */}
+                      <button
+                        type="button"
+                        onClick={() => setReplyTo(m)}
+                        className="hidden h-6 w-6 items-center justify-center rounded-full text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100 md:flex"
+                        aria-label="Reply"
+                        title="Reply"
+                      >
+                        <Reply className="h-3.5 w-3.5" />
+                      </button>
+                      {/* Hover-react button (desktop) */}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setPickerForMsg(pickerForMsg === m.id ? null : m.id); }}
+                        className="hidden h-6 w-6 items-center justify-center rounded-full text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100 md:flex"
+                        aria-label="Add reaction"
+                      >
+                        <SmilePlus className="h-3.5 w-3.5" />
+                      </button>
+
                       <div
+                        ref={(el) => { if (el) msgRefs.current.set(m.id, el); else msgRefs.current.delete(m.id); }}
+                        onTouchStart={() => onMsgPressStart(m.id)}
+                        onTouchEnd={onMsgPressEnd}
+                        onTouchMove={onMsgPressEnd}
                         className={cn(
-                          "max-w-[75%] rounded-2xl px-3 py-2 text-sm",
-                          isDeleted
-                            ? "border border-dashed border-border bg-transparent italic text-muted-foreground"
-                            : mine
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-foreground",
-                          m.attachment_url && !isDeleted && "p-1",
+                          "relative max-w-[78%] rounded-2xl text-sm transition-shadow",
+                          mine ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
+                          (m.attachment_url && !isVoice) ? "p-1" : "px-3 py-2",
                         )}
                       >
-                        {isDeleted ? (
-                          "Message deleted"
+                        {pickerForMsg === m.id && (
+                          <ReactionPicker
+                            align={mine ? "right" : "left"}
+                            onPick={(emoji) => toggleReaction(m.id, emoji)}
+                          />
+                        )}
+
+                        {/* Quoted reply snippet */}
+                        {replied && (
+                          <button
+                            type="button"
+                            onClick={() => scrollToMessage(replied.id)}
+                            className={cn(
+                              "mb-1.5 block w-full rounded-md border-l-2 px-2 py-1 text-left text-xs",
+                              mine
+                                ? "border-primary-foreground/60 bg-primary-foreground/10 text-primary-foreground/90"
+                                : "border-primary/60 bg-foreground/5 text-foreground/80",
+                            )}
+                          >
+                            <div className="line-clamp-2 truncate">{snippet(replied)}</div>
+                          </button>
+                        )}
+
+                        {isVoice ? (
+                          <VoiceNotePlayer url={m.attachment_url!} durationMs={m.voice_duration_ms} mine={mine} />
                         ) : (
                           <>
                             {m.attachment_url && (
@@ -322,30 +468,35 @@ export default function Messages() {
                                 onClick={() => setLightbox(m.attachment_url)}
                                 className="block overflow-hidden rounded-xl"
                               >
-                                <img
-                                  src={m.attachment_url}
-                                  alt=""
-                                  className="max-h-72 max-w-full object-cover"
-                                  loading="lazy"
-                                />
+                                <img src={m.attachment_url} alt="" className="max-h-72 max-w-full object-cover" loading="lazy" />
                               </button>
                             )}
                             {m.body && <p className={cn("whitespace-pre-wrap break-words", m.attachment_url && "px-2 py-1.5")}>{m.body}</p>}
                           </>
                         )}
                       </div>
-                      {mine && !isDeleted && (
-                        <button
-                          type="button"
-                          onClick={() => deleteMsg(m)}
-                          className="opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-                          aria-label="Delete message"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                        </button>
-                      )}
                     </div>
+
+                    {/* Reaction chips */}
+                    {grouping.size > 0 && (
+                      <div className={cn("mt-1 flex flex-wrap gap-1", mine ? "justify-end" : "justify-start")}>
+                        {[...grouping.entries()].map(([emoji, { count, mine: isMine }]) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => toggleReaction(m.id, emoji)}
+                            className={cn(
+                              "flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs transition-colors",
+                              isMine ? "border-primary bg-primary/15 text-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            <span>{emoji}</span>
+                            {count > 1 && <span className="font-mono text-[10px] tabular-nums">{count}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                     {showTimestamp && (
                       <span className={cn("mt-0.5 px-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground", mine ? "text-right" : "text-left")}>
                         {formatRelative(m.created_at)}
@@ -359,7 +510,31 @@ export default function Messages() {
                   </div>
                 );
               })}
+
+              {otherTyping && (
+                <div className="flex items-center gap-1.5 px-2 pt-1 text-xs text-muted-foreground">
+                  <span className="flex gap-0.5">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "0ms" }} />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "120ms" }} />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "240ms" }} />
+                  </span>
+                  <span>typing…</span>
+                </div>
+              )}
             </div>
+
+            {replyTo && (
+              <div className="flex items-start gap-2 border-t border-border bg-card/40 px-3 py-2">
+                <div className="w-1 self-stretch rounded-full bg-primary" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-primary">Replying to</p>
+                  <p className="truncate text-xs text-muted-foreground">{snippet(replyTo)}</p>
+                </div>
+                <Button type="button" size="icon" variant="ghost" onClick={() => setReplyTo(null)} aria-label="Cancel reply">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
 
             {pendingPreview && (
               <div className="flex items-center gap-3 border-t border-border bg-card/40 px-3 py-2">
@@ -371,10 +546,11 @@ export default function Messages() {
 
             <form onSubmit={send} className="flex items-center gap-2 border-t border-border p-3">
               <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-              <Button type="button" size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Attach image">
+              <Button type="button" size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Attach image" className="shrink-0">
                 <ImagePlus className="h-5 w-5" />
               </Button>
-              <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a message…" maxLength={4000} />
+              <VoiceRecorder onComplete={sendVoice} disabled={sending} />
+              <Input value={body} onChange={onBodyChange} placeholder="Write a message…" maxLength={4000} />
               <Button type="submit" size="icon" disabled={sending || (!body.trim() && !pendingFile)}><Send className="h-4 w-4" /></Button>
             </form>
           </>
@@ -385,12 +561,8 @@ export default function Messages() {
         )}
       </section>
 
-      {/* Lightbox */}
       {lightbox && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setLightbox(null)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setLightbox(null)}>
           <img src={lightbox} alt="" className="max-h-full max-w-full rounded-md" />
           <button
             className="absolute right-4 top-4 rounded-full bg-background/90 p-2 text-foreground"
