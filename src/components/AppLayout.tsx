@@ -10,7 +10,7 @@ type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean;
 
 const baseItems: NavItem[] = [
   { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
-  { to: "/", icon: Compass, label: "Explore", end: true },
+  { to: "/explore", icon: Compass, label: "Explore", end: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
 ];
 
@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <NavLink to="/" className="flex items-center gap-2">
+          <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
             <Logo />
           </NavLink>
           <div className="flex items-center gap-2">
