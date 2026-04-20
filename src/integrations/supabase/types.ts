@@ -562,7 +562,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          review_count: number
+          username: string
+        }[]
+      }
+      admin_stats: { Args: never; Returns: Json }
       get_or_create_thread: { Args: { other_user: string }; Returns: string }
+      is_admin: { Args: { uid: string }; Returns: boolean }
       list_provider_reviews: {
         Args: { p_provider: string }
         Returns: {
