@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_disputes: {
+        Row: {
+          contact_email: string
+          counter_evidence: string | null
+          created_at: string
+          id: string
+          provider_id: string
+          reason: string
+          review_id: string
+          review_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email: string
+          counter_evidence?: string | null
+          created_at?: string
+          id?: string
+          provider_id: string
+          reason: string
+          review_id: string
+          review_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string
+          counter_evidence?: string | null
+          created_at?: string
+          id?: string
+          provider_id?: string
+          reason?: string
+          review_id?: string
+          review_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_disputes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -321,6 +368,156 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      proof_access_requests: {
+        Row: {
+          created_at: string
+          id: string
+          proof_review_id: string
+          requester_email: string | null
+          requester_message: string | null
+          requester_user_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proof_review_id: string
+          requester_email?: string | null
+          requester_message?: string | null
+          requester_user_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proof_review_id?: string
+          requester_email?: string | null
+          requester_message?: string | null
+          requester_user_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_access_requests_proof_review_id_fkey"
+            columns: ["proof_review_id"]
+            isOneToOne: false
+            referencedRelation: "proof_backed_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proof_backed_reviews: {
+        Row: {
+          amount_paid_bracket: string | null
+          body: string
+          created_at: string
+          disputed_at: string | null
+          engagement_ended_month: number | null
+          engagement_ended_year: number | null
+          engagement_ongoing: boolean
+          engagement_started_month: number
+          engagement_started_year: number
+          engagement_type: string
+          id: string
+          is_disputed: boolean
+          proof_file_count: number
+          proof_file_paths: string[]
+          provider_id: string
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+          reviewer_user_id: string
+        }
+        Insert: {
+          amount_paid_bracket?: string | null
+          body: string
+          created_at?: string
+          disputed_at?: string | null
+          engagement_ended_month?: number | null
+          engagement_ended_year?: number | null
+          engagement_ongoing?: boolean
+          engagement_started_month: number
+          engagement_started_year: number
+          engagement_type: string
+          id?: string
+          is_disputed?: boolean
+          proof_file_count?: number
+          proof_file_paths?: string[]
+          provider_id: string
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+          reviewer_user_id: string
+        }
+        Update: {
+          amount_paid_bracket?: string | null
+          body?: string
+          created_at?: string
+          disputed_at?: string | null
+          engagement_ended_month?: number | null
+          engagement_ended_year?: number | null
+          engagement_ongoing?: boolean
+          engagement_started_month?: number
+          engagement_started_year?: number
+          engagement_type?: string
+          id?: string
+          is_disputed?: boolean
+          proof_file_count?: number
+          proof_file_paths?: string[]
+          provider_id?: string
+          rating?: number
+          reviewer_email?: string
+          reviewer_name?: string
+          reviewer_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_backed_reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_replies: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          provider_id: string
+          review_id: string
+          review_type: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          provider_id: string
+          review_id: string
+          review_type: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          provider_id?: string
+          review_id?: string
+          review_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_replies_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
