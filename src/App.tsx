@@ -18,6 +18,7 @@ import ProofReviewSubmit from "./pages/ProofReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
+import Admin from "./pages/Admin.tsx";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,8 @@ const App = () => (
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
             <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
             <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />
+
+            <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
 
             <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
             <Route path="/@:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />

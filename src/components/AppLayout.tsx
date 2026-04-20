@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Compass, MessageSquare, User, LogIn } from "lucide-react";
+import { Compass, MessageSquare, User, LogIn, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUnreadDocumentTitle } from "@/hooks/useUnreadThreads";
+import { isAdminUsername } from "@/lib/admin";
 import type { ReactNode } from "react";
 
 function UnreadBadge({ count }: { count: number }) {
@@ -19,21 +20,30 @@ function UnreadBadge({ count }: { count: number }) {
   );
 }
 
-type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean };
+type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean };
 
 const baseItems: NavItem[] = [
   { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
   { to: "/explore", icon: Compass, label: "Explore", end: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
+  { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
   const unread = useUnreadDocumentTitle("HireVy");
+  const isAdmin = isAdminUsername(profile?.username);
 
-  const items = baseItems.filter((i) => (i.authOnly ? !!user : true));
+  const items = baseItems.filter((i) => {
+    if (i.admin && !isAdmin) return false;
+    if (i.authOnly && !user) return false;
+    return true;
+  });
   const profilePath = profile?.username ? `/@${profile.username}` : "/me";
-  const mobileCols = items.length === 3 ? "grid-cols-3" : items.length === 2 ? "grid-cols-2" : "grid-cols-1";
+  const mobileCols =
+    items.length === 4 ? "grid-cols-4" :
+    items.length === 3 ? "grid-cols-3" :
+    items.length === 2 ? "grid-cols-2" : "grid-cols-1";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -79,6 +89,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <span className="relative inline-flex">
                     <item.icon className="h-4 w-4" />
                     {item.to === "/messages" && <UnreadBadge count={unread} />}
+                    {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
                   </span>
                   {item.label}
                 </NavLink>
@@ -112,6 +123,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <span className="relative inline-flex">
                 <item.icon className="h-5 w-5" strokeWidth={1.5} />
                 {item.to === "/messages" && <UnreadBadge count={unread} />}
+                {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
               </span>
               {item.label}
             </NavLink>
