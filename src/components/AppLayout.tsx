@@ -4,7 +4,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useUnreadDocumentTitle } from "@/hooks/useUnreadThreads";
 import type { ReactNode } from "react";
+
+function UnreadBadge({ count }: { count: number }) {
+  if (!count) return null;
+  return (
+    <span
+      aria-label={`${count} unread thread${count === 1 ? "" : "s"}`}
+      className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
+    >
+      {count >= 10 ? "9+" : count}
+    </span>
+  );
+}
 
 type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean };
 
@@ -16,6 +29,7 @@ const baseItems: NavItem[] = [
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
+  const unread = useUnreadDocumentTitle("HireVy");
 
   const items = baseItems.filter((i) => (i.authOnly ? !!user : true));
   const profilePath = profile?.username ? `/@${profile.username}` : "/me";
@@ -62,7 +76,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     )
                   }
                 >
-                  <item.icon className="h-4 w-4" />
+                  <span className="relative inline-flex">
+                    <item.icon className="h-4 w-4" />
+                    {item.to === "/messages" && <UnreadBadge count={unread} />}
+                  </span>
                   {item.label}
                 </NavLink>
               );
@@ -92,7 +109,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 )
               }
             >
-              <item.icon className="h-5 w-5" strokeWidth={1.5} />
+              <span className="relative inline-flex">
+                <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                {item.to === "/messages" && <UnreadBadge count={unread} />}
+              </span>
               {item.label}
             </NavLink>
           );
