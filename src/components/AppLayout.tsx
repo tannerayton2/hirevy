@@ -76,7 +76,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     )
                   }
                 >
-                  <item.icon className="h-4 w-4" />
+                  <span className="relative inline-flex">
+                    <item.icon className="h-4 w-4" />
+                    {item.to === "/messages" && <UnreadBadge count={unread} />}
+                  </span>
                   {item.label}
                 </NavLink>
               );
@@ -106,7 +109,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 )
               }
             >
-              <item.icon className="h-5 w-5" strokeWidth={1.5} />
+              <span className="relative inline-flex">
+                <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                {item.to === "/messages" && <UnreadBadge count={unread} />}
+              </span>
               {item.label}
             </NavLink>
           );
