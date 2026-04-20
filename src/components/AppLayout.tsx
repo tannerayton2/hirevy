@@ -4,7 +4,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useUnreadDocumentTitle } from "@/hooks/useUnreadThreads";
 import type { ReactNode } from "react";
+
+function UnreadBadge({ count }: { count: number }) {
+  if (!count) return null;
+  return (
+    <span
+      aria-label={`${count} unread thread${count === 1 ? "" : "s"}`}
+      className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
+    >
+      {count >= 10 ? "9+" : count}
+    </span>
+  );
+}
 
 type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean };
 
