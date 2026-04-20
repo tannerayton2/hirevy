@@ -164,15 +164,26 @@ export default function Messages() {
     };
   }, [activeId, user]);
 
-  // Mark read when new messages arrive
+  // Mark thread as read whenever it's open and messages change
   useEffect(() => {
-    if (!activeId || !user || msgs.length === 0) return;
-    const last = msgs[msgs.length - 1];
-    if (last.sender_id === user.id) return;
-    void supabase.from("message_reads").upsert(
-      { thread_id: activeId, user_id: user.id, last_read_message_id: last.id, last_read_at: new Date().toISOString() },
-      { onConflict: "thread_id,user_id" },
-    );
+    if (!activeId || !user) return;
+    const last = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+    // Mark as read even if there are no messages yet (clears stale badges) and
+    // even if the latest message is our own (covers race where we just sent one).
+    void supabase
+      .from("message_reads")
+      .upsert(
+        {
+          thread_id: activeId,
+          user_id: user.id,
+          last_read_message_id: last?.id ?? null,
+          last_read_at: new Date().toISOString(),
+        },
+        { onConflict: "thread_id,user_id" },
+      )
+      .then(({ error }) => {
+        if (error) console.error("[message_reads upsert]", error);
+      });
   }, [activeId, user, msgs]);
 
   // Auto-scroll
