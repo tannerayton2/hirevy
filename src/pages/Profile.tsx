@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
@@ -7,9 +7,14 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Link as LinkIcon, MessageSquare, Plus, Share2, Users } from "lucide-react";
+import { Link as LinkIcon, MessageSquare, Plus, Share2, ShieldCheck, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
+import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
+import { ProviderReply } from "@/components/reviews/ProviderReply";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 interface ProfileFull {
   id: string;
@@ -31,6 +36,16 @@ interface Review {
   created_at: string;
 }
 
+type SortKey = "newest" | "highest" | "lowest";
+
+function sortReviews<T extends { created_at: string; rating: number }>(items: T[], key: SortKey): T[] {
+  const out = [...items];
+  if (key === "newest") out.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return out;
+}
+
 export default function Profile() {
   const { username = "" } = useParams();
   const handle = username.startsWith("@") ? username.slice(1) : username;
@@ -38,6 +53,9 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferCardData[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
+  const [verifiedSort, setVerifiedSort] = useState<SortKey>("newest");
+  const [proofSort, setProofSort] = useState<SortKey>("newest");
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
 
@@ -61,9 +79,14 @@ export default function Profile() {
       .order("created_at", { ascending: false });
     if (!isOwner) offersQuery = offersQuery.eq("is_active", true);
 
-    const [offersRes, reviewsRes, followRes] = await Promise.all([
+    const [offersRes, reviewsRes, proofRes, followRes] = await Promise.all([
       offersQuery,
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
+      supabase
+        .from("proof_backed_reviews")
+        .select("id, provider_id, reviewer_name, rating, body, engagement_type, engagement_started_month, engagement_started_year, engagement_ended_month, engagement_ended_year, engagement_ongoing, amount_paid_bracket, proof_file_count, is_disputed, created_at")
+        .eq("provider_id", prof.id)
+        .order("created_at", { ascending: false }),
       user
         ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", prof.id).maybeSingle()
         : Promise.resolve({ data: null } as { data: null }),
@@ -71,6 +94,7 @@ export default function Profile() {
 
     setOffers((offersRes.data as unknown as OfferCardData[]) ?? []);
     setReviews((reviewsRes.data as unknown as Review[]) ?? []);
+    setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setFollowing(!!followRes.data);
     setLoading(false);
   };
@@ -87,6 +111,9 @@ export default function Profile() {
   const avg = profile && profile.review_count > 0 ? profile.rating_sum / profile.review_count : 0;
   const paidOffers = offers.filter((o) => !o.free_for_testimonial);
   const freeOffers = offers.filter((o) => o.free_for_testimonial);
+
+  const sortedVerified = useMemo(() => sortReviews(reviews, verifiedSort), [reviews, verifiedSort]);
+  const sortedProof = useMemo(() => sortReviews(proofReviews, proofSort), [proofReviews, proofSort]);
 
   const reviewLink = profile ? shareReviewUrl(profile.username) : "";
   const profileShareLink = profile ? shareProfileUrl(profile.username) : "";
@@ -131,6 +158,8 @@ export default function Profile() {
     );
   }
 
+  const providerDisplayName = profile.display_name || profile.username;
+
   return (
     <div className="px-4 py-6 md:px-8 md:py-10">
       {/* Header */}
@@ -145,13 +174,16 @@ export default function Profile() {
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{profile.display_name || profile.username}</h1>
+              <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{providerDisplayName}</h1>
               <TierBadge tier={tier} size="md" />
             </div>
             <p className="mt-1.5 text-sm text-muted-foreground">@{profile.username}{profile.service_category && ` · ${profile.service_category}`}</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
               <StarRating value={avg} count={profile.review_count} showValue size={14} />
               <span className="inline-flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {profile.follower_count} followers</span>
+              <span className="text-muted-foreground/80">
+                {profile.review_count} verified · {proofReviews.length} proof-backed
+              </span>
             </div>
           </div>
         </div>
@@ -171,14 +203,14 @@ export default function Profile() {
               <Button variant="outline" onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message</Button>
             </>
           )}
-          {/* Share is always visible to everyone — owner, other users, and logged-out visitors */}
+          {/* Share is always visible to everyone */}
           <Button variant="outline" onClick={copyProfileLink}>
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
         </div>
       </div>
 
-      {/* Bio (no label, plain text under header) */}
+      {/* Bio */}
       {profile.bio && (
         <section className="mt-6 max-w-2xl">
           <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{profile.bio}</p>
@@ -202,13 +234,22 @@ export default function Profile() {
         )}
       </Section>
 
-      {/* Reviews */}
-      <Section title="Verified reviews" count={profile.review_count}>
-        {reviews.length === 0 ? (
-          <Empty msg="No reviews yet." />
+      {/* Verified Reviews — primary, gold accent border */}
+      <section className="mt-10">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-primary/60 pb-2">
+          <div className="flex items-baseline gap-3">
+            <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{profile.review_count}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
+          </div>
+        </div>
+        {sortedVerified.length === 0 ? (
+          <Empty msg="No verified reviews yet." />
         ) : (
           <div className="space-y-4">
-            {reviews.map((r) => (
+            {sortedVerified.map((r) => (
               <article key={r.id} className="rounded-md border border-border bg-card p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="font-semibold">{r.reviewer_name}</p>
@@ -218,11 +259,61 @@ export default function Profile() {
                 <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                   {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                 </p>
+                <ProviderReply
+                  reviewId={r.id}
+                  reviewType="verified"
+                  providerId={profile.id}
+                  providerDisplayName={providerDisplayName}
+                  isProviderViewer={isMe}
+                />
               </article>
             ))}
           </div>
         )}
-      </Section>
+      </section>
+
+      {/* Proof-Backed Reviews — secondary */}
+      <section className="mt-10">
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
+          <div className="flex items-baseline gap-3">
+            <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
+              <ShieldCheck className="h-5 w-5 text-primary/80" strokeWidth={1.75} />
+              Proof-backed reviews
+            </h2>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{proofReviews.length}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {!isMe && user && user.id !== profile.id && (
+              <Button asChild size="sm">
+                <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
+              </Button>
+            )}
+            {!user && (
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+              </Button>
+            )}
+            {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
+          </div>
+        </div>
+        <p className="mb-4 text-xs italic text-muted-foreground">
+          Unverified but evidence-backed — submitted by clients with proof of engagement. Not counted toward tier or rating.
+        </p>
+        {sortedProof.length === 0 ? (
+          <Empty msg="No proof-backed reviews yet." />
+        ) : (
+          <div className="space-y-4">
+            {sortedProof.map((r) => (
+              <ProofReviewCard
+                key={r.id}
+                review={r}
+                providerDisplayName={providerDisplayName}
+                isProviderViewer={isMe}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -238,6 +329,20 @@ function Section({ title, count, children }: { title: string; count: number; chi
     </section>
   );
 }
+
+function SortMenu({ value, onChange }: { value: SortKey; onChange: (k: SortKey) => void }) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as SortKey)}>
+      <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="newest">Newest</SelectItem>
+        <SelectItem value="highest">Highest rated</SelectItem>
+        <SelectItem value="lowest">Lowest rated</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
 function Empty({ msg }: { msg: string }) {
   return <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">{msg}</p>;
 }
