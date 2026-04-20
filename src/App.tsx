@@ -14,6 +14,7 @@ import Profile from "./pages/Profile.tsx";
 import OfferDetail from "./pages/OfferDetail.tsx";
 import Messages from "./pages/Messages.tsx";
 import ReviewSubmit from "./pages/ReviewSubmit.tsx";
+import ProofReviewSubmit from "./pages/ProofReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/r/:username" element={<ReviewSubmit />} />
+            <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
 
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
