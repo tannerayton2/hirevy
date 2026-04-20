@@ -29,6 +29,7 @@ const baseItems: NavItem[] = [
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
+  const unread = useUnreadDocumentTitle("HireVy");
 
   const items = baseItems.filter((i) => (i.authOnly ? !!user : true));
   const profilePath = profile?.username ? `/@${profile.username}` : "/me";
