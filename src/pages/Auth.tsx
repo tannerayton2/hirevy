@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,15 @@ import { toast } from "@/hooks/use-toast";
 export default function Auth() {
   const { user, loading } = useAuth();
   const nav = useNavigate();
+  const [params] = useSearchParams();
+  const redirectParam = params.get("redirect");
+  const safeRedirect = redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : null;
   const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user) return <Navigate to={safeRedirect ?? "/"} replace />;
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +29,7 @@ export default function Auth() {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: window.location.origin + (safeRedirect ?? "") },
         });
         if (error) throw error;
         toast({ title: "Welcome to HireVy", description: "You're signed in. Pick your username next." });
@@ -34,7 +37,7 @@ export default function Auth() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        nav("/", { replace: true });
+        nav(safeRedirect ?? "/", { replace: true });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
@@ -49,7 +52,7 @@ export default function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: window.location.origin + (safeRedirect ?? "") },
       });
       if (error) throw error;
     } catch (err) {
