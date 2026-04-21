@@ -268,6 +268,7 @@ export type Database = {
           free_for_testimonial: boolean
           id: string
           is_active: boolean
+          is_pinned: boolean
           price_cents: number | null
           priority: number
           provider_id: string
@@ -285,6 +286,7 @@ export type Database = {
           free_for_testimonial?: boolean
           id?: string
           is_active?: boolean
+          is_pinned?: boolean
           price_cents?: number | null
           priority?: number
           provider_id: string
@@ -302,6 +304,7 @@ export type Database = {
           free_for_testimonial?: boolean
           id?: string
           is_active?: boolean
+          is_pinned?: boolean
           price_cents?: number | null
           priority?: number
           provider_id?: string
@@ -330,6 +333,7 @@ export type Database = {
           follower_count: number
           id: string
           paid_offer_limit: number
+          pinned_review_id: string | null
           plan: string
           rating_sum: number
           review_count: number
@@ -345,6 +349,7 @@ export type Database = {
           follower_count?: number
           id: string
           paid_offer_limit?: number
+          pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
@@ -360,6 +365,7 @@ export type Database = {
           follower_count?: number
           id?: string
           paid_offer_limit?: number
+          pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
