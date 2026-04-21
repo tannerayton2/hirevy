@@ -7,11 +7,14 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Link as LinkIcon, MessageSquare, Plus, Share2, ShieldCheck, Users } from "lucide-react";
+import { Clock, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
+import { CategoryChip } from "@/components/CategoryChip";
+import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -26,6 +29,8 @@ interface ProfileFull {
   review_count: number;
   rating_sum: number;
   follower_count: number;
+  created_at: string;
+  pinned_review_id: string | null;
 }
 
 interface Review {
@@ -46,24 +51,27 @@ function sortReviews<T extends { created_at: string; rating: number }>(items: T[
   return out;
 }
 
+type OfferRow = OfferCardData & { is_pinned?: boolean };
+
 export default function Profile() {
   const { username = "" } = useParams();
   const handle = username.startsWith("@") ? username.slice(1) : username;
   const { user, profile: me } = useAuth();
   const [profile, setProfile] = useState<ProfileFull | null>(null);
-  const [offers, setOffers] = useState<OfferCardData[]>([]);
+  const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [verifiedSort, setVerifiedSort] = useState<SortKey>("newest");
   const [proofSort, setProofSort] = useState<SortKey>("newest");
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
+  const [responseMs, setResponseMs] = useState<number | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -73,7 +81,7 @@ export default function Profile() {
     const isOwner = user?.id === prof.id;
     let offersQuery = supabase
       .from("offers")
-      .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category, is_active,
+      .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category, is_active, is_pinned,
                provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
       .eq("provider_id", prof.id)
       .order("created_at", { ascending: false });
@@ -92,11 +100,14 @@ export default function Profile() {
         : Promise.resolve({ data: null } as { data: null }),
     ]);
 
-    setOffers((offersRes.data as unknown as OfferCardData[]) ?? []);
+    setOffers((offersRes.data as unknown as OfferRow[]) ?? []);
     setReviews((reviewsRes.data as unknown as Review[]) ?? []);
     setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setFollowing(!!followRes.data);
     setLoading(false);
+
+    // Fetch response time async (doesn't block render)
+    void fetchAvgFirstResponseMs(prof.id).then(setResponseMs);
   };
 
   useEffect(() => {
@@ -109,11 +120,31 @@ export default function Profile() {
   const isMe = me?.id === profile?.id;
   const tier = profile ? tierForReviewCount(profile.review_count) : "unranked";
   const avg = profile && profile.review_count > 0 ? profile.rating_sum / profile.review_count : 0;
-  const paidOffers = offers.filter((o) => !o.free_for_testimonial);
-  const freeOffers = offers.filter((o) => o.free_for_testimonial);
 
-  const sortedVerified = useMemo(() => sortReviews(reviews, verifiedSort), [reviews, verifiedSort]);
+  const pinnedOffer = offers.find((o) => o.is_pinned) ?? null;
+  const unpinnedOffers = offers.filter((o) => !o.is_pinned);
+  const paidOffers = unpinnedOffers.filter((o) => !o.free_for_testimonial);
+  const freeOffers = unpinnedOffers.filter((o) => o.free_for_testimonial);
+
+  const pinnedReview = profile?.pinned_review_id
+    ? reviews.find((r) => r.id === profile.pinned_review_id) ?? null
+    : null;
+  const sortedVerified = useMemo(() => {
+    const list = pinnedReview ? reviews.filter((r) => r.id !== pinnedReview.id) : reviews;
+    return sortReviews(list, verifiedSort);
+  }, [reviews, verifiedSort, pinnedReview]);
   const sortedProof = useMemo(() => sortReviews(proofReviews, proofSort), [proofReviews, proofSort]);
+
+  // Category chips: service_category + up to 3 distinct offer categories
+  const categoryChips = useMemo(() => {
+    const set = new Set<string>();
+    if (profile?.service_category) set.add(profile.service_category);
+    for (const o of offers) {
+      if (set.size >= 4) break;
+      set.add(o.category);
+    }
+    return Array.from(set).slice(0, 4);
+  }, [profile, offers]);
 
   const reviewLink = profile ? shareReviewUrl(profile.username) : "";
   const profileShareLink = profile ? shareProfileUrl(profile.username) : "";
@@ -147,6 +178,15 @@ export default function Profile() {
     window.location.href = `/messages?t=${data}`;
   };
 
+  const togglePinReview = async (reviewId: string) => {
+    if (!profile || !isMe) return;
+    const next = profile.pinned_review_id === reviewId ? null : reviewId;
+    const { error } = await supabase.from("profiles").update({ pinned_review_id: next }).eq("id", profile.id);
+    if (error) { toast({ title: "Could not update", description: error.message, variant: "destructive" }); return; }
+    setProfile({ ...profile, pinned_review_id: next });
+    toast({ title: next ? "Review pinned" : "Review unpinned" });
+  };
+
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!profile) {
     return (
@@ -159,31 +199,59 @@ export default function Profile() {
   }
 
   const providerDisplayName = profile.display_name || profile.username;
+  const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
+  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0;
 
   return (
-    <div className="px-4 py-6 md:px-8 md:py-10">
+    <TooltipProvider delayDuration={150}>
+    <div className="px-4 py-6 md:px-8 md:py-8">
       {/* Header */}
-      <div className="flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary font-display text-2xl text-muted-foreground md:h-24 md:w-24">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground md:h-24 md:w-24">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
               (profile.display_name || profile.username).slice(0, 1).toUpperCase()
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{providerDisplayName}</h1>
               <TierBadge tier={tier} size="md" />
             </div>
-            <p className="mt-1.5 text-sm text-muted-foreground">@{profile.username}{profile.service_category && ` · ${profile.service_category}`}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
-              <StarRating value={avg} count={profile.review_count} showValue size={14} />
-              <span className="inline-flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {profile.follower_count} followers</span>
-              <span className="text-muted-foreground/80">
+            <p className="mt-1 text-sm text-muted-foreground">@{profile.username}</p>
+
+            {/* Category chips */}
+            {categoryChips.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {categoryChips.map((c) => <CategoryChip key={c} category={c} />)}
+              </div>
+            )}
+
+            {/* Dense stat strip */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+              <StatItem>
+                <StarRating value={avg} count={profile.review_count} showValue size={13} />
+              </StatItem>
+              <Dot />
+              <StatItem>
+                <Users className="h-3 w-3" /> {profile.follower_count} {profile.follower_count === 1 ? "follower" : "followers"}
+              </StatItem>
+              <Dot />
+              <StatItem>Member since {memberSince}</StatItem>
+              {responseMs != null && (
+                <>
+                  <Dot />
+                  <StatItem>
+                    <Clock className="h-3 w-3" /> Responds within {formatResponseTime(responseMs)}
+                  </StatItem>
+                </>
+              )}
+              <Dot />
+              <StatItem>
                 {profile.review_count} verified · {proofReviews.length} proof-backed
-              </span>
+              </StatItem>
             </div>
           </div>
         </div>
@@ -203,7 +271,6 @@ export default function Profile() {
               <Button variant="outline" onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message</Button>
             </>
           )}
-          {/* Share is always visible to everyone */}
           <Button variant="outline" onClick={copyProfileLink}>
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
@@ -212,115 +279,227 @@ export default function Profile() {
 
       {/* Bio */}
       {profile.bio && (
-        <section className="mt-6 max-w-2xl">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{profile.bio}</p>
+        <section className="mt-5 max-w-[600px]">
+          <p className="whitespace-pre-line font-body text-[15px] leading-relaxed text-foreground/90">{profile.bio}</p>
+        </section>
+      )}
+
+      {/* Empty state for visitors on a brand-new profile */}
+      {!hasAnyContent && !isMe && (
+        <div className="mt-8 rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
+          <p className="font-display text-xl font-semibold">{providerDisplayName} is just getting started on HireVy.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Check back soon — offers and reviews will appear here.</p>
+        </div>
+      )}
+
+      {/* Featured offer */}
+      {pinnedOffer && (
+        <section className="mt-8">
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">Featured offer</span>
+          </div>
+          <FeaturedOfferCard offer={pinnedOffer} />
         </section>
       )}
 
       {/* Offers */}
-      <Section title="Paid offers" count={paidOffers.length}>
-        {paidOffers.length === 0 ? <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} /> : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
-          </div>
-        )}
-      </Section>
+      {(paidOffers.length > 0 || isMe) && (
+        <Section title="Paid offers" count={paidOffers.length}>
+          {paidOffers.length === 0 ? <Empty msg="No paid offers yet. Create one to get started." /> : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
+            </div>
+          )}
+        </Section>
+      )}
 
-      <Section title="Free for testimonial" count={freeOffers.length}>
-        {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
-          </div>
-        )}
-      </Section>
+      {(freeOffers.length > 0 || isMe) && (
+        <Section title="Free for testimonial" count={freeOffers.length}>
+          {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
+            </div>
+          )}
+        </Section>
+      )}
 
-      {/* Verified Reviews — primary, gold accent border */}
-      <section className="mt-10">
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-primary/60 pb-2">
-          <div className="flex items-baseline gap-3">
-            <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{profile.review_count}</span>
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Verified Reviews — primary, gold accent */}
+      {(reviews.length > 0 || isMe) && (
+        <section className="mt-8">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-primary/60 pb-2">
+            <div className="flex items-baseline gap-3">
+              <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{profile.review_count}</span>
+            </div>
             {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
           </div>
-        </div>
-        {sortedVerified.length === 0 ? (
-          <Empty msg="No verified reviews yet." />
-        ) : (
-          <div className="space-y-4">
-            {sortedVerified.map((r) => (
-              <article key={r.id} className="rounded-md border border-border bg-card p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="font-semibold">{r.reviewer_name}</p>
-                  <StarRating value={r.rating} size={14} />
-                </div>
-                <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
-                <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                  {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                </p>
-                <ProviderReply
-                  reviewId={r.id}
-                  reviewType="verified"
-                  providerId={profile.id}
-                  providerDisplayName={providerDisplayName}
-                  isProviderViewer={isMe}
-                />
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
 
-      {/* Proof-Backed Reviews — secondary */}
-      <section className="mt-10">
-        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
-          <div className="flex items-baseline gap-3">
-            <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
-              <ShieldCheck className="h-5 w-5 text-primary/80" strokeWidth={1.75} />
-              Proof-backed reviews
-            </h2>
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{proofReviews.length}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {!isMe && user && user.id !== profile.id && (
-              <Button asChild size="sm">
-                <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
-              </Button>
-            )}
-            {!user && (
-              <Button asChild size="sm" variant="outline">
-                <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-              </Button>
-            )}
-            {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
-          </div>
-        </div>
-        <p className="mb-4 text-xs italic text-muted-foreground">
-          Unverified but evidence-backed — submitted by clients with proof of engagement. Not counted toward tier or rating.
-        </p>
-        {sortedProof.length === 0 ? (
-          <Empty msg="No proof-backed reviews yet." />
-        ) : (
-          <div className="space-y-4">
-            {sortedProof.map((r) => (
-              <ProofReviewCard
-                key={r.id}
-                review={r}
+          {/* Featured review */}
+          {pinnedReview && (
+            <article className="mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+                    <Star className="h-3 w-3 fill-current" /> Featured
+                  </span>
+                  <p className="font-semibold">{pinnedReview.reviewer_name}</p>
+                </div>
+                <StarRating value={pinnedReview.rating} size={16} />
+              </div>
+              <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                </p>
+                {isMe && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(pinnedReview.id)}>
+                    <PinOff className="mr-1 h-3 w-3" /> Unpin
+                  </Button>
+                )}
+              </div>
+              <ProviderReply
+                reviewId={pinnedReview.id}
+                reviewType="verified"
+                providerId={profile.id}
                 providerDisplayName={providerDisplayName}
                 isProviderViewer={isMe}
               />
-            ))}
+            </article>
+          )}
+
+          {sortedVerified.length === 0 && !pinnedReview ? (
+            <Empty msg="No verified reviews yet." />
+          ) : (
+            <div className="space-y-3">
+              {sortedVerified.map((r) => (
+                <article key={r.id} className="rounded-md border border-border bg-card p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-semibold">{r.reviewer_name}</p>
+                    <StarRating value={r.rating} size={14} />
+                  </div>
+                  <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                      {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                    </p>
+                    {isMe && (
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(r.id)}>
+                        <Pin className="mr-1 h-3 w-3" /> Pin this review
+                      </Button>
+                    )}
+                  </div>
+                  <ProviderReply
+                    reviewId={r.id}
+                    reviewType="verified"
+                    providerId={profile.id}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Proof-Backed Reviews — secondary, cooler tone */}
+      {(proofReviews.length > 0 || isMe || (user && user.id !== profile.id) || !user) && (
+        <section className="mt-8">
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
+            <div className="flex items-baseline gap-3">
+              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
+                <ShieldCheck className="h-5 w-5 text-primary/70" strokeWidth={1.75} />
+                Proof-Backed Reviews
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="What's the difference?">
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                    <p className="font-semibold mb-1">What's the difference?</p>
+                    <p>Verified Reviews come from clients invited by the provider. Proof-Backed Reviews can be left by anyone who uploads evidence of working with the provider. Both are visible; only verified reviews affect the tier badge and rating.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h2>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{proofReviews.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {!isMe && user && user.id !== profile.id && (
+                <Button asChild size="sm">
+                  <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
+                </Button>
+              )}
+              {!user && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+                </Button>
+              )}
+              {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
+            </div>
           </div>
-        )}
-      </section>
+          <p className="mb-4 text-xs italic text-muted-foreground">
+            Independent reviews with uploaded evidence — unverified by HireVy but backed by documentation.
+          </p>
+          {sortedProof.length === 0 ? (
+            <Empty msg="No proof-backed reviews yet." />
+          ) : (
+            <div className="space-y-3">
+              {sortedProof.map((r) => (
+                <div key={r.id} className="rounded-md border border-border bg-[hsl(220_15%_14%)]/50">
+                  <ProofReviewCard
+                    review={r}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
+    </TooltipProvider>
+  );
+}
+
+function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
+  const href = `/@${offer.provider.username}/${offer.slug}`;
+  const price = offer.free_for_testimonial
+    ? "FREE · Testimonial"
+    : offer.price_cents == null
+      ? ""
+      : `$${(offer.price_cents / 100).toLocaleString()}`;
+  return (
+    <Link
+      to={href}
+      className="group block overflow-hidden rounded-md border border-primary/40 bg-card transition-all hover:border-primary hover:elev md:flex"
+    >
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted md:aspect-auto md:w-1/2">
+        {offer.cover_url ? (
+          <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-secondary font-display text-3xl text-muted-foreground/40">HireVy</div>
+        )}
+        <span className="absolute left-3 top-3 rounded-[3px] bg-background/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
+          {offer.category}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col justify-center gap-3 p-5 md:p-7">
+        <h3 className="font-display text-2xl font-bold leading-tight md:text-3xl">{offer.title}</h3>
+        <p className="font-display text-lg font-semibold text-primary">{price}</p>
+        <span className="mt-2 inline-flex w-fit items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground group-hover:text-primary">
+          View offer →
+        </span>
+      </div>
+    </Link>
   );
 }
 
 function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
-    <section className="mt-10">
+    <section className="mt-8">
       <div className="mb-4 flex items-baseline justify-between border-b border-border pb-2">
         <h2 className="font-display text-xl font-semibold">{title}</h2>
         <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{count}</span>
@@ -345,4 +524,11 @@ function SortMenu({ value, onChange }: { value: SortKey; onChange: (k: SortKey) 
 
 function Empty({ msg }: { msg: string }) {
   return <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">{msg}</p>;
+}
+
+function StatItem({ children }: { children: React.ReactNode }) {
+  return <span className="inline-flex items-center gap-1 tracking-wide">{children}</span>;
+}
+function Dot() {
+  return <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />;
 }
