@@ -280,7 +280,7 @@ export default function Profile() {
       {/* Bio */}
       {profile.bio && (
         <section className="mt-5 max-w-[600px]">
-          <p className="whitespace-pre-line font-body text-[15px] leading-relaxed text-foreground/90">{profile.bio}</p>
+          <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/90">{profile.bio}</p>
         </section>
       )}
 
