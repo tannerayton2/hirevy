@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CATEGORIES } from "@/lib/categories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
+import { AvatarCropper } from "@/components/AvatarCropper";
 
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
 
 export default function ProfileEdit() {
@@ -23,8 +24,9 @@ export default function ProfileEdit() {
   const [bio, setBio] = useState("");
   const [category, setCategory] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
+  const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
+  const [rawSrc, setRawSrc] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -46,11 +48,17 @@ export default function ProfileEdit() {
       return;
     }
     if (f.size > MAX_AVATAR_BYTES) {
-      toast({ title: "Too large", description: "Max 2MB.", variant: "destructive" });
+      toast({ title: "Too large", description: "Max 4MB.", variant: "destructive" });
       return;
     }
-    setAvatarFile(f);
-    setPreview(URL.createObjectURL(f));
+    const url = URL.createObjectURL(f);
+    setRawSrc(url);
+  };
+
+  const onCropped = (blob: Blob) => {
+    setCroppedBlob(blob);
+    setCroppedPreview(URL.createObjectURL(blob));
+    setRawSrc(null);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -61,12 +69,11 @@ export default function ProfileEdit() {
     setBusy(true);
     try {
       let nextAvatar = avatarUrl;
-      if (avatarFile) {
-        const ext = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const path = `${profile.id}/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, {
+      if (croppedBlob) {
+        const path = `${profile.id}/${Date.now()}.jpg`;
+        const { error: upErr } = await supabase.storage.from("avatars").upload(path, croppedBlob, {
           upsert: true,
-          contentType: avatarFile.type,
+          contentType: "image/jpeg",
         });
         if (upErr) throw upErr;
         const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -97,7 +104,7 @@ export default function ProfileEdit() {
     }
   };
 
-  const previewSrc = preview || avatarUrl;
+  const previewSrc = croppedPreview || avatarUrl;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
@@ -108,22 +115,32 @@ export default function ProfileEdit() {
         {/* Avatar */}
         <div>
           <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Avatar</Label>
-          <div className="mt-2 flex items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary font-display text-2xl text-muted-foreground">
-              {previewSrc ? (
-                <img src={previewSrc} alt="" className="h-full w-full object-cover" />
-              ) : (
-                (displayName || profile.username).slice(0, 1).toUpperCase()
-              )}
+          {rawSrc ? (
+            <div className="mt-2 rounded-md border border-border bg-card p-3">
+              <AvatarCropper
+                src={rawSrc}
+                onCancel={() => { setRawSrc(null); if (fileRef.current) fileRef.current.value = ""; }}
+                onCropped={onCropped}
+              />
             </div>
-            <div className="space-y-1">
-              <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" /> Upload image
-              </Button>
-              <p className="text-xs text-muted-foreground">Square crop recommended. Max 2MB.</p>
+          ) : (
+            <div className="mt-2 flex items-center gap-4">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground">
+                {previewSrc ? (
+                  <img src={previewSrc} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  (displayName || profile.username).slice(0, 1).toUpperCase()
+                )}
+              </div>
+              <div className="space-y-1">
+                <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
+                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                  <Upload className="mr-1.5 h-3.5 w-3.5" /> {croppedPreview ? "Replace image" : "Upload image"}
+                </Button>
+                <p className="text-xs text-muted-foreground">Drag to pan, slide to zoom. Max 4MB.</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Display name */}
