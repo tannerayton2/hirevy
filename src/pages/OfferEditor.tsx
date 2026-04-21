@@ -39,6 +39,7 @@ export default function OfferEditor() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
   const [busy, setBusy] = useState(false);
   const [hydrating, setHydrating] = useState(isEdit);
 
@@ -69,6 +70,7 @@ export default function OfferEditor() {
       setTags(data.tags ?? []);
       setCoverUrl(data.cover_url);
       setIsActive(data.is_active);
+      setIsPinned(!!(data as { is_pinned?: boolean }).is_pinned);
       setHydrating(false);
     })();
   }, [isEdit, offerId, user, nav]);
@@ -124,28 +126,6 @@ export default function OfferEditor() {
       priceCents = Math.round(n * 100);
     }
 
-    // Free-tier paid limit (only enforce on create OR when switching free→paid)
-    // Free-tier paid limit (active paid offers only). Inactive paid offers don't count.
-    if (offerType === "paid" && isActive) {
-      const { data: existing } = await supabase
-        .from("offers")
-        .select("id")
-        .eq("provider_id", profile.id)
-        .eq("free_for_testimonial", false)
-        .eq("is_active", true);
-      const count = existing?.length ?? 0;
-      const isCountingThis = isEdit && existing?.some((o) => o.id === offerId);
-      const limit = 1;
-      if (count - (isCountingThis ? 1 : 0) >= limit) {
-        toast({
-          title: "Paid offer limit reached",
-          description: "Free plan allows 1 active paid offer. Deactivate or delete an existing one to create another.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setBusy(true);
     try {
       // Upload cover if new
@@ -162,6 +142,17 @@ export default function OfferEditor() {
         nextCover = pub.publicUrl;
       }
 
+      // If pinning, unpin all other offers first (DB has unique partial index)
+      if (isPinned) {
+        const unpinQuery = supabase
+          .from("offers")
+          .update({ is_pinned: false })
+          .eq("provider_id", profile.id)
+          .eq("is_pinned", true);
+        if (isEdit) await unpinQuery.neq("id", offerId!);
+        else await unpinQuery;
+      }
+
       let finalSlug: string;
       if (isEdit) {
         const { error } = await supabase
@@ -176,6 +167,7 @@ export default function OfferEditor() {
             tags,
             cover_url: nextCover,
             is_active: isActive,
+            is_pinned: isPinned,
           })
           .eq("id", offerId!);
         if (error) throw error;
@@ -207,6 +199,7 @@ export default function OfferEditor() {
           video_url: videoUrl.trim() || null,
           tags,
           is_active: isActive,
+          is_pinned: isPinned,
         });
         if (error) throw error;
         finalSlug = slug;
@@ -323,10 +316,23 @@ export default function OfferEditor() {
             <p className="text-xs text-muted-foreground">
               {isActive
                 ? "Visible on Explore and your public profile."
-                : "Hidden from Explore and your public profile. Inactive paid offers don't count toward your free-tier limit."}
+                : "Hidden from Explore and your public profile."}
             </p>
           </div>
           <Switch checked={isActive} onCheckedChange={setIsActive} />
+        </div>
+
+        {/* Pin as featured */}
+        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-card/40 p-4">
+          <div className="space-y-1">
+            <Label className="text-sm font-semibold text-foreground">
+              {isPinned ? "✨ Featured offer" : "Pin as featured"}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              The pinned offer is shown prominently at the top of your profile. Pinning this offer will unpin any other.
+            </p>
+          </div>
+          <Switch checked={isPinned} onCheckedChange={setIsPinned} />
         </div>
 
         <div className="flex gap-2">

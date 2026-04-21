@@ -12,6 +12,8 @@ interface Profile {
   review_count: number;
   rating_sum: number;
   follower_count: number;
+  created_at: string;
+  pinned_review_id: string | null;
 }
 
 interface AuthContextValue {
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setProfile(null); return; }
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id")
       .eq("id", uid)
       .maybeSingle();
     setProfile((data as Profile | null) ?? null);
