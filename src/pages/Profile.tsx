@@ -338,25 +338,44 @@ export default function Profile() {
         </section>
       )}
 
-      {/* Offers */}
-      {(paidOffers.length > 0 || isMe) && (
-        <Section title="Paid offers" count={paidOffers.length}>
-          {paidOffers.length === 0 ? <Empty msg="No paid offers yet. Create one to get started." /> : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+      {/* Offers — sub-tabs (Paid / Free) */}
+      {(paidOffers.length > 0 || freeOffers.length > 0 || isMe) && (
+        <section className="mt-8">
+          <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+            <div className="flex min-w-max items-center gap-1">
+              <TabButton
+                active={activeOffersTab === "paid"}
+                onClick={() => setActiveOffersTab("paid")}
+                count={paidOffers.length}
+                label="Paid"
+              />
+              <TabButton
+                active={activeOffersTab === "free"}
+                onClick={() => setActiveOffersTab("free")}
+                count={freeOffers.length}
+                label="Free"
+              />
             </div>
-          )}
-        </Section>
-      )}
+          </div>
 
-      {(freeOffers.length > 0 || isMe) && (
-        <Section title="Free for testimonial" count={freeOffers.length}>
-          {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
-            </div>
+          {activeOffersTab === "paid" ? (
+            paidOffers.length === 0 ? (
+              <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+              </div>
+            )
+          ) : (
+            freeOffers.length === 0 ? (
+              <Empty msg="No free-for-testimonial offers yet." />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+              </div>
+            )
           )}
-        </Section>
+        </section>
       )}
 
       {/* Reviews — tabbed interface */}
