@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatOfferPrice, isContactPricing } from "@/lib/pricing";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
@@ -8,17 +8,21 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
+import { Clock, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Sparkles, Star, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
+import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { ImportedTestimonial } from "@/lib/importedTestimonials";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+
+type TabKey = "verified" | "proof-backed" | "imported";
 
 interface ProfileFull {
   id: string;
