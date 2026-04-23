@@ -195,6 +195,20 @@ export default function ProfileEdit() {
           />
         </Field>
 
+        {/* Website */}
+        <Field label="Website (optional)">
+          <Input
+            type="url"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value.slice(0, WEBSITE_MAX))}
+            maxLength={WEBSITE_MAX}
+            placeholder="https://yourwebsite.com"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Your main site or professional link. Shown publicly on your profile.
+          </p>
+        </Field>
+
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
           <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>
