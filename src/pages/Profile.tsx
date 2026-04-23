@@ -6,9 +6,11 @@ import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
+import { OffersPanel, type OfferRow as PanelOfferRow } from "@/components/OffersPanel";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Sparkles, Star, Users } from "lucide-react";
+import { ChevronDown, Clock, ExternalLink, Globe, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Star, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
@@ -37,6 +39,7 @@ interface ProfileFull {
   follower_count: number;
   created_at: string;
   pinned_review_id: string | null;
+  website_url: string | null;
 }
 
 interface Review {
@@ -87,11 +90,11 @@ export default function Profile() {
     setSearchParams(next, { replace: true });
   };
 
-  const offersParam = searchParams.get("offers");
-  const activeOffersTab: "paid" | "free" = offersParam === "free" ? "free" : "paid";
-  const setActiveOffersTab = (t: "paid" | "free") => {
+  const offersOpen = searchParams.get("offers") === "open";
+  const setOffersOpen = (open: boolean) => {
     const next = new URLSearchParams(searchParams);
-    next.set("offers", t);
+    if (open) next.set("offers", "open");
+    else { next.delete("offers"); next.delete("offerstab"); }
     setSearchParams(next, { replace: true });
   };
 
@@ -99,7 +102,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
