@@ -440,23 +440,36 @@ export default function OfferEditor() {
 
         {/* Cover */}
         <div>
-          <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Cover image</Label>
+          <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Cover image (optional)</Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Upload a cover image if you have one. Leave blank and we'll render a clean branded card in your brand color.
+          </p>
           <div className="mt-2 overflow-hidden rounded-md border border-border bg-card">
             {previewSrc ? (
               <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
                 <img src={previewSrc} alt="" className="h-full w-full object-cover" />
               </div>
             ) : (
-              <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted text-xs text-muted-foreground">
-                No image yet
-              </div>
+              <OfferCoverPlaceholder title={title || "Your offer title"} aspect="aspect-[16/9]" />
             )}
             <div className="flex items-center justify-between gap-3 border-t border-border p-3">
-              <p className="text-xs text-muted-foreground">JPG/PNG. Max 2MB.</p>
+              <p className="text-xs text-muted-foreground">JPG/PNG. Max 2MB. Optional.</p>
               <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" /> {previewSrc ? "Replace" : "Upload"}
-              </Button>
+              <div className="flex gap-2">
+                {previewSrc && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setCoverFile(null); setCoverUrl(null); if (fileRef.current) fileRef.current.value = ""; }}
+                  >
+                    Remove
+                  </Button>
+                )}
+                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                  <Upload className="mr-1.5 h-3.5 w-3.5" /> {previewSrc ? "Replace" : "Upload"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
