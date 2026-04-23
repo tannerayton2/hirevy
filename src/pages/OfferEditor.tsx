@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { CATEGORIES, isValidVideoUrl, slugify } from "@/lib/categories";
+import { PRICING_MODELS, PRICING_MODEL_LABEL, PRICING_MODEL_HINT, type PricingModel } from "@/lib/pricing";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X, Sparkles, Link as LinkIcon, MessageSquare } from "lucide-react";
 
@@ -49,7 +50,8 @@ export default function OfferEditor() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState(""); // serves both short + long
   const [priceUsd, setPriceUsd] = useState("");
-  const [category, setCategory] = useState<string>("");
+  const [priceMaxUsd, setPriceMaxUsd] = useState("");
+  const [pricingModel, setPricingModel] = useState<PricingModel>("fixed");
   const [videoUrl, setVideoUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
