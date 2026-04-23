@@ -13,6 +13,7 @@ import { CATEGORIES, isValidVideoUrl, slugify } from "@/lib/categories";
 import { PRICING_MODELS, PRICING_MODEL_LABEL, PRICING_MODEL_HINT, type PricingModel } from "@/lib/pricing";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X, Sparkles, Link as LinkIcon, MessageSquare } from "lucide-react";
+import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 const MAX_TAGS = 10;
