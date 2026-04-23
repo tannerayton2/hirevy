@@ -471,9 +471,48 @@ export default function OfferEditor() {
         </Field>
 
         {offerType === "paid" && (
-          <Field label={mode === "linkout" ? "Price (USD) — shown as 'Starting at'" : "Price (USD)"}>
-            <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
-          </Field>
+          <div className="space-y-4 rounded-md border border-border bg-card/40 p-4">
+            <Field label="Pricing model">
+              <Select value={pricingModel} onValueChange={(v) => setPricingModel(v as PricingModel)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRICING_MODELS.map((m) => (
+                    <SelectItem key={m} value={m}>{PRICING_MODEL_LABEL[m]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-[11px] text-muted-foreground">{PRICING_MODEL_HINT[pricingModel]}</p>
+            </Field>
+
+            {pricingModel === "fixed" && (
+              <Field label="Price (USD)">
+                <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+              </Field>
+            )}
+
+            {pricingModel === "starting_at" && (
+              <Field label="Starting price (USD)">
+                <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+              </Field>
+            )}
+
+            {pricingModel === "range" && (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Minimum (USD)">
+                  <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+                </Field>
+                <Field label="Maximum (USD)">
+                  <Input type="number" min="0" step="1" value={priceMaxUsd} onChange={(e) => setPriceMaxUsd(e.target.value)} placeholder="2500" />
+                </Field>
+              </div>
+            )}
+
+            {pricingModel === "contact" && (
+              <p className="rounded-[3px] border border-dashed border-border bg-background/50 p-3 text-xs italic text-muted-foreground">
+                Buyers will be directed to your CTA link to discuss pricing. No price is shown on your card.
+              </p>
+            )}
+          </div>
         )}
 
         {mode === "linkout" && (
