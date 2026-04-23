@@ -632,17 +632,6 @@ function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
   );
 }
 
-function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
-  return (
-    <section className="mt-8">
-      <div className="mb-4 flex items-baseline justify-between border-b border-border pb-2">
-        <h2 className="font-display text-xl font-semibold">{title}</h2>
-        <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{count}</span>
-      </div>
-      {children}
-    </section>
-  );
-}
 
 function SortMenu({ value, onChange }: { value: SortKey; onChange: (k: SortKey) => void }) {
   return (
