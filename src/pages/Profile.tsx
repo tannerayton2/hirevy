@@ -348,93 +348,98 @@ export default function Profile() {
         </Section>
       )}
 
-      {/* Verified Reviews — primary, gold accent */}
-      {(reviews.length > 0 || isMe) && (
-        <section className="mt-8">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-primary/60 pb-2">
-            <div className="flex items-baseline gap-3">
-              <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{profile.review_count}</span>
-            </div>
-            {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
+      {/* Reviews — tabbed interface */}
+      <section className="mt-8">
+        {/* Tab strip */}
+        <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+          <div className="flex min-w-max items-center gap-1">
+            <TabButton active={activeTab === "verified"} onClick={() => setActiveTab("verified")} count={profile.review_count} label="Verified" />
+            <TabButton active={activeTab === "proof-backed"} onClick={() => setActiveTab("proof-backed")} count={proofReviews.length} label="Proof-Backed" />
+            <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
+        </div>
 
-          {/* Featured review */}
-          {pinnedReview && (
-            <article className="mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-                    <Star className="h-3 w-3 fill-current" /> Featured
-                  </span>
-                  <p className="font-semibold">{pinnedReview.reviewer_name}</p>
-                </div>
-                <StarRating value={pinnedReview.rating} size={16} />
-              </div>
-              <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                  {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                </p>
-                {isMe && (
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(pinnedReview.id)}>
-                    <PinOff className="mr-1 h-3 w-3" /> Unpin
-                  </Button>
-                )}
-              </div>
-              <ProviderReply
-                reviewId={pinnedReview.id}
-                reviewType="verified"
-                providerId={profile.id}
-                providerDisplayName={providerDisplayName}
-                isProviderViewer={isMe}
-              />
-            </article>
-          )}
-
-          {sortedVerified.length === 0 && !pinnedReview ? (
-            <Empty msg="No verified reviews yet." />
-          ) : (
-            <div className="space-y-3">
-              {sortedVerified.map((r) => (
-                <article key={r.id} className="rounded-md border border-border bg-card p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="font-semibold">{r.reviewer_name}</p>
-                    <StarRating value={r.rating} size={14} />
-                  </div>
-                  <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                      {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                    </p>
-                    {isMe && (
-                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(r.id)}>
-                        <Pin className="mr-1 h-3 w-3" /> Pin this review
-                      </Button>
-                    )}
-                  </div>
-                  <ProviderReply
-                    reviewId={r.id}
-                    reviewType="verified"
-                    providerId={profile.id}
-                    providerDisplayName={providerDisplayName}
-                    isProviderViewer={isMe}
-                  />
-                </article>
-              ))}
+        {/* Verified */}
+        {activeTab === "verified" && (
+          <div>
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
+              {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
             </div>
-          )}
-        </section>
-      )}
 
-      {/* Proof-Backed Reviews — secondary, cooler tone */}
-      {(proofReviews.length > 0 || isMe || (user && user.id !== profile.id) || !user) && (
-        <section className="mt-8">
-          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
-            <div className="flex items-baseline gap-3">
+            {pinnedReview && (
+              <article className="mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+                      <Star className="h-3 w-3 fill-current" /> Featured
+                    </span>
+                    <p className="font-semibold">{pinnedReview.reviewer_name}</p>
+                  </div>
+                  <StarRating value={pinnedReview.rating} size={16} />
+                </div>
+                <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                    {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                  </p>
+                  {isMe && (
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(pinnedReview.id)}>
+                      <PinOff className="mr-1 h-3 w-3" /> Unpin
+                    </Button>
+                  )}
+                </div>
+                <ProviderReply
+                  reviewId={pinnedReview.id}
+                  reviewType="verified"
+                  providerId={profile.id}
+                  providerDisplayName={providerDisplayName}
+                  isProviderViewer={isMe}
+                />
+              </article>
+            )}
+
+            {sortedVerified.length === 0 && !pinnedReview ? (
+              <Empty msg="No verified reviews yet." />
+            ) : (
+              <div className="space-y-3">
+                {sortedVerified.map((r) => (
+                  <article key={r.id} className="rounded-md border border-border bg-card p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-semibold">{r.reviewer_name}</p>
+                      <StarRating value={r.rating} size={14} />
+                    </div>
+                    <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                        {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                      </p>
+                      {isMe && (
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(r.id)}>
+                          <Pin className="mr-1 h-3 w-3" /> Pin this review
+                        </Button>
+                      )}
+                    </div>
+                    <ProviderReply
+                      reviewId={r.id}
+                      reviewType="verified"
+                      providerId={profile.id}
+                      providerDisplayName={providerDisplayName}
+                      isProviderViewer={isMe}
+                    />
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Proof-Backed */}
+        {activeTab === "proof-backed" && (
+          <div>
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
               <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
-                <ShieldCheck className="h-5 w-5 text-primary/70" strokeWidth={1.75} />
-                Proof-Backed Reviews
+                Proof-Backed reviews
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="What's the difference?">
@@ -447,42 +452,61 @@ export default function Profile() {
                   </TooltipContent>
                 </Tooltip>
               </h2>
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{proofReviews.length}</span>
+              <div className="flex items-center gap-2">
+                {!isMe && user && user.id !== profile.id && (
+                  <Button asChild size="sm">
+                    <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
+                  </Button>
+                )}
+                {!user && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+                  </Button>
+                )}
+                {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {!isMe && user && user.id !== profile.id && (
-                <Button asChild size="sm">
-                  <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
-                </Button>
-              )}
-              {!user && (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-                </Button>
-              )}
-              {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
-            </div>
+            <p className="mb-4 text-xs italic text-muted-foreground">
+              Independent reviews with uploaded evidence — unverified by HireVy but backed by documentation.
+            </p>
+            {sortedProof.length === 0 ? (
+              <Empty msg="No proof-backed reviews yet." />
+            ) : (
+              <div className="space-y-3">
+                {sortedProof.map((r) => (
+                  <div key={r.id} className="rounded-md border border-border bg-[hsl(220_15%_14%)]/50">
+                    <ProofReviewCard
+                      review={r}
+                      providerDisplayName={providerDisplayName}
+                      isProviderViewer={isMe}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <p className="mb-4 text-xs italic text-muted-foreground">
-            Independent reviews with uploaded evidence — unverified by HireVy but backed by documentation.
-          </p>
-          {sortedProof.length === 0 ? (
-            <Empty msg="No proof-backed reviews yet." />
-          ) : (
-            <div className="space-y-3">
-              {sortedProof.map((r) => (
-                <div key={r.id} className="rounded-md border border-border bg-[hsl(220_15%_14%)]/50">
-                  <ProofReviewCard
-                    review={r}
-                    providerDisplayName={providerDisplayName}
-                    isProviderViewer={isMe}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+        )}
+
+        {/* Imported */}
+        {activeTab === "imported" && (
+          <div>
+            <h2 className="mb-4 font-display text-xl font-semibold text-muted-foreground">Imported testimonials</h2>
+            {imported.length === 0 ? (
+              <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+                {providerDisplayName} hasn't imported any historical testimonials yet.
+              </p>
+            ) : (
+              <div className="space-y-2.5">
+                {imported.map((t) => <ImportedTestimonialCard key={t.id} t={t} />)}
+              </div>
+            )}
+            <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
+              Imported testimonials are historical reviews the provider brought from other platforms.
+              They are not independently verified by HireVy and do not affect the tier badge or rating.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
     </TooltipProvider>
   );
