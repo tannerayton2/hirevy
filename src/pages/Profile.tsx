@@ -82,6 +82,7 @@ export default function Profile() {
     let offersQuery = supabase
       .from("offers")
       .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category, is_active, is_pinned,
+               cta_link, cta_label, hosted_on_hirevy, offer_tier,
                provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
       .eq("provider_id", prof.id)
       .order("created_at", { ascending: false });
@@ -308,7 +309,7 @@ export default function Profile() {
         <Section title="Paid offers" count={paidOffers.length}>
           {paidOffers.length === 0 ? <Empty msg="No paid offers yet. Create one to get started." /> : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
+              {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
             </div>
           )}
         </Section>
@@ -318,7 +319,7 @@ export default function Profile() {
         <Section title="Free for testimonial" count={freeOffers.length}>
           {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} />)}
+              {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
             </div>
           )}
         </Section>

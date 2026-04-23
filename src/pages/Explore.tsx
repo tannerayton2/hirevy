@@ -176,7 +176,7 @@ export default function Explore() {
             <EmptyState hasFilters={count > 0} onClear={() => writeFilters({ ...DEFAULT_FILTERS, q: filters.q })} />
           ) : (
             <div className={gridCls}>
-              {visible.map((o) => <OfferCard key={o.id} offer={o} />)}
+              {visible.map((o) => <OfferCard key={o.id} offer={o} referrer="explore" />)}
             </div>
           )}
         </div>
