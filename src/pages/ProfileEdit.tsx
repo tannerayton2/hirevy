@@ -11,6 +11,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
+import { ImportedTestimonialsEditor } from "@/components/ImportedTestimonialsEditor";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
