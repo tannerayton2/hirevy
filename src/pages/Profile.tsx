@@ -87,6 +87,14 @@ export default function Profile() {
     setSearchParams(next, { replace: true });
   };
 
+  const offersParam = searchParams.get("offers");
+  const activeOffersTab: "paid" | "free" = offersParam === "free" ? "free" : "paid";
+  const setActiveOffersTab = (t: "paid" | "free") => {
+    const next = new URLSearchParams(searchParams);
+    next.set("offers", t);
+    setSearchParams(next, { replace: true });
+  };
+
   const loadAll = async () => {
     setLoading(true);
     const { data: p } = await supabase
