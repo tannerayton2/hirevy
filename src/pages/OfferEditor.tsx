@@ -52,6 +52,7 @@ export default function OfferEditor() {
   const [priceUsd, setPriceUsd] = useState("");
   const [priceMaxUsd, setPriceMaxUsd] = useState("");
   const [pricingModel, setPricingModel] = useState<PricingModel>("fixed");
+  const [category, setCategory] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
