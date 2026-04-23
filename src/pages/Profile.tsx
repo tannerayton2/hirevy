@@ -14,6 +14,7 @@ import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
+import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
