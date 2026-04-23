@@ -169,8 +169,8 @@ export default function Explore() {
 
           {loading ? (
             <div className={gridCls}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] animate-pulse rounded-md bg-card" />
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-[150px] animate-pulse rounded-md bg-card" />
               ))}
             </div>
           ) : visible.length === 0 ? (
