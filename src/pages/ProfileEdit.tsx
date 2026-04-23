@@ -14,6 +14,22 @@ import { AvatarCropper } from "@/components/AvatarCropper";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
+const WEBSITE_MAX = 200;
+
+function normalizeWebsite(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const u = new URL(withScheme);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    // Force https
+    u.protocol = "https:";
+    return u.toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
 
 export default function ProfileEdit() {
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -24,6 +40,7 @@ export default function ProfileEdit() {
   const [bio, setBio] = useState("");
   const [category, setCategory] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
@@ -35,6 +52,7 @@ export default function ProfileEdit() {
     setBio(profile.bio ?? "");
     setCategory(profile.service_category ?? "");
     setAvatarUrl(profile.avatar_url);
+    setWebsite(profile.website_url ?? "");
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
