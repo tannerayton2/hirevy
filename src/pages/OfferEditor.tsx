@@ -11,12 +11,29 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { CATEGORIES, isValidVideoUrl, slugify } from "@/lib/categories";
 import { toast } from "@/hooks/use-toast";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Sparkles, Link as LinkIcon, MessageSquare } from "lucide-react";
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 const MAX_TAGS = 10;
+const SHORT_DESC_MAX = 300;
+const LONG_DESC_MAX = 5000;
+const LABEL_MAX = 24;
+
+const CTA_PRESETS = ["Book Now", "Apply", "Learn More", "Visit Sales Page", "Start Free Trial", "Buy Now"];
+const SECONDARY_PRESETS = ["Learn More", "See Details", "Watch Demo", "Read More"];
 
 type OfferType = "paid" | "free";
+type Mode = "linkout" | "hosted";
+type TierLabel = "none" | "Entry" | "Mid" | "VIP";
+
+function isValidHttpsUrl(s: string) {
+  try {
+    const u = new URL(s);
+    return u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 export default function OfferEditor() {
   const { offerId } = useParams();
@@ -27,9 +44,10 @@ export default function OfferEditor() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const initialType = (params.get("type") === "free" ? "free" : "paid") as OfferType;
+  const [mode, setMode] = useState<Mode>("linkout");
   const [offerType, setOfferType] = useState<OfferType>(initialType);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(""); // serves both short + long
   const [priceUsd, setPriceUsd] = useState("");
   const [category, setCategory] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -42,6 +60,13 @@ export default function OfferEditor() {
   const [isPinned, setIsPinned] = useState(false);
   const [busy, setBusy] = useState(false);
   const [hydrating, setHydrating] = useState(isEdit);
+
+  // Link-out fields
+  const [ctaLink, setCtaLink] = useState("");
+  const [ctaLabel, setCtaLabel] = useState("Book Now");
+  const [secondaryLink, setSecondaryLink] = useState("");
+  const [secondaryLabel, setSecondaryLabel] = useState("Learn More");
+  const [offerTier, setOfferTier] = useState<TierLabel>("none");
 
   useEffect(() => {
     if (!isEdit || !user) return;
@@ -56,21 +81,29 @@ export default function OfferEditor() {
         nav(-1);
         return;
       }
-      if (data.provider_id !== user.id) {
+      const row = data as Record<string, unknown>;
+      if (row.provider_id !== user.id) {
         toast({ title: "Not your offer", variant: "destructive" });
         nav(-1);
         return;
       }
-      setTitle(data.title);
-      setDescription(data.description ?? "");
-      setOfferType(data.free_for_testimonial ? "free" : "paid");
-      setPriceUsd(data.price_cents != null ? String(data.price_cents / 100) : "");
-      setCategory(data.category);
-      setVideoUrl(data.video_url ?? "");
-      setTags(data.tags ?? []);
-      setCoverUrl(data.cover_url);
-      setIsActive(data.is_active);
-      setIsPinned(!!(data as { is_pinned?: boolean }).is_pinned);
+      setTitle(row.title as string);
+      setDescription((row.description as string) ?? "");
+      setOfferType(row.free_for_testimonial ? "free" : "paid");
+      setPriceUsd(row.price_cents != null ? String((row.price_cents as number) / 100) : "");
+      setCategory(row.category as string);
+      setVideoUrl((row.video_url as string) ?? "");
+      setTags((row.tags as string[]) ?? []);
+      setCoverUrl(row.cover_url as string | null);
+      setIsActive(row.is_active as boolean);
+      setIsPinned(!!row.is_pinned);
+      setMode(row.hosted_on_hirevy ? "hosted" : "linkout");
+      setCtaLink((row.cta_link as string) ?? "");
+      setCtaLabel((row.cta_label as string) ?? "Book Now");
+      setSecondaryLink((row.secondary_link as string) ?? "");
+      setSecondaryLabel((row.secondary_link_label as string) ?? "Learn More");
+      const tierVal = row.offer_tier as string | null;
+      setOfferTier((tierVal === "Entry" || tierVal === "Mid" || tierVal === "VIP") ? tierVal : "none");
       setHydrating(false);
     })();
   }, [isEdit, offerId, user, nav]);
@@ -114,10 +147,32 @@ export default function OfferEditor() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || title.length > 80) return toast({ title: "Title required (max 80 chars)", variant: "destructive" });
-    if (!description.trim() || description.length > 5000) return toast({ title: "Description required (max 5000 chars)", variant: "destructive" });
+
+    const descMax = mode === "hosted" ? LONG_DESC_MAX : SHORT_DESC_MAX;
+    if (!description.trim() || description.length > descMax) {
+      return toast({ title: `Description required (max ${descMax} chars)`, variant: "destructive" });
+    }
     if (!category) return toast({ title: "Pick a category", variant: "destructive" });
     if (!coverFile && !coverUrl) return toast({ title: "Cover image required", variant: "destructive" });
-    if (videoUrl && !isValidVideoUrl(videoUrl)) return toast({ title: "Invalid video URL", description: "Use YouTube, Vimeo, or Loom.", variant: "destructive" });
+
+    if (mode === "linkout") {
+      if (!ctaLink.trim() || !isValidHttpsUrl(ctaLink.trim())) {
+        return toast({ title: "CTA link required", description: "Must start with https://", variant: "destructive" });
+      }
+      if (!ctaLabel.trim() || ctaLabel.length > LABEL_MAX) {
+        return toast({ title: `CTA label required (max ${LABEL_MAX} chars)`, variant: "destructive" });
+      }
+      if (secondaryLink.trim() && !isValidHttpsUrl(secondaryLink.trim())) {
+        return toast({ title: "Secondary link must start with https://", variant: "destructive" });
+      }
+      if (secondaryLink.trim() && (!secondaryLabel.trim() || secondaryLabel.length > LABEL_MAX)) {
+        return toast({ title: `Secondary label required (max ${LABEL_MAX} chars)`, variant: "destructive" });
+      }
+    }
+
+    if (mode === "hosted" && videoUrl && !isValidVideoUrl(videoUrl)) {
+      return toast({ title: "Invalid video URL", description: "Use YouTube, Vimeo, or Loom.", variant: "destructive" });
+    }
 
     let priceCents: number | null = null;
     if (offerType === "paid") {
@@ -153,28 +208,32 @@ export default function OfferEditor() {
         else await unpinQuery;
       }
 
+      const payload: Record<string, unknown> = {
+        title: title.trim(),
+        description: description.trim(),
+        free_for_testimonial: offerType === "free",
+        price_cents: priceCents,
+        category,
+        tags,
+        cover_url: nextCover,
+        is_active: isActive,
+        is_pinned: isPinned,
+        hosted_on_hirevy: mode === "hosted",
+        cta_link: mode === "linkout" ? ctaLink.trim() : null,
+        cta_label: mode === "linkout" ? ctaLabel.trim() : "Book Now",
+        secondary_link: mode === "linkout" && secondaryLink.trim() ? secondaryLink.trim() : null,
+        secondary_link_label: mode === "linkout" && secondaryLink.trim() ? secondaryLabel.trim() : null,
+        offer_tier: offerTier === "none" ? null : offerTier,
+        video_url: mode === "hosted" && videoUrl.trim() ? videoUrl.trim() : null,
+      };
+
       let finalSlug: string;
       if (isEdit) {
-        const { error } = await supabase
-          .from("offers")
-          .update({
-            title: title.trim(),
-            description: description.trim(),
-            free_for_testimonial: offerType === "free",
-            price_cents: priceCents,
-            category,
-            video_url: videoUrl.trim() || null,
-            tags,
-            cover_url: nextCover,
-            is_active: isActive,
-            is_pinned: isPinned,
-          })
-          .eq("id", offerId!);
+        const { error } = await supabase.from("offers").update(payload).eq("id", offerId!);
         if (error) throw error;
         const { data: o } = await supabase.from("offers").select("slug").eq("id", offerId!).maybeSingle();
         finalSlug = (o?.slug as string) || slugify(title);
       } else {
-        // generate unique slug
         const base = slugify(title);
         let slug = base;
         for (let i = 0; i < 50; i++) {
@@ -188,19 +247,10 @@ export default function OfferEditor() {
           slug = `${base}-${i + 2}`;
         }
         const { error } = await supabase.from("offers").insert({
+          ...payload,
           provider_id: profile.id,
           slug,
-          title: title.trim(),
-          description: description.trim(),
-          category,
-          price_cents: priceCents,
-          free_for_testimonial: offerType === "free",
-          cover_url: nextCover,
-          video_url: videoUrl.trim() || null,
-          tags,
-          is_active: isActive,
-          is_pinned: isPinned,
-        });
+        } as never);
         if (error) throw error;
         finalSlug = slug;
       }
@@ -219,6 +269,7 @@ export default function OfferEditor() {
   };
 
   const previewSrc = coverPreview || coverUrl;
+  const descMax = mode === "hosted" ? LONG_DESC_MAX : SHORT_DESC_MAX;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
@@ -226,6 +277,42 @@ export default function OfferEditor() {
       <h1 className="font-display text-3xl font-bold">{isEdit ? "Update your offer" : "Launch a new offer"}</h1>
 
       <form onSubmit={submit} className="mt-8 space-y-6">
+        {/* Mode selector — link-out vs hosted */}
+        <div className="rounded-md border border-border bg-card/40 p-4">
+          <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Where do you sell this?</Label>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMode("linkout")}
+              className={`flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-colors ${
+                mode === "linkout" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">Link out to my sales page</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Calendly, Stan, Kajabi, your site.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("hosted")}
+              className={`flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-colors ${
+                mode === "hosted" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">Host on HireVy</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Collect inquiries via messaging.</p>
+            </button>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+            Most providers link to where they already sell. Only choose <span className="font-semibold text-foreground">Host on HireVy</span> if you don't have a sales page yet and want to collect inquiries through HireVy messaging.
+          </p>
+        </div>
+
         {/* Type */}
         <div>
           <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Offer type</Label>
@@ -236,6 +323,86 @@ export default function OfferEditor() {
             </TabsList>
           </Tabs>
         </div>
+
+        {/* Link-out CTA fields (shown first when in linkout mode) */}
+        {mode === "linkout" && (
+          <div className="space-y-4 rounded-md border border-primary/30 bg-primary/[0.03] p-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">Where the button goes</span>
+            </div>
+
+            <Field label="CTA Link" hint="Must start with https://">
+              <Input
+                type="url"
+                value={ctaLink}
+                onChange={(e) => setCtaLink(e.target.value)}
+                placeholder="https://calendly.com/yourname/intro"
+                required
+              />
+            </Field>
+
+            <Field label="CTA Label" hint={`${ctaLabel.length}/${LABEL_MAX}`}>
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {CTA_PRESETS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setCtaLabel(p)}
+                      className={`rounded-[3px] border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
+                        ctaLabel === p ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <Input
+                  value={ctaLabel}
+                  onChange={(e) => setCtaLabel(e.target.value.slice(0, LABEL_MAX))}
+                  placeholder="Or type a custom label"
+                  maxLength={LABEL_MAX}
+                />
+              </div>
+            </Field>
+
+            <Field label="Secondary Link (optional)">
+              <Input
+                type="url"
+                value={secondaryLink}
+                onChange={(e) => setSecondaryLink(e.target.value)}
+                placeholder="https://yoursite.com/details"
+              />
+            </Field>
+
+            {secondaryLink.trim() && (
+              <Field label="Secondary Label" hint={`${secondaryLabel.length}/${LABEL_MAX}`}>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {SECONDARY_PRESETS.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setSecondaryLabel(p)}
+                        className={`rounded-[3px] border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
+                          secondaryLabel === p ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <Input
+                    value={secondaryLabel}
+                    onChange={(e) => setSecondaryLabel(e.target.value.slice(0, LABEL_MAX))}
+                    maxLength={LABEL_MAX}
+                  />
+                </div>
+              </Field>
+            )}
+          </div>
+        )}
 
         {/* Cover */}
         <div>
@@ -264,13 +431,37 @@ export default function OfferEditor() {
           <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 80))} maxLength={80} required />
         </Field>
 
-        <Field label="Description" hint={`${description.length}/5000`}>
-          <Textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 5000))} rows={8} maxLength={5000} required />
+        <Field
+          label={mode === "hosted" ? "Description" : "Short description"}
+          hint={`${description.length}/${descMax}`}
+        >
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value.slice(0, descMax))}
+            rows={mode === "hosted" ? 8 : 4}
+            maxLength={descMax}
+            required
+            placeholder={mode === "linkout" ? "One or two sentences explaining what this offer is and who it's for." : ""}
+          />
         </Field>
 
         {offerType === "paid" && (
-          <Field label="Price (USD)">
+          <Field label={mode === "linkout" ? "Price (USD) — shown as 'Starting at'" : "Price (USD)"}>
             <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+          </Field>
+        )}
+
+        {mode === "linkout" && (
+          <Field label="Offer tier (optional)" hint="Display label only">
+            <Select value={offerTier} onValueChange={(v) => setOfferTier(v as TierLabel)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="Entry">Entry</SelectItem>
+                <SelectItem value="Mid">Mid</SelectItem>
+                <SelectItem value="VIP">VIP</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
         )}
 
@@ -283,9 +474,11 @@ export default function OfferEditor() {
           </Select>
         </Field>
 
-        <Field label="Video URL (optional)" hint="YouTube, Vimeo, or Loom">
-          <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=…" />
-        </Field>
+        {mode === "hosted" && (
+          <Field label="Video URL (optional)" hint="YouTube, Vimeo, or Loom">
+            <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=…" />
+          </Field>
+        )}
 
         <Field label="Tags" hint={`${tags.length}/${MAX_TAGS}`}>
           <div className="flex flex-wrap gap-1.5 rounded-md border border-input bg-input p-2">
