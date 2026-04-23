@@ -94,6 +94,45 @@ export type Database = {
           },
         ]
       }
+      imported_testimonials: {
+        Row: {
+          created_at: string
+          date_label: string
+          display_order: number
+          id: string
+          provider_user_id: string
+          reviewer_name: string
+          source_label: string
+          source_screenshot_url: string | null
+          testimonial_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_label: string
+          display_order?: number
+          id?: string
+          provider_user_id: string
+          reviewer_name: string
+          source_label: string
+          source_screenshot_url?: string | null
+          testimonial_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_label?: string
+          display_order?: number
+          id?: string
+          provider_user_id?: string
+          reviewer_name?: string
+          source_label?: string
+          source_screenshot_url?: string | null
+          testimonial_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
