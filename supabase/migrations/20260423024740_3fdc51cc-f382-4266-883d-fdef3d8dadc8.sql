@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Public read for imported-testimonial-sources" ON storage.objects;
