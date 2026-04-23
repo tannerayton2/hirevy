@@ -577,3 +577,31 @@ function StatItem({ children }: { children: React.ReactNode }) {
 function Dot() {
   return <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />;
 }
+
+function TabButton({ active, onClick, count, label }: { active: boolean; onClick: () => void; count: number; label: string }) {
+  const dim = count === 0 && !active;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "relative -mb-px shrink-0 px-4 py-2.5 text-sm font-medium transition-colors",
+        active
+          ? "text-primary"
+          : dim
+            ? "text-muted-foreground/50 hover:text-muted-foreground"
+            : "text-muted-foreground hover:text-foreground",
+      ].join(" ")}
+      aria-pressed={active}
+    >
+      <span className="font-display tracking-wide">{label}</span>
+      <span className={[
+        "ml-2 text-[11px] tabular-nums",
+        active ? "text-primary/80" : "text-muted-foreground/60",
+      ].join(" ")}>· {count}</span>
+      {active && (
+        <span aria-hidden className="absolute inset-x-2 -bottom-px h-[2px] bg-primary" />
+      )}
+    </button>
+  );
+}
