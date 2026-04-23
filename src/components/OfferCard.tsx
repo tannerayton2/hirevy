@@ -105,13 +105,13 @@ export function OfferCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)),hsl(var(--background)))] font-display text-3xl text-muted-foreground/40">
-            HireVy
-          </div>
+          <OfferCoverPlaceholder title={offer.title} aspect="aspect-[4/3]" className="h-full" />
         )}
-        <span className="absolute left-2 top-2 rounded-[3px] bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          {offer.category}
-        </span>
+        {offer.cover_url && (
+          <span className="absolute left-2 top-2 rounded-[3px] bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
+            {offer.category}
+          </span>
+        )}
         {inactive ? (
           <span className="absolute right-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             Inactive
