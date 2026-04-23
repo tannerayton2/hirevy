@@ -19,6 +19,7 @@ import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
+import OutboundRedirect from "./pages/OutboundRedirect.tsx";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
 
             <Route path="/me" element={<MeRedirect />} />
+            <Route path="/out/:offerId" element={<OutboundRedirect />} />
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
 
             {/* Settings — must be above the catch-all username routes */}

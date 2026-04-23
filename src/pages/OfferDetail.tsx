@@ -6,15 +6,32 @@ import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { MessageSquare, Share2 } from "lucide-react";
+import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
 
 interface OfferDetail {
-  id: string; slug: string; title: string; description: string; cover_url: string | null;
-  video_url: string | null; price_cents: number | null; free_for_testimonial: boolean;
-  category: string; tags: string[]; provider_id: string;
-  provider: { id: string; username: string; display_name: string | null; avatar_url: string | null; review_count: number; rating_sum: number; };
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  cover_url: string | null;
+  video_url: string | null;
+  price_cents: number | null;
+  free_for_testimonial: boolean;
+  category: string;
+  tags: string[];
+  provider_id: string;
+  cta_link: string | null;
+  cta_label: string | null;
+  secondary_link: string | null;
+  secondary_link_label: string | null;
+  hosted_on_hirevy: boolean;
+  offer_tier: string | null;
+  provider: {
+    id: string; username: string; display_name: string | null;
+    avatar_url: string | null; review_count: number; rating_sum: number;
+  };
 }
 
 function videoEmbed(url: string | null) {
@@ -76,7 +93,15 @@ export default function OfferDetail() {
   const tier = tierForReviewCount(offer.provider.review_count);
   const avg = offer.provider.review_count > 0 ? offer.provider.rating_sum / offer.provider.review_count : 0;
   const embed = videoEmbed(offer.video_url);
-  const priceLabel = offer.free_for_testimonial ? "FREE — Testimonial Only" : offer.price_cents != null ? `$${(offer.price_cents/100).toLocaleString()}` : "—";
+  const isLinkOut = !offer.hosted_on_hirevy && !!offer.cta_link;
+  const ctaLabel = (offer.cta_label || "Book Now").slice(0, 24);
+  const priceLabel = offer.free_for_testimonial
+    ? "FREE — Testimonial Only"
+    : offer.price_cents != null
+      ? `${isLinkOut ? "Starting at " : ""}$${(offer.price_cents / 100).toLocaleString()}`
+      : "—";
+
+  const outHref = `/out/${offer.id}?ref=offer_detail`;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-10">
@@ -91,7 +116,14 @@ export default function OfferDetail() {
           </div>
         )}
         <div className="p-5 md:p-7">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary">{offer.category}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary">{offer.category}</span>
+            {offer.offer_tier && (
+              <span className="rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                {offer.offer_tier}
+              </span>
+            )}
+          </div>
           <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">{offer.title}</h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -104,13 +136,39 @@ export default function OfferDetail() {
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
             <div className="font-display text-2xl font-bold">{priceLabel}</div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={copyShareLink}><Share2 className="mr-1.5 h-4 w-4" /> Share</Button>
-              <Button onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message Provider</Button>
+              {isLinkOut ? (
+                <>
+                  {offer.secondary_link && (
+                    <Button variant="outline" asChild>
+                      <a
+                        href={`/out/${offer.id}?ref=offer_detail_secondary`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          // Use the secondary link directly (not via /out, since /out routes to primary)
+                          e.preventDefault();
+                          window.open(offer.secondary_link!, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        {(offer.secondary_link_label || "Learn More").slice(0, 24)}
+                      </a>
+                    </Button>
+                  )}
+                  <Button asChild size="lg" className="font-bold uppercase tracking-[0.14em]">
+                    <a href={outHref} target="_blank" rel="noopener noreferrer">
+                      {ctaLabel} <ArrowUpRight className="ml-1.5 h-4 w-4" />
+                    </a>
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message Provider</Button>
+              )}
             </div>
           </div>
 
-          {embed && (
+          {embed && offer.hosted_on_hirevy && (
             <div className="mt-6 aspect-video overflow-hidden rounded-md border border-border bg-black">
               <iframe src={embed} className="h-full w-full" allowFullScreen title={offer.title} />
             </div>
@@ -127,8 +185,30 @@ export default function OfferDetail() {
               ))}
             </div>
           )}
+
+          {/* Big CTA at the bottom for link-out offers */}
+          {isLinkOut && (
+            <div className="mt-8 rounded-md border border-primary/30 bg-primary/[0.04] p-5 text-center">
+              <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">Ready to start?</p>
+              <Button asChild size="lg" className="font-bold uppercase tracking-[0.14em]">
+                <a href={outHref} target="_blank" rel="noopener noreferrer">
+                  {ctaLabel} <ArrowUpRight className="ml-1.5 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Reviews mentioning this offer (placeholder section, populated in a future pass) */}
+      <section className="mt-8">
+        <h2 className="border-b border-border pb-2 font-display text-lg font-semibold">
+          Reviews mentioning this offer
+        </h2>
+        <p className="mt-4 text-sm italic text-muted-foreground">
+          No reviews mention this offer yet.
+        </p>
+      </section>
     </div>
   );
 }

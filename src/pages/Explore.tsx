@@ -41,6 +41,7 @@ export default function Explore() {
         .from("offers")
         .select(`
           id, slug, title, cover_url, price_cents, free_for_testimonial, category, created_at,
+          cta_link, cta_label, hosted_on_hirevy, offer_tier,
           provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )
         `)
         .eq("is_active", true)
@@ -176,7 +177,7 @@ export default function Explore() {
             <EmptyState hasFilters={count > 0} onClear={() => writeFilters({ ...DEFAULT_FILTERS, q: filters.q })} />
           ) : (
             <div className={gridCls}>
-              {visible.map((o) => <OfferCard key={o.id} offer={o} />)}
+              {visible.map((o) => <OfferCard key={o.id} offer={o} referrer="explore" />)}
             </div>
           )}
         </div>
