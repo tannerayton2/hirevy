@@ -19,7 +19,6 @@ export default function OutboundRedirect() {
 
       const { data, error: e } = await supabase
         .from("offers")
-        // @ts-expect-error new column not yet in generated types
         .select("cta_link, hosted_on_hirevy, slug, provider:profiles!offers_provider_id_fkey(username)")
         .eq("id", offerId)
         .maybeSingle();
