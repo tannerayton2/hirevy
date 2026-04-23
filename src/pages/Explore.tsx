@@ -40,7 +40,7 @@ export default function Explore() {
       let req = supabase
         .from("offers")
         .select(`
-          id, slug, title, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, created_at,
+          id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, created_at,
           cta_link, cta_label, hosted_on_hirevy, offer_tier,
           provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )
         `)
