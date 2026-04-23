@@ -159,7 +159,7 @@ export default function OfferEditor() {
       return toast({ title: `Description required (max ${descMax} chars)`, variant: "destructive" });
     }
     if (!category) return toast({ title: "Pick a category", variant: "destructive" });
-    if (!coverFile && !coverUrl) return toast({ title: "Cover image required", variant: "destructive" });
+    // Cover image is optional — a branded fallback renders when missing.
 
     if (mode === "linkout") {
       if (!ctaLink.trim() || !isValidHttpsUrl(ctaLink.trim())) {
