@@ -283,11 +283,20 @@ export default function OfferEditor() {
       toast({ title: isEdit ? "Offer updated" : "Offer created" });
       nav(`/@${profile.username}/${finalSlug}`);
     } catch (err) {
-      toast({
-        title: "Couldn't save",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
+      // Surface the most informative bits from a Supabase/PostgREST error.
+      const e = err as { message?: string; details?: string; hint?: string; code?: string } | null;
+      let description = "Unknown error";
+      if (e) {
+        const parts = [e.message, e.details, e.hint].filter(Boolean) as string[];
+        if (parts.length) description = parts.join(" — ");
+        // Friendlier copy for the pricing CHECK constraint.
+        if (e.code === "23514" && /offers_pricing_validity_check/i.test(`${e.message ?? ""}${e.details ?? ""}`)) {
+          description = "Pricing values don't match the selected pricing model. Check that price/min/max are set correctly.";
+        }
+      } else if (err instanceof Error) {
+        description = err.message;
+      }
+      toast({ title: "Couldn't save", description, variant: "destructive" });
     } finally {
       setBusy(false);
     }
