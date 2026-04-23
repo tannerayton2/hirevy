@@ -3,6 +3,7 @@ import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
+import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
 import { ArrowUpRight, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -17,6 +18,8 @@ export interface OfferCardData {
   title: string;
   cover_url: string | null;
   price_cents: number | null;
+  price_max_cents?: number | null;
+  pricing_model?: PricingModel | string | null;
   free_for_testimonial: boolean;
   category: string;
   is_active?: boolean;
@@ -31,12 +34,6 @@ export interface OfferCardData {
     review_count: number;
     rating_sum: number;
   };
-}
-
-function formatPrice(cents: number | null) {
-  if (cents == null) return "";
-  if (cents === 0) return "Free";
-  return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export function OfferCard({
@@ -134,8 +131,13 @@ export function OfferCard({
         </div>
         <div className="flex items-center justify-between gap-2 pt-1">
           <div className="flex items-center gap-1.5">
-            <span className="font-display text-base font-bold text-foreground">
-              {offer.free_for_testimonial ? "FREE" : formatPrice(offer.price_cents)}
+            <span
+              className={cn(
+                "font-display text-base font-bold text-foreground",
+                isContactPricing(offer) && "text-[14px] italic text-foreground/80",
+              )}
+            >
+              {formatOfferPrice(offer)}
             </span>
             {offer.offer_tier && (
               <span className="rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary">
