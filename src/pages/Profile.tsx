@@ -327,54 +327,49 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Featured offer */}
-      {pinnedOffer && (
+      {/* Offers — toggle to expand */}
+      {(totalOffers > 0 || isMe) && (
         <section className="mt-8">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">Featured offer</span>
-          </div>
-          <FeaturedOfferCard offer={pinnedOffer} />
-        </section>
-      )}
-
-      {/* Offers — sub-tabs (Paid / Free) */}
-      {(paidOffers.length > 0 || freeOffers.length > 0 || isMe) && (
-        <section className="mt-8">
-          <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
-            <div className="flex min-w-max items-center gap-1">
-              <TabButton
-                active={activeOffersTab === "paid"}
-                onClick={() => setActiveOffersTab("paid")}
-                count={paidOffers.length}
-                label="Paid"
-              />
-              <TabButton
-                active={activeOffersTab === "free"}
-                onClick={() => setActiveOffersTab("free")}
-                count={freeOffers.length}
-                label="Free"
-              />
+          <Collapsible open={offersOpen} onOpenChange={setOffersOpen}>
+            <div className="flex flex-wrap items-center gap-2">
+              {totalOffers > 0 && (
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
+                    {offersOpen ? "Hide offers" : `View offers (${totalOffers})`}
+                    <ChevronDown
+                      className={`ml-1 h-4 w-4 transition-transform duration-200 ${offersOpen ? "rotate-180" : ""}`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+              )}
+              {isMe && totalOffers > 0 && (
+                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
+                  <Link to="/settings/offers/new"><Plus className="mr-1 h-3.5 w-3.5" /> Create offer</Link>
+                </Button>
+              )}
+              {totalOffers > 0 && (
+                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
+                  <Link to={`/@${profile.username}/offers`}>Open as page →</Link>
+                </Button>
+              )}
+              {isMe && totalOffers === 0 && (
+                <Button asChild>
+                  <Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create your first offer</Link>
+                </Button>
+              )}
             </div>
-          </div>
-
-          {activeOffersTab === "paid" ? (
-            paidOffers.length === 0 ? (
-              <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-[collapsible-up_180ms_ease-out] data-[state=open]:animate-[collapsible-down_220ms_ease-out]">
+              <div className="mt-5">
+                <OffersPanel
+                  offers={offers as PanelOfferRow[]}
+                  isOwner={isMe}
+                  onChanged={loadAll}
+                  tabParamKey="offerstab"
+                  referrer="profile"
+                />
               </div>
-            )
-          ) : (
-            freeOffers.length === 0 ? (
-              <Empty msg="No free-for-testimonial offers yet." />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
-              </div>
-            )
-          )}
+            </CollapsibleContent>
+          </Collapsible>
         </section>
       )}
 
