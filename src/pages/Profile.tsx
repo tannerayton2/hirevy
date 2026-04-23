@@ -14,6 +14,7 @@ import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
+import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -72,6 +73,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
+  const [importedModalOpen, setImportedModalOpen] = useState(false);
+  const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -490,23 +493,83 @@ export default function Profile() {
         {/* Imported */}
         {activeTab === "imported" && (
           <div>
-            <h2 className="mb-4 font-display text-xl font-semibold text-muted-foreground">Imported testimonials</h2>
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported testimonials</h2>
+              {isMe && imported.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" /> Add
+                </Button>
+              )}
+            </div>
+
             {imported.length === 0 ? (
-              <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
-                {providerDisplayName} hasn't imported any historical testimonials yet.
-              </p>
+              isMe ? (
+                <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                  <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                    Drop your best testimonials here — old DMs, client emails, video testimonials,
+                    anywhere you have proof of your work. These appear on your profile clearly
+                    labeled as imported.
+                  </p>
+                  <Button
+                    size="lg"
+                    className="mt-5"
+                    onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                  >
+                    <Plus className="mr-1.5 h-4 w-4" /> Add your first imported testimonial
+                  </Button>
+                </div>
+              ) : (
+                <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+                  {providerDisplayName} hasn't imported any testimonials yet.
+                </p>
+              )
             ) : (
-              <div className="space-y-2.5">
-                {imported.map((t) => <ImportedTestimonialCard key={t.id} t={t} />)}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {imported.map((t) => (
+                  <ImportedTestimonialCard
+                    key={t.id}
+                    t={t}
+                    isOwner={isMe}
+                    onEdit={(item) => { setImportedEditing(item); setImportedModalOpen(true); }}
+                    onDelete={async (item) => {
+                      if (!confirm("Delete this imported testimonial?")) return;
+                      const { error } = await supabase
+                        .from("imported_testimonials")
+                        .delete()
+                        .eq("id", item.id);
+                      if (error) {
+                        toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+                        return;
+                      }
+                      toast({ title: "Deleted" });
+                      await loadAll();
+                    }}
+                  />
+                ))}
               </div>
             )}
             <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
-              Imported testimonials are historical reviews the provider brought from other platforms.
+              Imported testimonials are historical proof the provider brought from other platforms.
               They are not independently verified by HireVy and do not affect the tier badge or rating.
             </p>
           </div>
         )}
       </section>
+
+      {isMe && profile && (
+        <ImportedTestimonialModal
+          open={importedModalOpen}
+          onOpenChange={setImportedModalOpen}
+          providerId={profile.id}
+          initial={importedEditing}
+          onSaved={loadAll}
+        />
+      )}
     </div>
     </TooltipProvider>
   );
