@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { getVideoEmbedUrl, type ImportedTestimonial } from "@/lib/importedTestimonials";
+
+const BUCKET = "imported-testimonial-sources";
+function getPhotoPublicUrl(path: string): string {
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
 
 interface Props {
   t: ImportedTestimonial;
