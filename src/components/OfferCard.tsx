@@ -1,7 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { TierBadge } from "@/components/TierBadge";
-import { StarRating } from "@/components/StarRating";
-import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
 import { ArrowUpRight, ExternalLink, Pencil, Trash2 } from "lucide-react";
@@ -17,6 +14,7 @@ export interface OfferCardData {
   id: string;
   slug: string;
   title: string;
+  description?: string | null;
   cover_url: string | null;
   price_cents: number | null;
   price_max_cents?: number | null;
@@ -24,7 +22,6 @@ export interface OfferCardData {
   free_for_testimonial: boolean;
   category: string;
   is_active?: boolean;
-  // New link-out fields (optional for back-compat with older queries)
   cta_link?: string | null;
   cta_label?: string | null;
   hosted_on_hirevy?: boolean;
@@ -37,6 +34,11 @@ export interface OfferCardData {
   };
 }
 
+/**
+ * Compact horizontal offer card.
+ * Image thumbnail (left, ~120px square) + stacked text column on the right.
+ * 2-per-row on desktop grids, 1-per-row on mobile (still horizontal layout).
+ */
 export function OfferCard({
   offer,
   owner,
@@ -48,17 +50,16 @@ export function OfferCard({
   onChanged?: () => void;
   referrer?: string;
 }) {
-  const tier = tierForReviewCount(offer.provider.review_count);
-  const avgRating = offer.provider.review_count > 0 ? offer.provider.rating_sum / offer.provider.review_count : 0;
-  const providerName = offer.provider.display_name || `@${offer.provider.username}`;
   const nav = useNavigate();
   const inactive = offer.is_active === false;
   const detailHref = `/@${offer.provider.username}/${offer.slug}`;
 
   const isLinkOut = !offer.hosted_on_hirevy && !!offer.cta_link;
-  const ctaLabel = (offer.cta_label || "Book Now").slice(0, 24);
+  const ctaLabel = (offer.cta_label || "Book Now").slice(0, 20);
   const outHref = `/out/${offer.id}?ref=${encodeURIComponent(referrer)}`;
   const ownerNeedsLink = owner && !offer.hosted_on_hirevy && !offer.cta_link;
+
+  const snippet = (offer.description || "").trim().replace(/\s+/g, " ").slice(0, 90);
 
   const handleDelete = async () => {
     const { error } = await supabase.from("offers").delete().eq("id", offer.id);
@@ -73,14 +74,12 @@ export function OfferCard({
   const goToOffer = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest("[data-no-nav]")) return;
-    // Card-body click always goes to the in-app detail page (works for both modes).
     nav(detailHref);
   };
 
   const handleCta = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLinkOut) {
-      // Open the redirector in a new tab so the original profile/explore stays open.
       window.open(outHref, "_blank", "noopener,noreferrer");
     } else {
       nav(detailHref);
@@ -91,123 +90,120 @@ export function OfferCard({
     <div
       onClick={goToOffer}
       className={cn(
-        "group flex cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-card transition-all",
-        "hover:border-primary/40 hover:elev",
+        "group relative flex cursor-pointer overflow-hidden rounded-md border border-border bg-card transition-all",
+        "hover:-translate-y-0.5 hover:border-primary/50 hover:elev",
         inactive && "opacity-60",
       )}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+      {/* Thumbnail (left) */}
+      <div className="relative h-[140px] w-[120px] shrink-0 overflow-hidden rounded-l-md bg-muted sm:h-[150px] sm:w-[140px]">
         {offer.cover_url ? (
           <img
             src={offer.cover_url}
             alt={offer.title}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
         ) : (
-          <OfferCoverPlaceholder title={offer.title} aspect="aspect-[4/3]" className="h-full" />
-        )}
-        {offer.cover_url && (
-          <span className="absolute left-2 top-2 rounded-[3px] bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-            {offer.category}
-          </span>
+          <OfferCoverPlaceholder title={offer.title} aspect="" className="h-full" />
         )}
         {inactive ? (
-          <span className="absolute right-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             Inactive
           </span>
         ) : offer.free_for_testimonial && (
-          <span className="absolute right-2 top-2 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-            Free · Testimonial
+          <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+            Free
           </span>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <h3 className="line-clamp-2 font-display text-[15px] font-semibold leading-tight text-foreground">
+
+      {/* Text column (right) */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3 sm:p-3.5">
+        {offer.offer_tier && (
+          <span className="inline-flex w-fit items-center rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary">
+            {offer.offer_tier}
+          </span>
+        )}
+        <h3 className="line-clamp-2 font-display text-[15px] font-bold leading-tight text-foreground">
           {offer.title}
         </h3>
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{providerName}</div>
-          <TierBadge tier={tier} size="xs" />
-        </div>
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <div className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "font-display text-base font-bold text-foreground",
-                isContactPricing(offer) && "text-[14px] italic text-foreground/80",
-              )}
-            >
-              {formatOfferPrice(offer)}
-            </span>
-            {offer.offer_tier && (
-              <span className="rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary">
-                {offer.offer_tier}
-              </span>
+        {snippet && (
+          <p className="line-clamp-1 text-xs text-muted-foreground">
+            {snippet}
+          </p>
+        )}
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1.5">
+          <span
+            className={cn(
+              "font-display text-[15px] font-bold text-foreground",
+              isContactPricing(offer) && "text-[13px] italic text-foreground/80",
+            )}
+          >
+            {formatOfferPrice(offer)}
+          </span>
+
+          <div data-no-nav className="shrink-0">
+            {ownerNeedsLink ? (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
+                className="inline-flex items-center justify-center gap-1 rounded-[3px] border border-dashed border-border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                + Add link
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCta}
+                className="inline-flex items-center justify-center gap-1 rounded-[3px] bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {ctaLabel}
+                {isLinkOut && <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />}
+              </button>
             )}
           </div>
-          <StarRating value={avgRating} count={offer.provider.review_count} showValue size={12} />
         </div>
 
-        {/* CTA row */}
-        <div data-no-nav className="mt-auto pt-2">
-          {ownerNeedsLink ? (
+        {owner && (
+          <div data-no-nav className="-mx-3 -mb-3 mt-2 flex border-t border-border sm:-mx-3.5 sm:-mb-3.5">
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-[3px] border border-dashed border-border px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:border-primary hover:text-primary"
+              className="flex flex-1 items-center justify-center gap-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
             >
-              + Add a link to activate
+              <Pencil className="h-3 w-3" /> Edit
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCta}
-              className="flex w-full items-center justify-center gap-1.5 rounded-[3px] bg-primary px-2 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {ctaLabel}
-              {isLinkOut && <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />}
-            </button>
-          )}
-        </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="h-3 w-3" /> Delete
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    "{offer.title}" will be removed permanently. This can't be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
       </div>
-      {owner && (
-        <div data-no-nav className="flex border-t border-border">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
-            className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
-          >
-            <Pencil className="h-3 w-3" /> Edit
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                type="button"
-                onClick={(e) => e.stopPropagation()}
-                className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" /> Delete
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  "{offer.title}" will be removed permanently. This can't be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      )}
-      {/* Hidden marker so unused icon import doesn't get tree-shaken-warned by lint */}
+
+      {/* Hidden marker so unused icon import doesn't get tree-shaken-warned */}
       <ExternalLink className="hidden" aria-hidden />
     </div>
   );

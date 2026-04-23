@@ -87,6 +87,14 @@ export default function Profile() {
     setSearchParams(next, { replace: true });
   };
 
+  const offersParam = searchParams.get("offers");
+  const activeOffersTab: "paid" | "free" = offersParam === "free" ? "free" : "paid";
+  const setActiveOffersTab = (t: "paid" | "free") => {
+    const next = new URLSearchParams(searchParams);
+    next.set("offers", t);
+    setSearchParams(next, { replace: true });
+  };
+
   const loadAll = async () => {
     setLoading(true);
     const { data: p } = await supabase
@@ -101,7 +109,7 @@ export default function Profile() {
     const isOwner = user?.id === prof.id;
     let offersQuery = supabase
       .from("offers")
-      .select(`id, slug, title, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, is_pinned,
+      .select(`id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, is_pinned,
                cta_link, cta_label, hosted_on_hirevy, offer_tier,
                provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
       .eq("provider_id", prof.id)
@@ -330,25 +338,44 @@ export default function Profile() {
         </section>
       )}
 
-      {/* Offers */}
-      {(paidOffers.length > 0 || isMe) && (
-        <Section title="Paid offers" count={paidOffers.length}>
-          {paidOffers.length === 0 ? <Empty msg="No paid offers yet. Create one to get started." /> : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+      {/* Offers — sub-tabs (Paid / Free) */}
+      {(paidOffers.length > 0 || freeOffers.length > 0 || isMe) && (
+        <section className="mt-8">
+          <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+            <div className="flex min-w-max items-center gap-1">
+              <TabButton
+                active={activeOffersTab === "paid"}
+                onClick={() => setActiveOffersTab("paid")}
+                count={paidOffers.length}
+                label="Paid"
+              />
+              <TabButton
+                active={activeOffersTab === "free"}
+                onClick={() => setActiveOffersTab("free")}
+                count={freeOffers.length}
+                label="Free"
+              />
             </div>
-          )}
-        </Section>
-      )}
+          </div>
 
-      {(freeOffers.length > 0 || isMe) && (
-        <Section title="Free for testimonial" count={freeOffers.length}>
-          {freeOffers.length === 0 ? <Empty msg="No free-for-testimonial offers yet." /> : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
-            </div>
+          {activeOffersTab === "paid" ? (
+            paidOffers.length === 0 ? (
+              <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+              </div>
+            )
+          ) : (
+            freeOffers.length === 0 ? (
+              <Empty msg="No free-for-testimonial offers yet." />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+              </div>
+            )
           )}
-        </Section>
+        </section>
       )}
 
       {/* Reviews — tabbed interface */}
@@ -605,17 +632,6 @@ function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
   );
 }
 
-function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
-  return (
-    <section className="mt-8">
-      <div className="mb-4 flex items-baseline justify-between border-b border-border pb-2">
-        <h2 className="font-display text-xl font-semibold">{title}</h2>
-        <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{count}</span>
-      </div>
-      {children}
-    </section>
-  );
-}
 
 function SortMenu({ value, onChange }: { value: SortKey; onChange: (k: SortKey) => void }) {
   return (

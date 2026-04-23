@@ -40,7 +40,7 @@ export default function Explore() {
       let req = supabase
         .from("offers")
         .select(`
-          id, slug, title, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, created_at,
+          id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, created_at,
           cta_link, cta_label, hosted_on_hirevy, offer_tier,
           provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )
         `)
@@ -169,8 +169,8 @@ export default function Explore() {
 
           {loading ? (
             <div className={gridCls}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] animate-pulse rounded-md bg-card" />
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-[150px] animate-pulse rounded-md bg-card" />
               ))}
             </div>
           ) : visible.length === 0 ? (
@@ -188,7 +188,7 @@ export default function Explore() {
 
 const gridCls = cn(
   "grid gap-4",
-  "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
+  "grid-cols-1 md:grid-cols-2",
 );
 
 function EmptyState({ hasFilters, onClear }: { hasFilters: boolean; onClear: () => void }) {
