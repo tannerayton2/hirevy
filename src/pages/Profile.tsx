@@ -372,7 +372,7 @@ export default function Profile() {
                 </Button>
               )}
             </div>
-            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-[collapsible-up_180ms_ease-out] data-[state=open]:animate-[collapsible-down_220ms_ease-out]">
+            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
               <div className="mt-5">
                 <OffersPanel
                   offers={offers as PanelOfferRow[]}
