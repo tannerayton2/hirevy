@@ -229,7 +229,7 @@ export default function OfferEditor() {
 
       let finalSlug: string;
       if (isEdit) {
-        const { error } = await supabase.from("offers").update(payload).eq("id", offerId!);
+        const { error } = await supabase.from("offers").update(payload as never).eq("id", offerId!);
         if (error) throw error;
         const { data: o } = await supabase.from("offers").select("slug").eq("id", offerId!).maybeSingle();
         finalSlug = (o?.slug as string) || slugify(title);
