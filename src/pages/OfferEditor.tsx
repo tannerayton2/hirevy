@@ -94,6 +94,9 @@ export default function OfferEditor() {
       setDescription((row.description as string) ?? "");
       setOfferType(row.free_for_testimonial ? "free" : "paid");
       setPriceUsd(row.price_cents != null ? String((row.price_cents as number) / 100) : "");
+      setPriceMaxUsd(row.price_max_cents != null ? String((row.price_max_cents as number) / 100) : "");
+      const pm = row.pricing_model as string | null;
+      setPricingModel((pm === "starting_at" || pm === "range" || pm === "contact") ? pm : "fixed");
       setCategory(row.category as string);
       setVideoUrl((row.video_url as string) ?? "");
       setTags((row.tags as string[]) ?? []);
@@ -178,10 +181,27 @@ export default function OfferEditor() {
     }
 
     let priceCents: number | null = null;
-    if (offerType === "paid") {
+    let priceMaxCents: number | null = null;
+    if (offerType === "paid" && pricingModel !== "contact") {
       const n = Number(priceUsd);
-      if (!Number.isFinite(n) || n < 0) return toast({ title: "Enter a valid price", variant: "destructive" });
+      if (!Number.isFinite(n) || n <= 0) {
+        return toast({
+          title: pricingModel === "starting_at" ? "Enter a starting price" : pricingModel === "range" ? "Enter a minimum price" : "Enter a valid price",
+          variant: "destructive",
+        });
+      }
       priceCents = Math.round(n * 100);
+
+      if (pricingModel === "range") {
+        const m = Number(priceMaxUsd);
+        if (!Number.isFinite(m) || m <= 0) {
+          return toast({ title: "Enter a maximum price", variant: "destructive" });
+        }
+        if (m <= n) {
+          return toast({ title: "Max must be greater than min", variant: "destructive" });
+        }
+        priceMaxCents = Math.round(m * 100);
+      }
     }
 
     setBusy(true);
@@ -216,6 +236,8 @@ export default function OfferEditor() {
         description: description.trim(),
         free_for_testimonial: offerType === "free",
         price_cents: priceCents,
+        price_max_cents: priceMaxCents,
+        pricing_model: offerType === "free" ? "fixed" : pricingModel,
         category,
         tags,
         cover_url: nextCover,
