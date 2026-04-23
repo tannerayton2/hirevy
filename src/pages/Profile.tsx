@@ -6,9 +6,11 @@ import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
+import { OffersPanel, type OfferRow as PanelOfferRow } from "@/components/OffersPanel";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Sparkles, Star, Users } from "lucide-react";
+import { ChevronDown, Clock, ExternalLink, Globe, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Star, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
@@ -37,6 +39,7 @@ interface ProfileFull {
   follower_count: number;
   created_at: string;
   pinned_review_id: string | null;
+  website_url: string | null;
 }
 
 interface Review {
@@ -87,11 +90,11 @@ export default function Profile() {
     setSearchParams(next, { replace: true });
   };
 
-  const offersParam = searchParams.get("offers");
-  const activeOffersTab: "paid" | "free" = offersParam === "free" ? "free" : "paid";
-  const setActiveOffersTab = (t: "paid" | "free") => {
+  const offersOpen = searchParams.get("offers") === "open";
+  const setOffersOpen = (open: boolean) => {
     const next = new URLSearchParams(searchParams);
-    next.set("offers", t);
+    if (open) next.set("offers", "open");
+    else { next.delete("offers"); next.delete("offerstab"); }
     setSearchParams(next, { replace: true });
   };
 
@@ -99,7 +102,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -156,10 +159,7 @@ export default function Profile() {
   const tier = profile ? tierForReviewCount(profile.review_count) : "unranked";
   const avg = profile && profile.review_count > 0 ? profile.rating_sum / profile.review_count : 0;
 
-  const pinnedOffer = offers.find((o) => o.is_pinned) ?? null;
-  const unpinnedOffers = offers.filter((o) => !o.is_pinned);
-  const paidOffers = unpinnedOffers.filter((o) => !o.free_for_testimonial);
-  const freeOffers = unpinnedOffers.filter((o) => o.free_for_testimonial);
+  const totalOffers = offers.length;
 
   const pinnedReview = profile?.pinned_review_id
     ? reviews.find((r) => r.id === profile.pinned_review_id) ?? null
@@ -288,6 +288,20 @@ export default function Profile() {
                 {profile.review_count} verified · {proofReviews.length} proof-backed
               </StatItem>
             </div>
+
+            {/* Website link */}
+            {profile.website_url && (
+              <a
+                href={profile.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Globe className="h-3 w-3" />
+                <span className="underline-offset-4 hover:underline">{prettyDomain(profile.website_url)}</span>
+                <ExternalLink className="h-3 w-3 opacity-60" />
+              </a>
+            )}
           </div>
         </div>
 
@@ -327,54 +341,49 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Featured offer */}
-      {pinnedOffer && (
+      {/* Offers — toggle to expand */}
+      {(totalOffers > 0 || isMe) && (
         <section className="mt-8">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">Featured offer</span>
-          </div>
-          <FeaturedOfferCard offer={pinnedOffer} />
-        </section>
-      )}
-
-      {/* Offers — sub-tabs (Paid / Free) */}
-      {(paidOffers.length > 0 || freeOffers.length > 0 || isMe) && (
-        <section className="mt-8">
-          <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
-            <div className="flex min-w-max items-center gap-1">
-              <TabButton
-                active={activeOffersTab === "paid"}
-                onClick={() => setActiveOffersTab("paid")}
-                count={paidOffers.length}
-                label="Paid"
-              />
-              <TabButton
-                active={activeOffersTab === "free"}
-                onClick={() => setActiveOffersTab("free")}
-                count={freeOffers.length}
-                label="Free"
-              />
+          <Collapsible open={offersOpen} onOpenChange={setOffersOpen}>
+            <div className="flex flex-wrap items-center gap-2">
+              {totalOffers > 0 && (
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
+                    {offersOpen ? "Hide offers" : `View offers (${totalOffers})`}
+                    <ChevronDown
+                      className={`ml-1 h-4 w-4 transition-transform duration-200 ${offersOpen ? "rotate-180" : ""}`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+              )}
+              {isMe && totalOffers > 0 && (
+                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
+                  <Link to="/settings/offers/new"><Plus className="mr-1 h-3.5 w-3.5" /> Create offer</Link>
+                </Button>
+              )}
+              {totalOffers > 0 && (
+                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
+                  <Link to={`/@${profile.username}/offers`}>Open as page →</Link>
+                </Button>
+              )}
+              {isMe && totalOffers === 0 && (
+                <Button asChild>
+                  <Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create your first offer</Link>
+                </Button>
+              )}
             </div>
-          </div>
-
-          {activeOffersTab === "paid" ? (
-            paidOffers.length === 0 ? (
-              <Empty msg={isMe ? "No paid offers yet. Create one to get started." : "No paid offers yet."} />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {paidOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
+            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+              <div className="mt-5">
+                <OffersPanel
+                  offers={offers as PanelOfferRow[]}
+                  isOwner={isMe}
+                  onChanged={loadAll}
+                  tabParamKey="offerstab"
+                  referrer="profile"
+                />
               </div>
-            )
-          ) : (
-            freeOffers.length === 0 ? (
-              <Empty msg="No free-for-testimonial offers yet." />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {freeOffers.map((o) => <OfferCard key={o.id} offer={o} owner={isMe} onChanged={loadAll} referrer="profile" />)}
-              </div>
-            )
-          )}
+            </CollapsibleContent>
+          </Collapsible>
         </section>
       )}
 
@@ -602,34 +611,13 @@ export default function Profile() {
   );
 }
 
-function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
-  const href = `/@${offer.provider.username}/${offer.slug}`;
-  const price = formatOfferPrice(offer);
-  const muted = isContactPricing(offer);
-  return (
-    <Link
-      to={href}
-      className="group block overflow-hidden rounded-md border border-primary/40 bg-card transition-all hover:border-primary hover:elev md:flex"
-    >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted md:aspect-auto md:w-1/2">
-        {offer.cover_url ? (
-          <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-secondary font-display text-3xl text-muted-foreground/40">HireVy</div>
-        )}
-        <span className="absolute left-3 top-3 rounded-[3px] bg-background/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          {offer.category}
-        </span>
-      </div>
-      <div className="flex flex-1 flex-col justify-center gap-3 p-5 md:p-7">
-        <h3 className="font-display text-2xl font-bold leading-tight md:text-3xl">{offer.title}</h3>
-        <p className={muted ? "font-display text-base italic text-primary/80" : "font-display text-lg font-semibold text-primary"}>{price}</p>
-        <span className="mt-2 inline-flex w-fit items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground group-hover:text-primary">
-          View offer →
-        </span>
-      </div>
-    </Link>
-  );
+function prettyDomain(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, "") + (u.pathname && u.pathname !== "/" ? u.pathname.replace(/\/$/, "") : "");
+  } catch {
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+  }
 }
 
 

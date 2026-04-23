@@ -20,6 +20,7 @@ import ProfileEdit from "./pages/ProfileEdit.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
+import ProfileOffers from "./pages/ProfileOffers.tsx";
 
 const queryClient = new QueryClient();
 
@@ -50,8 +51,10 @@ const App = () => (
             <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
 
             <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
+            <Route path="/@:username/offers" element={<AppLayout><ProfileOffers /></AppLayout>} />
             <Route path="/@:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
             <Route path="/:username" element={<AppLayout><Profile /></AppLayout>} />
+            <Route path="/:username/offers" element={<AppLayout><ProfileOffers /></AppLayout>} />
             <Route path="/:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
