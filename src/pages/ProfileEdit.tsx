@@ -175,6 +175,10 @@ export default function ProfileEdit() {
           <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>
         </div>
       </form>
+
+      <div className="mt-10">
+        <ImportedTestimonialsEditor providerId={profile.id} />
+      </div>
     </div>
   );
 }
