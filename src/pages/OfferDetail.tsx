@@ -10,6 +10,7 @@ import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
+import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
 
 interface OfferDetail {
   id: string;
@@ -112,10 +113,12 @@ export default function OfferDetail() {
       </Link>
 
       <div className="mt-4 overflow-hidden rounded-md border border-border bg-card">
-        {offer.cover_url && (
+        {offer.cover_url ? (
           <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
             <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover" />
           </div>
+        ) : (
+          <OfferCoverPlaceholder title={offer.title} category={offer.category} aspect="aspect-[16/9]" large />
         )}
         <div className="p-5 md:p-7">
           <div className="flex flex-wrap items-center gap-2">
