@@ -5,6 +5,7 @@ import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
 import { ArrowUpRight, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
