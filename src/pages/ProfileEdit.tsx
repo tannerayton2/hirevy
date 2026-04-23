@@ -84,6 +84,13 @@ export default function ProfileEdit() {
     if (displayName.length > 60) return toast({ title: "Display name too long", variant: "destructive" });
     if (bio.length > BIO_MAX) return toast({ title: "Bio too long", variant: "destructive" });
 
+    let normalizedWebsite: string | null = null;
+    if (website.trim()) {
+      if (website.length > WEBSITE_MAX) return toast({ title: "Website URL too long", variant: "destructive" });
+      normalizedWebsite = normalizeWebsite(website);
+      if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
+    }
+
     setBusy(true);
     try {
       let nextAvatar = avatarUrl;
@@ -105,6 +112,7 @@ export default function ProfileEdit() {
           bio: bio.trim() || null,
           service_category: category || null,
           avatar_url: nextAvatar,
+          website_url: normalizedWebsite,
         })
         .eq("id", profile.id);
       if (error) throw error;
