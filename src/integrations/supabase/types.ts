@@ -259,19 +259,64 @@ export type Database = {
           },
         ]
       }
+      offer_clicks: {
+        Row: {
+          clicked_at: string
+          clicked_by_user_id: string | null
+          clicked_ip: string | null
+          clicker_country: string | null
+          id: string
+          offer_id: string
+          referrer: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          clicked_by_user_id?: string | null
+          clicked_ip?: string | null
+          clicker_country?: string | null
+          id?: string
+          offer_id: string
+          referrer?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          clicked_by_user_id?: string | null
+          clicked_ip?: string | null
+          clicker_country?: string | null
+          id?: string
+          offer_id?: string
+          referrer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_clicks_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           category: string
           cover_url: string | null
           created_at: string
+          cta_label: string
+          cta_link: string | null
           description: string
           free_for_testimonial: boolean
+          hosted_on_hirevy: boolean
           id: string
           is_active: boolean
           is_pinned: boolean
+          offer_tier: string | null
+          outbound_click_count: number
           price_cents: number | null
           priority: number
           provider_id: string
+          secondary_link: string | null
+          secondary_link_label: string | null
           slug: string
           tags: string[]
           title: string
@@ -282,14 +327,21 @@ export type Database = {
           category: string
           cover_url?: string | null
           created_at?: string
+          cta_label?: string
+          cta_link?: string | null
           description?: string
           free_for_testimonial?: boolean
+          hosted_on_hirevy?: boolean
           id?: string
           is_active?: boolean
           is_pinned?: boolean
+          offer_tier?: string | null
+          outbound_click_count?: number
           price_cents?: number | null
           priority?: number
           provider_id: string
+          secondary_link?: string | null
+          secondary_link_label?: string | null
           slug: string
           tags?: string[]
           title: string
@@ -300,14 +352,21 @@ export type Database = {
           category?: string
           cover_url?: string | null
           created_at?: string
+          cta_label?: string
+          cta_link?: string | null
           description?: string
           free_for_testimonial?: boolean
+          hosted_on_hirevy?: boolean
           id?: string
           is_active?: boolean
           is_pinned?: boolean
+          offer_tier?: string | null
+          outbound_click_count?: number
           price_cents?: number | null
           priority?: number
           provider_id?: string
+          secondary_link?: string | null
+          secondary_link_label?: string | null
           slug?: string
           tags?: string[]
           title?: string
@@ -592,6 +651,15 @@ export type Database = {
           rating: number
           reviewer_name: string
         }[]
+      }
+      record_offer_click: {
+        Args: {
+          p_clicked_ip?: string
+          p_clicker_country?: string
+          p_offer_id: string
+          p_referrer?: string
+        }
+        Returns: undefined
       }
       tier_for_review_count: { Args: { c: number }; Returns: string }
     }
