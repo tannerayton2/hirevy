@@ -611,34 +611,13 @@ export default function Profile() {
   );
 }
 
-function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
-  const href = `/@${offer.provider.username}/${offer.slug}`;
-  const price = formatOfferPrice(offer);
-  const muted = isContactPricing(offer);
-  return (
-    <Link
-      to={href}
-      className="group block overflow-hidden rounded-md border border-primary/40 bg-card transition-all hover:border-primary hover:elev md:flex"
-    >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted md:aspect-auto md:w-1/2">
-        {offer.cover_url ? (
-          <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-secondary font-display text-3xl text-muted-foreground/40">HireVy</div>
-        )}
-        <span className="absolute left-3 top-3 rounded-[3px] bg-background/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          {offer.category}
-        </span>
-      </div>
-      <div className="flex flex-1 flex-col justify-center gap-3 p-5 md:p-7">
-        <h3 className="font-display text-2xl font-bold leading-tight md:text-3xl">{offer.title}</h3>
-        <p className={muted ? "font-display text-base italic text-primary/80" : "font-display text-lg font-semibold text-primary"}>{price}</p>
-        <span className="mt-2 inline-flex w-fit items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground group-hover:text-primary">
-          View offer →
-        </span>
-      </div>
-    </Link>
-  );
+function prettyDomain(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, "") + (u.pathname && u.pathname !== "/" ? u.pathname.replace(/\/$/, "") : "");
+  } catch {
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+  }
 }
 
 
