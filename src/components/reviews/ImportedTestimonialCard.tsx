@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -85,13 +85,14 @@ export function ImportedTestimonialCard({ t, isOwner, onEdit, onDelete }: Props)
 function PhotoTile({ path, onClick }: { path: string; onClick: () => void }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
 
-  // Lazy fetch signed URL once on mount
-  useState(() => {
+  useEffect(() => {
+    let cancelled = false;
     void supabase.storage
       .from("imported-testimonial-sources")
       .createSignedUrl(path, 60 * 60)
-      .then(({ data }) => setThumbUrl(data?.signedUrl ?? null));
-  });
+      .then(({ data }) => { if (!cancelled) setThumbUrl(data?.signedUrl ?? null); });
+    return () => { cancelled = true; };
+  }, [path]);
 
   return (
     <button
