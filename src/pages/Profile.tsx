@@ -66,11 +66,23 @@ export default function Profile() {
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
+  const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [verifiedSort, setVerifiedSort] = useState<SortKey>("newest");
   const [proofSort, setProofSort] = useState<SortKey>("newest");
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabKey =
+    tabParam === "proof-backed" ? "proof-backed" :
+    tabParam === "imported" ? "imported" : "verified";
+  const setActiveTab = (t: TabKey) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", t);
+    setSearchParams(next, { replace: true });
+  };
 
   const loadAll = async () => {
     setLoading(true);
