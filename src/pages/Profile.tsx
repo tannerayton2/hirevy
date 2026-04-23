@@ -288,6 +288,20 @@ export default function Profile() {
                 {profile.review_count} verified · {proofReviews.length} proof-backed
               </StatItem>
             </div>
+
+            {/* Website link */}
+            {profile.website_url && (
+              <a
+                href={profile.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Globe className="h-3 w-3" />
+                <span className="underline-offset-4 hover:underline">{prettyDomain(profile.website_url)}</span>
+                <ExternalLink className="h-3 w-3 opacity-60" />
+              </a>
+            )}
           </div>
         </div>
 
