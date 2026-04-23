@@ -10,6 +10,7 @@ import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
+import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
 
 interface OfferDetail {
   id: string;
