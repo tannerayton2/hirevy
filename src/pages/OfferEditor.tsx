@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { CATEGORIES, isValidVideoUrl, slugify } from "@/lib/categories";
+import { PRICING_MODELS, PRICING_MODEL_LABEL, PRICING_MODEL_HINT, type PricingModel } from "@/lib/pricing";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X, Sparkles, Link as LinkIcon, MessageSquare } from "lucide-react";
 
@@ -49,6 +50,8 @@ export default function OfferEditor() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState(""); // serves both short + long
   const [priceUsd, setPriceUsd] = useState("");
+  const [priceMaxUsd, setPriceMaxUsd] = useState("");
+  const [pricingModel, setPricingModel] = useState<PricingModel>("fixed");
   const [category, setCategory] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -91,6 +94,9 @@ export default function OfferEditor() {
       setDescription((row.description as string) ?? "");
       setOfferType(row.free_for_testimonial ? "free" : "paid");
       setPriceUsd(row.price_cents != null ? String((row.price_cents as number) / 100) : "");
+      setPriceMaxUsd(row.price_max_cents != null ? String((row.price_max_cents as number) / 100) : "");
+      const pm = row.pricing_model as string | null;
+      setPricingModel((pm === "starting_at" || pm === "range" || pm === "contact") ? pm : "fixed");
       setCategory(row.category as string);
       setVideoUrl((row.video_url as string) ?? "");
       setTags((row.tags as string[]) ?? []);
@@ -175,10 +181,27 @@ export default function OfferEditor() {
     }
 
     let priceCents: number | null = null;
-    if (offerType === "paid") {
+    let priceMaxCents: number | null = null;
+    if (offerType === "paid" && pricingModel !== "contact") {
       const n = Number(priceUsd);
-      if (!Number.isFinite(n) || n < 0) return toast({ title: "Enter a valid price", variant: "destructive" });
+      if (!Number.isFinite(n) || n <= 0) {
+        return toast({
+          title: pricingModel === "starting_at" ? "Enter a starting price" : pricingModel === "range" ? "Enter a minimum price" : "Enter a valid price",
+          variant: "destructive",
+        });
+      }
       priceCents = Math.round(n * 100);
+
+      if (pricingModel === "range") {
+        const m = Number(priceMaxUsd);
+        if (!Number.isFinite(m) || m <= 0) {
+          return toast({ title: "Enter a maximum price", variant: "destructive" });
+        }
+        if (m <= n) {
+          return toast({ title: "Max must be greater than min", variant: "destructive" });
+        }
+        priceMaxCents = Math.round(m * 100);
+      }
     }
 
     setBusy(true);
@@ -213,6 +236,8 @@ export default function OfferEditor() {
         description: description.trim(),
         free_for_testimonial: offerType === "free",
         price_cents: priceCents,
+        price_max_cents: priceMaxCents,
+        pricing_model: offerType === "free" ? "fixed" : pricingModel,
         category,
         tags,
         cover_url: nextCover,
@@ -446,9 +471,48 @@ export default function OfferEditor() {
         </Field>
 
         {offerType === "paid" && (
-          <Field label={mode === "linkout" ? "Price (USD) — shown as 'Starting at'" : "Price (USD)"}>
-            <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
-          </Field>
+          <div className="space-y-4 rounded-md border border-border bg-card/40 p-4">
+            <Field label="Pricing model">
+              <Select value={pricingModel} onValueChange={(v) => setPricingModel(v as PricingModel)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRICING_MODELS.map((m) => (
+                    <SelectItem key={m} value={m}>{PRICING_MODEL_LABEL[m]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-[11px] text-muted-foreground">{PRICING_MODEL_HINT[pricingModel]}</p>
+            </Field>
+
+            {pricingModel === "fixed" && (
+              <Field label="Price (USD)">
+                <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+              </Field>
+            )}
+
+            {pricingModel === "starting_at" && (
+              <Field label="Starting price (USD)">
+                <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+              </Field>
+            )}
+
+            {pricingModel === "range" && (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Minimum (USD)">
+                  <Input type="number" min="0" step="1" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="500" />
+                </Field>
+                <Field label="Maximum (USD)">
+                  <Input type="number" min="0" step="1" value={priceMaxUsd} onChange={(e) => setPriceMaxUsd(e.target.value)} placeholder="2500" />
+                </Field>
+              </div>
+            )}
+
+            {pricingModel === "contact" && (
+              <p className="rounded-[3px] border border-dashed border-border bg-background/50 p-3 text-xs italic text-muted-foreground">
+                Buyers will be directed to your CTA link to discuss pricing. No price is shown on your card.
+              </p>
+            )}
+          </div>
         )}
 
         {mode === "linkout" && (

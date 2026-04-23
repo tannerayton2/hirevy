@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
+import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
 
 interface OfferDetail {
   id: string;
@@ -18,6 +19,8 @@ interface OfferDetail {
   cover_url: string | null;
   video_url: string | null;
   price_cents: number | null;
+  price_max_cents: number | null;
+  pricing_model: PricingModel | string | null;
   free_for_testimonial: boolean;
   category: string;
   tags: string[];
@@ -97,9 +100,8 @@ export default function OfferDetail() {
   const ctaLabel = (offer.cta_label || "Book Now").slice(0, 24);
   const priceLabel = offer.free_for_testimonial
     ? "FREE — Testimonial Only"
-    : offer.price_cents != null
-      ? `${isLinkOut ? "Starting at " : ""}$${(offer.price_cents / 100).toLocaleString()}`
-      : "—";
+    : formatOfferPrice(offer) || "—";
+  const priceMuted = isContactPricing(offer);
 
   const outHref = `/out/${offer.id}?ref=offer_detail`;
 
@@ -135,7 +137,15 @@ export default function OfferDetail() {
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
-            <div className="font-display text-2xl font-bold">{priceLabel}</div>
+            <div
+              className={
+                priceMuted
+                  ? "font-display text-xl font-semibold italic text-foreground/80"
+                  : "font-display text-2xl font-bold"
+              }
+            >
+              {priceLabel}
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={copyShareLink}><Share2 className="mr-1.5 h-4 w-4" /> Share</Button>
               {isLinkOut ? (

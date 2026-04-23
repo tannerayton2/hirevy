@@ -1,5 +1,6 @@
 import { CATEGORIES, type Category } from "@/lib/categories";
 import { tierForReviewCount, type Tier } from "@/lib/tiers";
+import { matchesPriceFilter, priceSortKey, type PricingModel } from "@/lib/pricing";
 
 export const TIERS: Tier[] = ["unranked", "bronze", "silver", "gold", "platinum", "diamond"];
 export const REVIEW_STEPS = [0, 5, 10, 25, 50, 100] as const;
@@ -21,6 +22,7 @@ export interface ExploreFilters {
   priceMin: number | null;
   priceMax: number | null;
   freeOnly: boolean;
+  includeContactPricing: boolean;
   tiers: Tier[];
   minReviews: number;
   minRating: number; // 0 = any
@@ -34,6 +36,7 @@ export const DEFAULT_FILTERS: ExploreFilters = {
   priceMin: null,
   priceMax: null,
   freeOnly: false,
+  includeContactPricing: true,
   tiers: [],
   minReviews: 0,
   minRating: 0,
@@ -70,6 +73,7 @@ export function parseFilters(params: URLSearchParams): ExploreFilters {
     priceMin: numOrNull(params.get("pmin")),
     priceMax: numOrNull(params.get("pmax")),
     freeOnly: params.get("free") === "1",
+    includeContactPricing: params.get("nocontact") !== "1",
     tiers,
     minReviews: Number(params.get("rcmin") ?? 0) || 0,
     minRating: Number(params.get("rmin") ?? 0) || 0,
@@ -85,6 +89,7 @@ export function filtersToParams(f: ExploreFilters): URLSearchParams {
   if (f.priceMin != null) p.set("pmin", String(f.priceMin));
   if (f.priceMax != null) p.set("pmax", String(f.priceMax));
   if (f.freeOnly) p.set("free", "1");
+  if (!f.includeContactPricing) p.set("nocontact", "1");
   if (f.tiers.length) p.set("tiers", f.tiers.join(","));
   if (f.minReviews > 0) p.set("rcmin", String(f.minReviews));
   if (f.minRating > 0) p.set("rmin", String(f.minRating));
@@ -98,6 +103,7 @@ export function activeFilterCount(f: ExploreFilters): number {
   if (f.priceMin != null) n++;
   if (f.priceMax != null) n++;
   if (f.freeOnly) n++;
+  if (!f.includeContactPricing) n++;
   if (f.tiers.length) n++;
   if (f.minReviews > 0) n++;
   if (f.minRating > 0) n++;
@@ -115,6 +121,8 @@ export interface ProviderLite {
 
 export function applyClientFilters<T extends {
   price_cents: number | null;
+  price_max_cents?: number | null;
+  pricing_model?: PricingModel | string | null;
   free_for_testimonial: boolean;
   provider: ProviderLite;
   created_at?: string;
@@ -132,11 +140,14 @@ export function applyClientFilters<T extends {
       const avg = o.provider.review_count > 0 ? o.provider.rating_sum / o.provider.review_count : 0;
       if (avg < f.minRating) return false;
     }
+    // contact-pricing exclusion
+    const model = (o.pricing_model as PricingModel) || "fixed";
+    if (!f.includeContactPricing && model === "contact") return false;
     // price range — only meaningful for paid offers
     if (!o.free_for_testimonial) {
-      const cents = o.price_cents ?? 0;
-      if (f.priceMin != null && cents < f.priceMin * 100) return false;
-      if (f.priceMax != null && cents > f.priceMax * 100) return false;
+      const minCents = f.priceMin != null ? f.priceMin * 100 : null;
+      const maxCents = f.priceMax != null ? f.priceMax * 100 : null;
+      if (!matchesPriceFilter(o, minCents, maxCents)) return false;
     }
     return true;
   });
@@ -154,10 +165,24 @@ export function applyClientFilters<T extends {
       sorted.sort((a, b) => b.provider.review_count - a.provider.review_count);
       break;
     case "price_asc":
-      sorted.sort((a, b) => (a.price_cents ?? 0) - (b.price_cents ?? 0));
+      sorted.sort((a, b) => {
+        const ka = priceSortKey(a);
+        const kb = priceSortKey(b);
+        if (ka == null && kb == null) return 0;
+        if (ka == null) return 1; // contact → bottom
+        if (kb == null) return -1;
+        return ka - kb;
+      });
       break;
     case "price_desc":
-      sorted.sort((a, b) => (b.price_cents ?? 0) - (a.price_cents ?? 0));
+      sorted.sort((a, b) => {
+        const ka = priceSortKey(a);
+        const kb = priceSortKey(b);
+        if (ka == null && kb == null) return 0;
+        if (ka == null) return 1; // contact → bottom (also for high-to-low; they have no number)
+        if (kb == null) return -1;
+        return kb - ka;
+      });
       break;
     // newest: rely on server order
   }

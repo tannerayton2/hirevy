@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { formatOfferPrice, isContactPricing } from "@/lib/pricing";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
@@ -81,7 +82,7 @@ export default function Profile() {
     const isOwner = user?.id === prof.id;
     let offersQuery = supabase
       .from("offers")
-      .select(`id, slug, title, cover_url, price_cents, free_for_testimonial, category, is_active, is_pinned,
+      .select(`id, slug, title, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, is_pinned,
                cta_link, cta_label, hosted_on_hirevy, offer_tier,
                provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
       .eq("provider_id", prof.id)
@@ -467,11 +468,8 @@ export default function Profile() {
 
 function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
   const href = `/@${offer.provider.username}/${offer.slug}`;
-  const price = offer.free_for_testimonial
-    ? "FREE · Testimonial"
-    : offer.price_cents == null
-      ? ""
-      : `$${(offer.price_cents / 100).toLocaleString()}`;
+  const price = formatOfferPrice(offer);
+  const muted = isContactPricing(offer);
   return (
     <Link
       to={href}
@@ -489,7 +487,7 @@ function FeaturedOfferCard({ offer }: { offer: OfferRow }) {
       </div>
       <div className="flex flex-1 flex-col justify-center gap-3 p-5 md:p-7">
         <h3 className="font-display text-2xl font-bold leading-tight md:text-3xl">{offer.title}</h3>
-        <p className="font-display text-lg font-semibold text-primary">{price}</p>
+        <p className={muted ? "font-display text-base italic text-primary/80" : "font-display text-lg font-semibold text-primary"}>{price}</p>
         <span className="mt-2 inline-flex w-fit items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground group-hover:text-primary">
           View offer →
         </span>

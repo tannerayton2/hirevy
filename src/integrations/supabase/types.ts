@@ -313,6 +313,8 @@ export type Database = {
           offer_tier: string | null
           outbound_click_count: number
           price_cents: number | null
+          price_max_cents: number | null
+          pricing_model: string
           priority: number
           provider_id: string
           secondary_link: string | null
@@ -338,6 +340,8 @@ export type Database = {
           offer_tier?: string | null
           outbound_click_count?: number
           price_cents?: number | null
+          price_max_cents?: number | null
+          pricing_model?: string
           priority?: number
           provider_id: string
           secondary_link?: string | null
@@ -363,6 +367,8 @@ export type Database = {
           offer_tier?: string | null
           outbound_click_count?: number
           price_cents?: number | null
+          price_max_cents?: number | null
+          pricing_model?: string
           priority?: number
           provider_id?: string
           secondary_link?: string | null
