@@ -562,6 +562,15 @@ export default function Profile() {
           onSaved={loadAll}
         />
       )}
+
+      {profile && !profile.is_claimed && (
+        <ClaimProfileModal
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          profileId={profile.id}
+          providerDisplayName={profile.username}
+        />
+      )}
     </div>
     </TooltipProvider>
   );
