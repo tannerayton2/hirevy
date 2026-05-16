@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProviderReply } from "./ProviderReply";
 import { ReviewCompletenessShield } from "./ReviewCompletenessShield";
+import { ExpandableReviewText } from "./ExpandableReviewText";
 import { amountLabel, dateRangeLabel, engagementLabel } from "@/lib/proofReviews";
 import { AlertTriangle, FileSearch, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
