@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StarRatingProps {
-  value: number; // 0..5
+  value: number; // 0..5, supports 0.5 increments
   size?: number;
   className?: string;
   showValue?: boolean;
@@ -18,16 +18,25 @@ export function StarRating({ value, size = 14, className, showValue = false, cou
           const filled = rounded >= i;
           const half = !filled && rounded >= i - 0.5;
           return (
-            <Star
+            <span
               key={i}
-              size={size}
-              className={cn(
-                "shrink-0",
-                filled || half ? "fill-primary text-primary" : "text-muted-foreground/40",
+              className="relative inline-block shrink-0"
+              style={{ width: size, height: size }}
+            >
+              <Star
+                size={size}
+                className="absolute inset-0 text-muted-foreground/40"
+                strokeWidth={1.5}
+              />
+              {(filled || half) && (
+                <Star
+                  size={size}
+                  className="absolute inset-0 fill-primary text-primary"
+                  strokeWidth={1.5}
+                  style={half ? { clipPath: "inset(0 50% 0 0)" } : undefined}
+                />
               )}
-              strokeWidth={1.5}
-              style={half ? { clipPath: "inset(0 50% 0 0)" } : undefined}
-            />
+            </span>
           );
         })}
       </span>
