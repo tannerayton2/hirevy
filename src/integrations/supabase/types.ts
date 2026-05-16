@@ -130,6 +130,24 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -666,6 +684,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      unclaimed_reviews: {
+        Row: {
+          amount_paid_bracket: string | null
+          body: string
+          coach_name: string
+          created_at: string
+          evidence_paths: string[]
+          id: string
+          instagram_handle: string | null
+          offer_url: string | null
+          purchased: boolean
+          rating: number
+          reviewer_email: string
+          strength_tier: string
+        }
+        Insert: {
+          amount_paid_bracket?: string | null
+          body: string
+          coach_name: string
+          created_at?: string
+          evidence_paths?: string[]
+          id?: string
+          instagram_handle?: string | null
+          offer_url?: string | null
+          purchased?: boolean
+          rating: number
+          reviewer_email: string
+          strength_tier?: string
+        }
+        Update: {
+          amount_paid_bracket?: string | null
+          body?: string
+          coach_name?: string
+          created_at?: string
+          evidence_paths?: string[]
+          id?: string
+          instagram_handle?: string | null
+          offer_url?: string | null
+          purchased?: boolean
+          rating?: number
+          reviewer_email?: string
+          strength_tier?: string
+        }
+        Relationships: []
       }
     }
     Views: {
