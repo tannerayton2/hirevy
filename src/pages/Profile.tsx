@@ -202,10 +202,12 @@ export default function Profile() {
     return [...v, ...p];
   }, [reviews, proofReviews, pinnedReview]);
 
-  const visibleReviews = useMemo(
-    () => sortUnified(filterReviews(unifiedReviews, reviewsFilter), reviewsSort),
-    [unifiedReviews, reviewsFilter, reviewsSort],
-  );
+  const visibleReviews = useMemo(() => {
+    const base = verifiedPurchasesOnly
+      ? unifiedReviews.filter((u) => u.kind === "proof" && u.data.engagement_type === "paid_offer")
+      : unifiedReviews;
+    return sortUnified(base, reviewsSort);
+  }, [unifiedReviews, verifiedPurchasesOnly, reviewsSort]);
   const totalReviewsCount = reviews.length + proofReviews.length;
 
   // Category chips: service_category + up to 3 distinct offer categories
