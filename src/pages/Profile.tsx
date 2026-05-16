@@ -490,7 +490,7 @@ export default function Profile() {
                     <ReviewCompletenessShield score={pinnedReview.completeness_score ?? 0} />
                   </div>
                 </div>
-                <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
+                <ExpandableReviewText text={pinnedReview.body} className="text-[15px] leading-relaxed text-foreground/95" />
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                     {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
