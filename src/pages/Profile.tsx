@@ -341,51 +341,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Offers — toggle to expand */}
-      {(totalOffers > 0 || isMe) && (
-        <section className="mt-8">
-          <Collapsible open={offersOpen} onOpenChange={setOffersOpen}>
-            <div className="flex flex-wrap items-center gap-2">
-              {totalOffers > 0 && (
-                <CollapsibleTrigger asChild>
-                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
-                    {offersOpen ? "Hide offers" : `View offers (${totalOffers})`}
-                    <ChevronDown
-                      className={`ml-1 h-4 w-4 transition-transform duration-200 ${offersOpen ? "rotate-180" : ""}`}
-                    />
-                  </Button>
-                </CollapsibleTrigger>
-              )}
-              {isMe && totalOffers > 0 && (
-                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
-                  <Link to="/settings/offers/new"><Plus className="mr-1 h-3.5 w-3.5" /> Create offer</Link>
-                </Button>
-              )}
-              {totalOffers > 0 && (
-                <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
-                  <Link to={`/@${profile.username}/offers`}>Open as page →</Link>
-                </Button>
-              )}
-              {isMe && totalOffers === 0 && (
-                <Button asChild>
-                  <Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create your first offer</Link>
-                </Button>
-              )}
-            </div>
-            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-              <div className="mt-5">
-                <OffersPanel
-                  offers={offers as PanelOfferRow[]}
-                  isOwner={isMe}
-                  onChanged={loadAll}
-                  tabParamKey="offerstab"
-                  referrer="profile"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </section>
-      )}
+
 
       {/* Reviews — tabbed interface */}
       <section className="mt-8">
