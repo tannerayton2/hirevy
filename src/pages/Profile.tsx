@@ -13,6 +13,7 @@ import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofRev
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
