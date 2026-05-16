@@ -22,7 +22,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
-type TabKey = "verified" | "proof-backed" | "imported";
+type TabKey = "reviews" | "imported";
 
 interface ProfileFull {
   id: string;
@@ -46,15 +46,30 @@ interface Review {
   rating: number;
   body: string;
   created_at: string;
+  completeness_score: number;
 }
 
-type SortKey = "newest" | "highest" | "lowest";
+type SortKey = "newest" | "highest" | "lowest" | "complete";
+type FilterKey = "all" | "partial" | "strong";
 
-function sortReviews<T extends { created_at: string; rating: number }>(items: T[], key: SortKey): T[] {
+type UnifiedReview =
+  | { kind: "verified"; id: string; created_at: string; rating: number; score: number; data: Review }
+  | { kind: "proof"; id: string; created_at: string; rating: number; score: number; data: ProofReview };
+
+function filterReviews(items: UnifiedReview[], f: FilterKey): UnifiedReview[] {
+  if (f === "partial") return items.filter((r) => r.score >= 34);
+  if (f === "strong") return items.filter((r) => r.score >= 67);
+  return items;
+}
+
+function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   const out = [...items];
-  if (key === "newest") out.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  if (key === "highest") out.sort((a, b) => b.rating - a.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const byDate = (a: UnifiedReview, b: UnifiedReview) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  if (key === "newest") out.sort(byDate);
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDate(a, b));
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDate(a, b));
+  if (key === "complete") out.sort((a, b) => b.score - a.score || byDate(a, b));
   return out;
 }
 
