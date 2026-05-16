@@ -9,6 +9,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProviderReply } from "./ProviderReply";
+import { ReviewValidityBar } from "./ReviewValidityBar";
 import { amountLabel, dateRangeLabel, engagementLabel } from "@/lib/proofReviews";
 import { AlertTriangle, FileSearch, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export interface ProofReview {
   proof_file_count: number;
   is_disputed: boolean;
   created_at: string;
+  completeness_score?: number;
 }
 
 interface Props {
