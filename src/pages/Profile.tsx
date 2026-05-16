@@ -310,7 +310,7 @@ export default function Profile() {
             <>
               <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
               <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
-              <Button asChild><Link to="/settings/offers/new"><Plus className="mr-1.5 h-4 w-4" /> Create offer</Link></Button>
+              
             </>
           ) : (
             <>
