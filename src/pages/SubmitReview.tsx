@@ -358,6 +358,7 @@ export default function SubmitReview() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         tier={tier}
+        score={completenessScore}
         saving={saving}
         onSubmit={doSubmit}
       />
