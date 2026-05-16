@@ -144,7 +144,7 @@ export default function Profile() {
   const tier = profile ? tierForReviewCount(profile.review_count) : "unranked";
   const avg = profile && profile.review_count > 0 ? profile.rating_sum / profile.review_count : 0;
 
-  const totalOffers = offers.length;
+  
 
   const pinnedReview = profile?.pinned_review_id
     ? reviews.find((r) => r.id === profile.pinned_review_id) ?? null
