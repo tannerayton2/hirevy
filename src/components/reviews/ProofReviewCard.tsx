@@ -118,8 +118,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
   };
 
   return (
-    <article className="relative rounded-md border border-border bg-card p-4 pl-5">
-      <ReviewValidityBar score={review.completeness_score ?? 0} />
+    <article className="relative rounded-md border border-border bg-card p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-semibold">{review.reviewer_name}</p>
@@ -129,7 +128,10 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
             </span>
           )}
         </div>
-        <StarRating value={review.rating} size={14} />
+        <div className="flex items-center gap-2">
+          <StarRating value={review.rating} size={14} />
+          <ReviewCompletenessShield score={review.completeness_score ?? 0} />
+        </div>
       </div>
 
       <p className="whitespace-pre-line text-sm text-muted-foreground">{review.body}</p>
