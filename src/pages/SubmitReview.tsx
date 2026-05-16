@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Upload, X, ShieldCheck, BadgeCheck, Check } from "lucide-react";
+import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +23,18 @@ const AMOUNT_BRACKETS = [
   "Over $5,000",
 ];
 
+const CATEGORIES = [
+  "Business Coaching",
+  "Sales",
+  "Copywriting",
+  "Fitness & Health",
+  "Mindset",
+  "Marketing",
+  "Finance",
+  "Life Coaching",
+  "Other",
+];
+
 type Tier = "basic" | "verified" | "evidenced";
 
 function computeTier(purchased: boolean, fileCount: number): Tier {
@@ -28,14 +43,23 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
   return "basic";
 }
 
+const MIN_BODY = 150;
+
 export default function SubmitReview() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const prefilledCoach = params.get("coach") ?? "";
 
   const [coachName, setCoachName] = useState(prefilledCoach);
+  const [category, setCategory] = useState<string>("");
+  const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [linkedin, setLinkedin] = useState("");
   const [offerUrl, setOfferUrl] = useState("");
+  const [showMoreProfile, setShowMoreProfile] = useState(false);
+
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [body, setBody] = useState("");
@@ -44,6 +68,7 @@ export default function SubmitReview() {
   const [files, setFiles] = useState<File[]>([]);
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const tier = useMemo(() => computeTier(purchased, files.length), [purchased, files.length]);
 
@@ -55,16 +80,23 @@ export default function SubmitReview() {
   };
   const removeFile = (i: number) => setFiles(files.filter((_, idx) => idx !== i));
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!coachName.trim()) return toast({ title: "Coach name required", variant: "destructive" });
-    if (rating < 1) return toast({ title: "Pick a star rating", variant: "destructive" });
-    if (body.trim().length < 50) return toast({ title: "Review must be at least 50 characters", variant: "destructive" });
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return toast({ title: "Enter a valid email", variant: "destructive" });
+  const validate = () => {
+    if (!coachName.trim()) { toast({ title: "Coach name required", variant: "destructive" }); return false; }
+    if (rating < 1) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
+    if (body.trim().length < MIN_BODY) { toast({ title: `Review must be at least ${MIN_BODY} characters`, variant: "destructive" }); return false; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast({ title: "Enter a valid email", variant: "destructive" }); return false; }
+    return true;
+  };
 
+  const onClickSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setConfirmOpen(true);
+  };
+
+  const doSubmit = async () => {
     setSaving(true);
     try {
-      // Upload evidence
       const paths: string[] = [];
       for (const f of files) {
         const ext = f.name.split(".").pop()?.toLowerCase() || "bin";
@@ -76,12 +108,23 @@ export default function SubmitReview() {
         paths.push(path);
       }
 
+      // Embed extra profile info into body as a single trailing block (schema unchanged)
+      const extras: string[] = [];
+      if (category) extras.push(`Category: ${category}`);
+      if (website.trim()) extras.push(`Website: ${website.trim()}`);
+      if (twitter.trim()) extras.push(`Twitter/X: ${twitter.trim()}`);
+      if (youtube.trim()) extras.push(`YouTube: ${youtube.trim()}`);
+      if (linkedin.trim()) extras.push(`LinkedIn: ${linkedin.trim()}`);
+      const composedBody = extras.length
+        ? `${body.trim()}\n\n---\n${extras.join("\n")}`
+        : body.trim();
+
       const { error } = await supabase.from("unclaimed_reviews").insert({
         coach_name: coachName.trim().slice(0, 120),
         instagram_handle: instagram.trim() || null,
         offer_url: offerUrl.trim() || null,
         rating,
-        body: body.trim(),
+        body: composedBody,
         purchased,
         amount_paid_bracket: purchased && amount ? amount : null,
         evidence_paths: paths,
@@ -91,6 +134,7 @@ export default function SubmitReview() {
       if (error) throw error;
 
       toast({ title: "Review submitted", description: "Thanks — your review is live." });
+      setConfirmOpen(false);
       navigate("/explore");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
@@ -100,150 +144,236 @@ export default function SubmitReview() {
     }
   };
 
+  const counterReached = body.length >= MIN_BODY;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Public review</p>
         <h1 className="mt-2 font-display text-2xl font-bold md:text-3xl">Review a coach</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Share your honest experience. Reviews appear publicly on the coach's HireVy profile.
-        </p>
       </div>
 
-      <form onSubmit={submit} className="space-y-5">
-        <Field label="Coach or provider name" required>
-          <Input value={coachName} onChange={(e) => setCoachName(e.target.value)} required maxLength={120} />
-        </Field>
+      <form onSubmit={onClickSubmit} className="space-y-8">
+        {/* SECTION 1 */}
+        <section className="space-y-5">
+          <header>
+            <h2 className="font-display text-lg font-semibold">Who are you reviewing?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Help us build their profile. Add as much as you know.</p>
+          </header>
 
-        <Field label="Their Instagram handle">
-          <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@theirhandle" />
-        </Field>
+          <Field label="Coach or provider name" required>
+            <Input value={coachName} onChange={(e) => setCoachName(e.target.value)} required maxLength={120} />
+          </Field>
 
-        <Field label="Link to the specific offer or program you purchased">
-          <Input type="url" value={offerUrl} onChange={(e) => setOfferUrl(e.target.value)} placeholder="https://theirwebsite.com/offer" />
-        </Field>
+          <Field label="Their primary category">
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="h-10"><SelectValue placeholder="Select a category (optional)" /></SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Field>
 
-        <Field label="Star rating" required>
-          <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
-            {[1, 2, 3, 4, 5].map((i) => {
-              const display = hoverRating || rating;
-              const filled = display >= i;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setRating(i)}
-                  onMouseEnter={() => setHoverRating(i)}
-                  aria-label={`${i} star${i === 1 ? "" : "s"}`}
-                  className="rounded p-1 transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={cn("h-9 w-9", filled ? "fill-primary text-primary" : "text-muted-foreground/40")}
-                    strokeWidth={1.5}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </Field>
-
-        <Field label="Written review" required hint={`${body.length}/50 min`}>
-          <Textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Describe your experience honestly. What did you get? What were the results? Would you recommend it?"
-            rows={6}
-            required
-            minLength={50}
-            maxLength={4000}
-          />
-        </Field>
-
-        <div className="rounded-md border border-border bg-card/50 p-4">
-          <label className="flex cursor-pointer items-start gap-3">
-            <Checkbox checked={purchased} onCheckedChange={(v) => setPurchased(!!v)} className="mt-0.5" />
-            <span className="text-sm">I purchased from this coach or bought their program</span>
-          </label>
-          {purchased && (
-            <div className="mt-4">
-              <p className="mb-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground">Approximate amount paid</p>
-              <Select value={amount} onValueChange={setAmount}>
-                <SelectTrigger className="h-10"><SelectValue placeholder="Select bracket (optional)" /></SelectTrigger>
-                <SelectContent>
-                  {AMOUNT_BRACKETS.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                </SelectContent>
-              </Select>
+          {!showMoreProfile ? (
+            <button
+              type="button"
+              onClick={() => setShowMoreProfile(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:text-primary/80"
+            >
+              <ChevronDown className="h-3.5 w-3.5" /> Add more profile info (optional)
+            </button>
+          ) : (
+            <div className="space-y-5">
+              <Field label="Their website URL">
+                <Input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://theirwebsite.com" />
+              </Field>
+              <Field label="Their Instagram handle">
+                <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@theirhandle" />
+              </Field>
+              <Field label="Their Twitter/X handle">
+                <Input value={twitter} onChange={(e) => setTwitter(e.target.value)} placeholder="@theirhandle" />
+              </Field>
+              <Field label="Their YouTube channel URL">
+                <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="https://youtube.com/@theirchannel" />
+              </Field>
+              <Field label="Their LinkedIn URL">
+                <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/theirprofile" />
+              </Field>
+              <Field label="Link to the specific offer or program you purchased">
+                <Input type="url" value={offerUrl} onChange={(e) => setOfferUrl(e.target.value)} placeholder="https://theirwebsite.com/offer — the exact program you bought" />
+              </Field>
             </div>
           )}
-        </div>
+        </section>
 
-        <Field label="Upload evidence (optional)" hint={`${files.length}/3`}>
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors hover:border-primary/40">
-            <Upload className="h-5 w-5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              Add receipts, screenshots of results, or proof of purchase (optional)
-            </span>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={onPickFiles}
-              disabled={files.length >= 3}
-            />
-          </label>
-          {files.length > 0 && (
-            <ul className="mt-2 space-y-1.5">
-              {files.map((f, i) => (
-                <li key={i} className="flex items-center justify-between gap-2 rounded border border-border bg-card/50 px-2.5 py-1.5 text-xs">
-                  <span className="truncate">{f.name}</span>
-                  <button type="button" onClick={() => removeFile(i)} aria-label="Remove">
-                    <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+        <div className="h-px w-full bg-border" />
+
+        {/* SECTION 2 */}
+        <section className="space-y-5">
+          <header>
+            <h2 className="font-display text-lg font-semibold">Your experience</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Be honest. Be specific. Other buyers are counting on you.</p>
+          </header>
+
+          <Field label="Star rating" required>
+            <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+              {[1, 2, 3, 4, 5].map((i) => {
+                const display = hoverRating || rating;
+                const filled = display >= i;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setRating(i)}
+                    onMouseEnter={() => setHoverRating(i)}
+                    aria-label={`${i} star${i === 1 ? "" : "s"}`}
+                    className="rounded p-1 transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={cn("h-9 w-9", filled ? "fill-primary text-primary" : "text-muted-foreground/40")}
+                      strokeWidth={1.5}
+                    />
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Field>
+                );
+              })}
+            </div>
+          </Field>
 
-        <Field label="Your email address" required>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
-        </Field>
+          <Field
+            label="Written review"
+            required
+            hint={
+              <span className={cn(counterReached ? "text-primary" : "text-muted-foreground/70")}>
+                {body.length}/{MIN_BODY} min
+              </span>
+            }
+          >
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="What did you sign up for? What did you actually get? What were the results? Would you recommend this coach and why or why not?"
+              rows={7}
+              required
+              minLength={MIN_BODY}
+              maxLength={4000}
+            />
+          </Field>
+
+          <div className="rounded-md border border-border bg-card/50 p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <Checkbox checked={purchased} onCheckedChange={(v) => setPurchased(!!v)} className="mt-0.5" />
+              <span className="text-sm">I purchased from this coach or bought their program</span>
+            </label>
+            {purchased && (
+              <div className="mt-4">
+                <p className="mb-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground">Approximate amount paid</p>
+                <Select value={amount} onValueChange={setAmount}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Select bracket (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    {AMOUNT_BRACKETS.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          <Field label="Upload evidence (optional)" hint={`${files.length}/3`}>
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors hover:border-primary/40">
+              <Upload className="h-5 w-5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Add receipts, screenshots of results, or proof of purchase
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={onPickFiles}
+                disabled={files.length >= 3}
+              />
+            </label>
+            {files.length > 0 && (
+              <ul className="mt-2 space-y-1.5">
+                {files.map((f, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 rounded border border-border bg-card/50 px-2.5 py-1.5 text-xs">
+                    <span className="truncate">{f.name}</span>
+                    <button type="button" onClick={() => removeFile(i)} aria-label="Remove">
+                      <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Field>
+
+          <Field label="Your email address" required>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+            <p className="mt-1 text-xs text-muted-foreground">Used only to verify your review. Never shown publicly.</p>
+          </Field>
+        </section>
 
         <StrengthCard tier={tier} />
 
-        <Button type="submit" disabled={saving} className="h-12 w-full text-sm font-semibold">
-          {saving ? "Submitting…" : "Submit Review"}
+        <Button type="submit" className="h-12 w-full text-sm font-semibold">
+          Submit Review
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           Your review will be posted publicly on the coach's HireVy profile.
         </p>
       </form>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        tier={tier}
+        saving={saving}
+        onSubmit={doSubmit}
+      />
     </div>
   );
 }
 
-function Field({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: React.ReactNode }) {
+function Field({ label, required, hint, children }: { label: string; required?: boolean; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
         <label className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {label} {required && <span className="text-primary">*</span>}
         </label>
-        {hint && <span className="text-[10px] text-muted-foreground/70">{hint}</span>}
+        {hint && <span className="text-[10px]">{hint}</span>}
       </div>
       {children}
     </div>
   );
 }
 
+const TIER_META: Record<Tier, { label: string; desc: string; icon: React.ReactNode; badge: string; motivation: string }> = {
+  basic: {
+    label: "Basic",
+    desc: "Comment only, no purchase confirmation",
+    icon: <Check className="h-3.5 w-3.5" />,
+    badge: "bg-muted text-muted-foreground",
+    motivation: "Adding purchase confirmation or evidence makes your review more trustworthy to buyers.",
+  },
+  verified: {
+    label: "Verified",
+    desc: "Purchase confirmed via checkbox",
+    icon: <BadgeCheck className="h-3.5 w-3.5" />,
+    badge: "bg-primary/15 text-primary ring-1 ring-primary/30",
+    motivation: "Great — purchase confirmed. Adding evidence would make this a top-tier review.",
+  },
+  evidenced: {
+    label: "Evidenced",
+    desc: "Purchase confirmed + at least one photo or file uploaded",
+    icon: <ShieldCheck className="h-3.5 w-3.5" />,
+    badge: "bg-primary/15 text-primary ring-1 ring-primary/30",
+    motivation: "This is a high-trust review. Thank you for the detail.",
+  },
+};
+
 function StrengthCard({ tier }: { tier: Tier }) {
-  const tiers: { id: Tier; label: string; desc: string; icon: React.ReactNode; badge: string }[] = [
-    { id: "basic", label: "Basic", desc: "Comment only, no purchase confirmation", icon: <Check className="h-3.5 w-3.5" />, badge: "bg-muted text-muted-foreground" },
-    { id: "verified", label: "Verified", desc: "Purchase confirmed via checkbox", icon: <BadgeCheck className="h-3.5 w-3.5" />, badge: "bg-primary/15 text-primary ring-1 ring-primary/30" },
-    { id: "evidenced", label: "Evidenced", desc: "Purchase confirmed + at least one photo or file uploaded", icon: <ShieldCheck className="h-3.5 w-3.5" />, badge: "bg-primary/15 text-primary ring-1 ring-primary/30" },
-  ];
-  const active = tiers.find((t) => t.id === tier)!;
+  const tiers: Tier[] = ["basic", "verified", "evidenced"];
+  const active = TIER_META[tier];
   return (
     <div className="rounded-md border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -253,15 +383,64 @@ function StrengthCard({ tier }: { tier: Tier }) {
         </span>
       </div>
       <ul className="space-y-2">
-        {tiers.map((t) => (
-          <li key={t.id} className={cn("flex items-start gap-2.5 text-xs", t.id === tier ? "text-foreground" : "text-muted-foreground/70")}>
-            <span className={cn("mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full", t.id === tier ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>
-              {t.icon}
-            </span>
-            <span><span className="font-semibold">{t.label}</span> — {t.desc}</span>
-          </li>
-        ))}
+        {tiers.map((id) => {
+          const t = TIER_META[id];
+          const isActive = id === tier;
+          return (
+            <li key={id} className={cn("flex items-start gap-2.5 text-xs", isActive ? "text-foreground" : "text-muted-foreground/70")}>
+              <span className={cn("mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full", isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>
+                {t.icon}
+              </span>
+              <span><span className="font-semibold">{t.label}</span> — {t.desc}</span>
+            </li>
+          );
+        })}
       </ul>
     </div>
+  );
+}
+
+function ConfirmModal({
+  open, onOpenChange, tier, saving, onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tier: Tier;
+  saving: boolean;
+  onSubmit: () => void;
+}) {
+  const meta = TIER_META[tier];
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display text-xl">Your review strength</DialogTitle>
+          <DialogDescription className="sr-only">Confirm your review submission</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col items-center gap-3 py-2 text-center">
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
+            {meta.icon} {meta.label}
+          </span>
+          <p className="text-sm text-muted-foreground">{meta.desc}</p>
+          <p className="text-sm text-foreground/90">{meta.motivation}</p>
+        </div>
+
+        <div className="mt-2 flex flex-col gap-2">
+          <Button onClick={onSubmit} disabled={saving} className="h-11 w-full text-sm font-semibold">
+            {saving ? "Submitting…" : "Submit Review"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
+            className="h-9 w-full text-xs"
+          >
+            Go back and add more
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
