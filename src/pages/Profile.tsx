@@ -486,11 +486,13 @@ export default function Profile() {
             ) : (
               <div className="space-y-3">
                 {visibleReviews.map((u) => u.kind === "verified" ? (
-                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4 pl-5">
-                    <ReviewValidityBar score={u.score} />
+                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <p className="font-semibold">{u.data.reviewer_name}</p>
-                      <StarRating value={u.data.rating} size={14} />
+                      <div className="flex items-center gap-2">
+                        <StarRating value={u.data.rating} size={14} />
+                        <ReviewCompletenessShield score={u.score} />
+                      </div>
                     </div>
                     <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
                     <div className="mt-2 flex items-center justify-between">
