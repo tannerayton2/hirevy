@@ -526,7 +526,7 @@ export default function Profile() {
                         <ReviewCompletenessShield score={u.score} />
                       </div>
                     </div>
-                    <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
+                    <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                         {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
