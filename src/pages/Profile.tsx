@@ -56,7 +56,7 @@ function sortReviews<T extends { created_at: string; rating: number }>(items: T[
   return out;
 }
 
-type OfferRow = OfferCardData & { is_pinned?: boolean };
+type OfferRow = { id: string; category: string; is_pinned?: boolean };
 
 export default function Profile() {
   const { username = "" } = useParams();
