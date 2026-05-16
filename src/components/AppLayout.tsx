@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Compass, MessageSquare, User, LogIn, ShieldAlert } from "lucide-react";
+import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -20,11 +20,23 @@ function UnreadBadge({ count }: { count: number }) {
   );
 }
 
-type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean };
+function SoonPill() {
+  return (
+    <span
+      aria-label="Coming soon"
+      className="absolute -right-3 -top-2 rounded-full bg-primary/15 px-1.5 py-px text-[8px] font-semibold uppercase tracking-[0.14em] text-primary ring-1 ring-primary/30"
+    >
+      Soon
+    </span>
+  );
+}
+
+type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean; soon?: boolean };
 
 const baseItems: NavItem[] = [
-  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
   { to: "/explore", icon: Compass, label: "Explore", end: true },
+  { to: "/marketplace", icon: Store, label: "Marketplace", soon: true },
+  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
@@ -41,6 +53,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   });
   const profilePath = profile?.username ? `/@${profile.username}` : "/me";
   const mobileCols =
+    items.length === 5 ? "grid-cols-5" :
     items.length === 4 ? "grid-cols-4" :
     items.length === 3 ? "grid-cols-3" :
     items.length === 2 ? "grid-cols-2" : "grid-cols-1";
@@ -89,6 +102,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <span className="relative inline-flex">
                     <item.icon className="h-4 w-4" />
                     {item.to === "/messages" && <UnreadBadge count={unread} />}
+                    {item.soon && <SoonPill />}
                     {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
                   </span>
                   {item.label}
@@ -123,6 +137,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <span className="relative inline-flex">
                 <item.icon className="h-5 w-5" strokeWidth={1.5} />
                 {item.to === "/messages" && <UnreadBadge count={unread} />}
+                {item.soon && <SoonPill />}
                 {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
               </span>
               {item.label}

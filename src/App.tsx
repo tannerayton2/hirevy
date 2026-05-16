@@ -21,6 +21,8 @@ import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
 import ProfileOffers from "./pages/ProfileOffers.tsx";
+import Marketplace from "./pages/Marketplace.tsx";
+import SubmitReview from "./pages/SubmitReview.tsx";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +36,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/explore" element={<Index />} />
+            <Route path="/marketplace" element={<AppLayout><Marketplace /></AppLayout>} />
+            <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
+
 
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/out/:offerId" element={<OutboundRedirect />} />
