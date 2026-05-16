@@ -20,8 +20,10 @@ import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ImportedTestimonial } from "@/lib/importedTestimonials";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Check, Filter as FilterIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type TabKey = "reviews" | "imported";
 
