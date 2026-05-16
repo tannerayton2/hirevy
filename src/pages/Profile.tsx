@@ -12,6 +12,7 @@ import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
+import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
@@ -22,7 +23,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
-type TabKey = "verified" | "proof-backed" | "imported";
+type TabKey = "reviews" | "imported";
 
 interface ProfileFull {
   id: string;
@@ -46,15 +47,30 @@ interface Review {
   rating: number;
   body: string;
   created_at: string;
+  completeness_score: number;
 }
 
-type SortKey = "newest" | "highest" | "lowest";
+type SortKey = "newest" | "highest" | "lowest" | "complete";
+type FilterKey = "all" | "partial" | "strong";
 
-function sortReviews<T extends { created_at: string; rating: number }>(items: T[], key: SortKey): T[] {
+type UnifiedReview =
+  | { kind: "verified"; id: string; created_at: string; rating: number; score: number; data: Review }
+  | { kind: "proof"; id: string; created_at: string; rating: number; score: number; data: ProofReview };
+
+function filterReviews(items: UnifiedReview[], f: FilterKey): UnifiedReview[] {
+  if (f === "partial") return items.filter((r) => r.score >= 34);
+  if (f === "strong") return items.filter((r) => r.score >= 67);
+  return items;
+}
+
+function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   const out = [...items];
-  if (key === "newest") out.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  if (key === "highest") out.sort((a, b) => b.rating - a.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const byDate = (a: UnifiedReview, b: UnifiedReview) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  if (key === "newest") out.sort(byDate);
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDate(a, b));
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDate(a, b));
+  if (key === "complete") out.sort((a, b) => b.score - a.score || byDate(a, b));
   return out;
 }
 
@@ -69,8 +85,8 @@ export default function Profile() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
-  const [verifiedSort, setVerifiedSort] = useState<SortKey>("newest");
-  const [proofSort, setProofSort] = useState<SortKey>("newest");
+  const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
+  const [reviewsFilter, setReviewsFilter] = useState<FilterKey>("all");
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
@@ -80,12 +96,11 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey =
-    tabParam === "proof-backed" ? "proof-backed" :
-    tabParam === "imported" ? "imported" : "verified";
+  const activeTab: TabKey = tabParam === "imported" ? "imported" : "reviews";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
-    next.set("tab", t);
+    if (t === "reviews") next.delete("tab");
+    else next.set("tab", t);
     setSearchParams(next, { replace: true });
   };
 
@@ -152,11 +167,35 @@ export default function Profile() {
   const pinnedReview = profile?.pinned_review_id
     ? reviews.find((r) => r.id === profile.pinned_review_id) ?? null
     : null;
-  const sortedVerified = useMemo(() => {
-    const list = pinnedReview ? reviews.filter((r) => r.id !== pinnedReview.id) : reviews;
-    return sortReviews(list, verifiedSort);
-  }, [reviews, verifiedSort, pinnedReview]);
-  const sortedProof = useMemo(() => sortReviews(proofReviews, proofSort), [proofReviews, proofSort]);
+
+  // Unified reviews feed = verified + proof-backed (no data deleted)
+  const unifiedReviews = useMemo<UnifiedReview[]>(() => {
+    const v: UnifiedReview[] = reviews
+      .filter((r) => !pinnedReview || r.id !== pinnedReview.id)
+      .map((r) => ({
+        kind: "verified" as const,
+        id: r.id,
+        created_at: r.created_at,
+        rating: r.rating,
+        score: r.completeness_score ?? 0,
+        data: r,
+      }));
+    const p: UnifiedReview[] = proofReviews.map((r) => ({
+      kind: "proof" as const,
+      id: r.id,
+      created_at: r.created_at,
+      rating: r.rating,
+      score: r.completeness_score ?? 0,
+      data: r,
+    }));
+    return [...v, ...p];
+  }, [reviews, proofReviews, pinnedReview]);
+
+  const visibleReviews = useMemo(
+    () => sortUnified(filterReviews(unifiedReviews, reviewsFilter), reviewsSort),
+    [unifiedReviews, reviewsFilter, reviewsSort],
+  );
+  const totalReviewsCount = reviews.length + proofReviews.length;
 
   // Category chips: service_category + up to 3 distinct offer categories
   const categoryChips = useMemo(() => {
@@ -343,27 +382,71 @@ export default function Profile() {
 
 
 
-      {/* Reviews — tabbed interface */}
+      {/* Reviews / Imported — two-section layout */}
       <section className="mt-8">
         {/* Tab strip */}
-        <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+        <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
           <div className="flex min-w-max items-center gap-1">
-            <TabButton active={activeTab === "verified"} onClick={() => setActiveTab("verified")} count={profile.review_count} label="Verified" />
-            <TabButton active={activeTab === "proof-backed"} onClick={() => setActiveTab("proof-backed")} count={proofReviews.length} label="Proof-Backed" />
+            <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount} label="Reviews" />
             <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
         </div>
 
-        {/* Verified */}
-        {activeTab === "verified" && (
+        {/* Reviews (verified + proof-backed merged) */}
+        {activeTab === "reviews" && (
           <div>
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
-              {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
+                Reviews
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="About reviews">
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                    <p>Reviews from clients invited by the provider and from anyone who submitted proof of working with them. Each review's left bar shows its completeness.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h2>
+              {!isMe && user && user.id !== profile.id && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/r/${profile.username}/proof`}>Leave a review</Link>
+                </Button>
+              )}
+              {!user && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+                </Button>
+              )}
             </div>
 
+            {/* Sort + filter bar */}
+            {(unifiedReviews.length > 0 || pinnedReview) && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <Select value={reviewsSort} onValueChange={(v) => setReviewsSort(v as SortKey)}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Most Recent</SelectItem>
+                    <SelectItem value="highest">Highest Rated</SelectItem>
+                    <SelectItem value="complete">Most Complete</SelectItem>
+                    <SelectItem value="lowest">Lowest Rated</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={reviewsFilter} onValueChange={(v) => setReviewsFilter(v as FilterKey)}>
+                  <SelectTrigger className="h-8 w-[180px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Reviews</SelectItem>
+                    <SelectItem value="partial">Partial and above</SelectItem>
+                    <SelectItem value="strong">Strong only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {pinnedReview && (
-              <article className="mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 pl-6 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+                <ReviewValidityBar score={pinnedReview.completeness_score ?? 0} />
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
@@ -394,88 +477,45 @@ export default function Profile() {
               </article>
             )}
 
-            {sortedVerified.length === 0 && !pinnedReview ? (
-              <Empty msg="No verified reviews yet." />
+            {visibleReviews.length === 0 && !pinnedReview ? (
+              <Empty msg="No reviews yet." />
+            ) : visibleReviews.length === 0 ? (
+              <Empty msg="No reviews match the current filter." />
             ) : (
               <div className="space-y-3">
-                {sortedVerified.map((r) => (
-                  <article key={r.id} className="rounded-md border border-border bg-card p-4">
+                {visibleReviews.map((u) => u.kind === "verified" ? (
+                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4 pl-5">
+                    <ReviewValidityBar score={u.score} />
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="font-semibold">{r.reviewer_name}</p>
-                      <StarRating value={r.rating} size={14} />
+                      <p className="font-semibold">{u.data.reviewer_name}</p>
+                      <StarRating value={u.data.rating} size={14} />
                     </div>
-                    <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
+                    <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                        {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                        {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                       </p>
                       {isMe && (
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(r.id)}>
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
                           <Pin className="mr-1 h-3 w-3" /> Pin this review
                         </Button>
                       )}
                     </div>
                     <ProviderReply
-                      reviewId={r.id}
+                      reviewId={u.id}
                       reviewType="verified"
                       providerId={profile.id}
                       providerDisplayName={providerDisplayName}
                       isProviderViewer={isMe}
                     />
                   </article>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Proof-Backed */}
-        {activeTab === "proof-backed" && (
-          <div>
-            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
-                Proof-Backed reviews
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="What's the difference?">
-                      <Info className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
-                    <p className="font-semibold mb-1">What's the difference?</p>
-                    <p>Verified Reviews come from clients invited by the provider. Proof-Backed Reviews can be left by anyone who uploads evidence of working with the provider. Both are visible; only verified reviews affect the tier badge and rating.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </h2>
-              <div className="flex items-center gap-2">
-                {!isMe && user && user.id !== profile.id && (
-                  <Button asChild size="sm">
-                    <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
-                  </Button>
-                )}
-                {!user && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-                  </Button>
-                )}
-                {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
-              </div>
-            </div>
-            <p className="mb-4 text-xs italic text-muted-foreground">
-              Independent reviews with uploaded evidence — unverified by HireVy but backed by documentation.
-            </p>
-            {sortedProof.length === 0 ? (
-              <Empty msg="No proof-backed reviews yet." />
-            ) : (
-              <div className="space-y-3">
-                {sortedProof.map((r) => (
-                  <div key={r.id} className="rounded-md border border-border bg-[hsl(220_15%_14%)]/50">
-                    <ProofReviewCard
-                      review={r}
-                      providerDisplayName={providerDisplayName}
-                      isProviderViewer={isMe}
-                    />
-                  </div>
+                ) : (
+                  <ProofReviewCard
+                    key={u.id}
+                    review={u.data}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
                 ))}
               </div>
             )}
@@ -485,8 +525,8 @@ export default function Profile() {
         {/* Imported */}
         {activeTab === "imported" && (
           <div>
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported testimonials</h2>
+            <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported</h2>
               {isMe && imported.length > 0 && (
                 <Button
                   size="sm"
@@ -498,6 +538,9 @@ export default function Profile() {
                 </Button>
               )}
             </div>
+            <p className="mb-4 text-xs text-muted-foreground/80">
+              These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
+            </p>
 
             {imported.length === 0 ? (
               isMe ? (

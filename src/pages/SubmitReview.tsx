@@ -14,6 +14,28 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+function computeCompletenessScore(opts: {
+  body: string;
+  purchased: boolean;
+  amountFilled: boolean;
+  offerFilled: boolean;
+  photoCount: number;
+}): number {
+  let s = 0;
+  if (opts.body && opts.body.trim().length > 0) s += 20;
+  if (opts.body && opts.body.length > 300) s += 20;
+  else if (opts.body && opts.body.length >= 100) s += 10;
+  if (opts.purchased) s += 25;
+  if (opts.amountFilled) s += 10;
+  if (opts.offerFilled) s += 10;
+  if (opts.photoCount >= 3) s += 10;
+  else if (opts.photoCount === 2) s += 8;
+  else if (opts.photoCount === 1) s += 5;
+  return Math.min(100, Math.max(0, s));
+}
 
 const AMOUNT_BRACKETS = [
   "Under $100",
@@ -69,6 +91,16 @@ export default function SubmitReview() {
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const completenessScore = useMemo(
+    () => computeCompletenessScore({
+      body, purchased,
+      amountFilled: !!(purchased && amount),
+      offerFilled: !!offerUrl.trim(),
+      photoCount: files.length,
+    }),
+    [body, purchased, amount, offerUrl, files.length],
+  );
 
   const tier = useMemo(() => computeTier(purchased, files.length), [purchased, files.length]);
 
@@ -326,6 +358,7 @@ export default function SubmitReview() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         tier={tier}
+        score={completenessScore}
         saving={saving}
         onSubmit={doSubmit}
       />
@@ -401,11 +434,12 @@ function StrengthCard({ tier }: { tier: Tier }) {
 }
 
 function ConfirmModal({
-  open, onOpenChange, tier, saving, onSubmit,
+  open, onOpenChange, tier, score, saving, onSubmit,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   tier: Tier;
+  score: number;
   saving: boolean;
   onSubmit: () => void;
 }) {
@@ -418,13 +452,18 @@ function ConfirmModal({
           <DialogDescription className="sr-only">Confirm your review submission</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-3 py-2 text-center">
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
-            {meta.icon} {meta.label}
-          </span>
-          <p className="text-sm text-muted-foreground">{meta.desc}</p>
-          <p className="text-sm text-foreground/90">{meta.motivation}</p>
-        </div>
+        <TooltipProvider delayDuration={150}>
+          <div className="relative rounded-md border border-border bg-card/60 p-4 pl-5">
+            <ReviewValidityBar score={score} />
+            <div className="flex flex-col items-center gap-3 py-2 text-center">
+              <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
+                {meta.icon} {meta.label}
+              </span>
+              <p className="text-sm text-muted-foreground">{meta.desc}</p>
+              <p className="text-sm text-foreground/90">{meta.motivation}</p>
+            </div>
+          </div>
+        </TooltipProvider>
 
         <div className="mt-2 flex flex-col gap-2">
           <Button onClick={onSubmit} disabled={saving} className="h-11 w-full text-sm font-semibold">

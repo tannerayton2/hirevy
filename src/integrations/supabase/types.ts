@@ -581,6 +581,7 @@ export type Database = {
         Row: {
           amount_paid_bracket: string | null
           body: string
+          completeness_score: number
           created_at: string
           disputed_at: string | null
           engagement_ended_month: number | null
@@ -602,6 +603,7 @@ export type Database = {
         Insert: {
           amount_paid_bracket?: string | null
           body: string
+          completeness_score?: number
           created_at?: string
           disputed_at?: string | null
           engagement_ended_month?: number | null
@@ -623,6 +625,7 @@ export type Database = {
         Update: {
           amount_paid_bracket?: string | null
           body?: string
+          completeness_score?: number
           created_at?: string
           disputed_at?: string | null
           engagement_ended_month?: number | null
@@ -692,6 +695,7 @@ export type Database = {
       reviews: {
         Row: {
           body: string
+          completeness_score: number
           created_at: string
           id: string
           provider_id: string
@@ -701,6 +705,7 @@ export type Database = {
         }
         Insert: {
           body?: string
+          completeness_score?: number
           created_at?: string
           id?: string
           provider_id: string
@@ -710,6 +715,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          completeness_score?: number
           created_at?: string
           id?: string
           provider_id?: string
@@ -732,6 +738,7 @@ export type Database = {
           amount_paid_bracket: string | null
           body: string
           coach_name: string
+          completeness_score: number
           created_at: string
           evidence_paths: string[]
           id: string
@@ -746,6 +753,7 @@ export type Database = {
           amount_paid_bracket?: string | null
           body: string
           coach_name: string
+          completeness_score?: number
           created_at?: string
           evidence_paths?: string[]
           id?: string
@@ -760,6 +768,7 @@ export type Database = {
           amount_paid_bracket?: string | null
           body?: string
           coach_name?: string
+          completeness_score?: number
           created_at?: string
           evidence_paths?: string[]
           id?: string
@@ -789,12 +798,23 @@ export type Database = {
         }[]
       }
       admin_stats: { Args: never; Returns: Json }
+      compute_review_score: {
+        Args: {
+          p_amount_filled: boolean
+          p_body: string
+          p_offer_filled: boolean
+          p_photo_count: number
+          p_purchased: boolean
+        }
+        Returns: number
+      }
       get_or_create_thread: { Args: { other_user: string }; Returns: string }
       is_admin: { Args: { uid: string }; Returns: boolean }
       list_provider_reviews: {
         Args: { p_provider: string }
         Returns: {
           body: string
+          completeness_score: number
           created_at: string
           id: string
           provider_id: string

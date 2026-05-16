@@ -9,6 +9,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProviderReply } from "./ProviderReply";
+import { ReviewValidityBar } from "./ReviewValidityBar";
 import { amountLabel, dateRangeLabel, engagementLabel } from "@/lib/proofReviews";
 import { AlertTriangle, FileSearch, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export interface ProofReview {
   proof_file_count: number;
   is_disputed: boolean;
   created_at: string;
+  completeness_score?: number;
 }
 
 interface Props {
@@ -116,7 +118,8 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
   };
 
   return (
-    <article className="rounded-md border border-border bg-card p-4">
+    <article className="relative rounded-md border border-border bg-card p-4 pl-5">
+      <ReviewValidityBar score={review.completeness_score ?? 0} />
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-semibold">{review.reviewer_name}</p>
