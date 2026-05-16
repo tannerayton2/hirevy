@@ -381,27 +381,71 @@ export default function Profile() {
 
 
 
-      {/* Reviews — tabbed interface */}
+      {/* Reviews / Imported — two-section layout */}
       <section className="mt-8">
         {/* Tab strip */}
-        <div className="-mx-4 mb-4 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+        <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
           <div className="flex min-w-max items-center gap-1">
-            <TabButton active={activeTab === "verified"} onClick={() => setActiveTab("verified")} count={profile.review_count} label="Verified" />
-            <TabButton active={activeTab === "proof-backed"} onClick={() => setActiveTab("proof-backed")} count={proofReviews.length} label="Proof-Backed" />
+            <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount} label="Reviews" />
             <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
         </div>
 
-        {/* Verified */}
-        {activeTab === "verified" && (
+        {/* Reviews (verified + proof-backed merged) */}
+        {activeTab === "reviews" && (
           <div>
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold">Verified reviews</h2>
-              {reviews.length > 1 && <SortMenu value={verifiedSort} onChange={setVerifiedSort} />}
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
+                Reviews
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="About reviews">
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                    <p>Reviews from clients invited by the provider and from anyone who submitted proof of working with them. Each review's left bar shows its completeness.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h2>
+              {!isMe && user && user.id !== profile.id && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/r/${profile.username}/proof`}>Leave a review</Link>
+                </Button>
+              )}
+              {!user && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+                </Button>
+              )}
             </div>
 
+            {/* Sort + filter bar */}
+            {(unifiedReviews.length > 0 || pinnedReview) && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <Select value={reviewsSort} onValueChange={(v) => setReviewsSort(v as SortKey)}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Most Recent</SelectItem>
+                    <SelectItem value="highest">Highest Rated</SelectItem>
+                    <SelectItem value="complete">Most Complete</SelectItem>
+                    <SelectItem value="lowest">Lowest Rated</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={reviewsFilter} onValueChange={(v) => setReviewsFilter(v as FilterKey)}>
+                  <SelectTrigger className="h-8 w-[180px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Reviews</SelectItem>
+                    <SelectItem value="partial">Partial and above</SelectItem>
+                    <SelectItem value="strong">Strong only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {pinnedReview && (
-              <article className="mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 pl-6 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+                <ReviewValidityBar score={pinnedReview.completeness_score ?? 0} />
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
@@ -432,88 +476,45 @@ export default function Profile() {
               </article>
             )}
 
-            {sortedVerified.length === 0 && !pinnedReview ? (
-              <Empty msg="No verified reviews yet." />
+            {visibleReviews.length === 0 && !pinnedReview ? (
+              <Empty msg="No reviews yet." />
+            ) : visibleReviews.length === 0 ? (
+              <Empty msg="No reviews match the current filter." />
             ) : (
               <div className="space-y-3">
-                {sortedVerified.map((r) => (
-                  <article key={r.id} className="rounded-md border border-border bg-card p-4">
+                {visibleReviews.map((u) => u.kind === "verified" ? (
+                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4 pl-5">
+                    <ReviewValidityBar score={u.score} />
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="font-semibold">{r.reviewer_name}</p>
-                      <StarRating value={r.rating} size={14} />
+                      <p className="font-semibold">{u.data.reviewer_name}</p>
+                      <StarRating value={u.data.rating} size={14} />
                     </div>
-                    <p className="whitespace-pre-line text-sm text-muted-foreground">{r.body}</p>
+                    <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                        {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                        {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                       </p>
                       {isMe && (
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(r.id)}>
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
                           <Pin className="mr-1 h-3 w-3" /> Pin this review
                         </Button>
                       )}
                     </div>
                     <ProviderReply
-                      reviewId={r.id}
+                      reviewId={u.id}
                       reviewType="verified"
                       providerId={profile.id}
                       providerDisplayName={providerDisplayName}
                       isProviderViewer={isMe}
                     />
                   </article>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Proof-Backed */}
-        {activeTab === "proof-backed" && (
-          <div>
-            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
-                Proof-Backed reviews
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="What's the difference?">
-                      <Info className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
-                    <p className="font-semibold mb-1">What's the difference?</p>
-                    <p>Verified Reviews come from clients invited by the provider. Proof-Backed Reviews can be left by anyone who uploads evidence of working with the provider. Both are visible; only verified reviews affect the tier badge and rating.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </h2>
-              <div className="flex items-center gap-2">
-                {!isMe && user && user.id !== profile.id && (
-                  <Button asChild size="sm">
-                    <Link to={`/r/${profile.username}/proof`}>Leave a proof-backed review</Link>
-                  </Button>
-                )}
-                {!user && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-                  </Button>
-                )}
-                {proofReviews.length > 1 && <SortMenu value={proofSort} onChange={setProofSort} />}
-              </div>
-            </div>
-            <p className="mb-4 text-xs italic text-muted-foreground">
-              Independent reviews with uploaded evidence — unverified by HireVy but backed by documentation.
-            </p>
-            {sortedProof.length === 0 ? (
-              <Empty msg="No proof-backed reviews yet." />
-            ) : (
-              <div className="space-y-3">
-                {sortedProof.map((r) => (
-                  <div key={r.id} className="rounded-md border border-border bg-[hsl(220_15%_14%)]/50">
-                    <ProofReviewCard
-                      review={r}
-                      providerDisplayName={providerDisplayName}
-                      isProviderViewer={isMe}
-                    />
-                  </div>
+                ) : (
+                  <ProofReviewCard
+                    key={u.id}
+                    review={u.data}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
                 ))}
               </div>
             )}
