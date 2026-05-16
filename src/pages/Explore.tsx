@@ -25,7 +25,7 @@ interface CoachRow {
 }
 
 function avgRating(r: { review_count: number; rating_sum: number }) {
-  return r.review_count > 0 ? r.rating_sum / r.review_count : 0;
+  return r.review_count > 0 ? Number(r.rating_sum) / r.review_count : 0;
 }
 
 function initialsOf(name: string) {
