@@ -21,6 +21,8 @@ import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
 import ProfileOffers from "./pages/ProfileOffers.tsx";
+import Marketplace from "./pages/Marketplace.tsx";
+import SubmitReview from "./pages/SubmitReview.tsx";
 
 const queryClient = new QueryClient();
 
