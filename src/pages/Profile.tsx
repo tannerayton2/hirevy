@@ -434,26 +434,44 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Sort + filter bar */}
+            {/* Filter + verified-purchases toggle */}
             {(unifiedReviews.length > 0 || pinnedReview) && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <Select value={reviewsSort} onValueChange={(v) => setReviewsSort(v as SortKey)}>
-                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Most Recent</SelectItem>
-                    <SelectItem value="highest">Highest Rated</SelectItem>
-                    <SelectItem value="complete">Most Complete</SelectItem>
-                    <SelectItem value="lowest">Lowest Rated</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={reviewsFilter} onValueChange={(v) => setReviewsFilter(v as FilterKey)}>
-                  <SelectTrigger className="h-8 w-[180px] text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Reviews</SelectItem>
-                    <SelectItem value="partial">Partial and above</SelectItem>
-                    <SelectItem value="strong">Strong only</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                      <FilterIcon className="mr-1 h-3.5 w-3.5" />
+                      Filter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    {SORT_OPTIONS.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onSelect={() => setReviewsSort(opt.value)}
+                        className="flex items-center justify-between text-xs"
+                      >
+                        <span>{opt.label}</span>
+                        {reviewsSort === opt.value && (
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <button
+                  type="button"
+                  onClick={() => setVerifiedPurchasesOnly((v) => !v)}
+                  aria-pressed={verifiedPurchasesOnly}
+                  className={cn(
+                    "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+                    verifiedPurchasesOnly
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-primary/60 text-primary hover:bg-primary/10",
+                  )}
+                >
+                  Verified purchases only
+                </button>
               </div>
             )}
 
