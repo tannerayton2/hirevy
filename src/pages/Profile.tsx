@@ -84,8 +84,8 @@ export default function Profile() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
-  const [verifiedSort, setVerifiedSort] = useState<SortKey>("newest");
-  const [proofSort, setProofSort] = useState<SortKey>("newest");
+  const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
+  const [reviewsFilter, setReviewsFilter] = useState<FilterKey>("all");
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
@@ -95,12 +95,11 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey =
-    tabParam === "proof-backed" ? "proof-backed" :
-    tabParam === "imported" ? "imported" : "verified";
+  const activeTab: TabKey = tabParam === "imported" ? "imported" : "reviews";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
-    next.set("tab", t);
+    if (t === "reviews") next.delete("tab");
+    else next.set("tab", t);
     setSearchParams(next, { replace: true });
   };
 
