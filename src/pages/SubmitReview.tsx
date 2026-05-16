@@ -15,6 +15,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { tierColor, tierLabel } from "@/components/reviews/ReviewCompletenessShield";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 function computeCompletenessScore(opts: {
@@ -178,12 +179,32 @@ export default function SubmitReview() {
 
   const counterReached = body.length >= MIN_BODY;
 
+  const barColor = tierColor(completenessScore);
+  const barLabel = tierLabel(completenessScore);
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Public review</p>
-        <h1 className="mt-2 font-display text-2xl font-bold md:text-3xl">Review a coach</h1>
+    <>
+      {/* Sticky completeness bar — sits directly below the app header */}
+      <div className="fixed inset-x-0 top-14 z-30 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur md:px-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="h-5 w-full overflow-hidden rounded-md bg-muted/60">
+            <div
+              className="h-full rounded-md transition-all duration-300 ease-out"
+              style={{ width: `${completenessScore}%`, backgroundColor: barColor }}
+            />
+          </div>
+          <div className="mt-1 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: barColor }}>
+            <span>{barLabel}</span>
+            <span>{completenessScore}</span>
+          </div>
+        </div>
       </div>
+
+      <div className="mx-auto max-w-2xl px-4 pb-10 pt-[96px] md:px-8 md:pt-[104px]">
+        <div className="mb-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Public review</p>
+          <h1 className="mt-2 font-display text-2xl font-bold md:text-3xl">Review a coach</h1>
+        </div>
 
       <form onSubmit={onClickSubmit} className="space-y-8">
         {/* SECTION 1 */}
@@ -362,7 +383,8 @@ export default function SubmitReview() {
         saving={saving}
         onSubmit={doSubmit}
       />
-    </div>
+      </div>
+    </>
   );
 }
 

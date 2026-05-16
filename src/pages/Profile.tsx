@@ -12,7 +12,7 @@ import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
-import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
@@ -445,8 +445,7 @@ export default function Profile() {
             )}
 
             {pinnedReview && (
-              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 pl-6 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
-                <ReviewValidityBar score={pinnedReview.completeness_score ?? 0} />
+              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
@@ -454,7 +453,10 @@ export default function Profile() {
                     </span>
                     <p className="font-semibold">{pinnedReview.reviewer_name}</p>
                   </div>
-                  <StarRating value={pinnedReview.rating} size={16} />
+                  <div className="flex items-center gap-2">
+                    <StarRating value={pinnedReview.rating} size={16} />
+                    <ReviewCompletenessShield score={pinnedReview.completeness_score ?? 0} />
+                  </div>
                 </div>
                 <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
                 <div className="mt-3 flex items-center justify-between">
@@ -484,11 +486,13 @@ export default function Profile() {
             ) : (
               <div className="space-y-3">
                 {visibleReviews.map((u) => u.kind === "verified" ? (
-                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4 pl-5">
-                    <ReviewValidityBar score={u.score} />
+                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <p className="font-semibold">{u.data.reviewer_name}</p>
-                      <StarRating value={u.data.rating} size={14} />
+                      <div className="flex items-center gap-2">
+                        <StarRating value={u.data.rating} size={14} />
+                        <ReviewCompletenessShield score={u.score} />
+                      </div>
                     </div>
                     <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
                     <div className="mt-2 flex items-center justify-between">
