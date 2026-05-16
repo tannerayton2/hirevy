@@ -97,7 +97,7 @@ export default function Profile() {
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
-  const [reviewsFilter, setReviewsFilter] = useState<FilterKey>("all");
+  const [verifiedPurchasesOnly, setVerifiedPurchasesOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
