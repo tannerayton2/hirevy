@@ -12,6 +12,7 @@ import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
+import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
