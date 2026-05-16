@@ -62,8 +62,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "oldest", label: "Oldest First" },
   { value: "highest", label: "Best Rated" },
   { value: "lowest", label: "Worst Rated" },
-  { value: "complete", label: "Strongest First" },
-  { value: "complete_asc", label: "Weakest First" },
+  { value: "complete", label: "Strongest Review First" },
+  { value: "complete_asc", label: "Weakest Review First" },
 ];
 
 type UnifiedReview =
