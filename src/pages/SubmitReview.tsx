@@ -269,26 +269,63 @@ export default function SubmitReview() {
           </header>
 
           <Field label="Star rating" required>
-            <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
-              {[1, 2, 3, 4, 5].map((i) => {
-                const display = hoverRating || rating;
-                const filled = display >= i;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setRating(i)}
-                    onMouseEnter={() => setHoverRating(i)}
-                    aria-label={`${i} star${i === 1 ? "" : "s"}`}
-                    className="rounded p-1 transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={cn("h-9 w-9", filled ? "fill-primary text-primary" : "text-muted-foreground/40")}
-                      strokeWidth={1.5}
-                    />
-                  </button>
-                );
-              })}
+            <div className="flex flex-col items-start gap-1">
+              <div
+                className="flex items-center gap-1"
+                onMouseLeave={() => setHoverRating(0)}
+                onTouchMove={(e) => {
+                  const touch = e.touches[0];
+                  const el = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null;
+                  const half = el?.dataset?.starHalf;
+                  if (half) setRating(parseFloat(half));
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((i) => {
+                  const display = hoverRating || rating;
+                  const fullVal = i;
+                  const halfVal = i - 0.5;
+                  const filled = display >= fullVal;
+                  const half = !filled && display >= halfVal;
+                  return (
+                    <div key={i} className="relative h-9 w-9">
+                      <Star
+                        className={cn(
+                          "absolute inset-0 h-9 w-9 pointer-events-none",
+                          filled || half ? "text-primary" : "text-muted-foreground/40",
+                          filled && "fill-primary",
+                        )}
+                        strokeWidth={1.5}
+                      />
+                      {half && (
+                        <Star
+                          className="absolute inset-0 h-9 w-9 fill-primary text-primary pointer-events-none"
+                          strokeWidth={1.5}
+                          style={{ clipPath: "inset(0 50% 0 0)" }}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        data-star-half={halfVal}
+                        onClick={() => setRating(halfVal)}
+                        onMouseEnter={() => setHoverRating(halfVal)}
+                        aria-label={`${halfVal} stars`}
+                        className="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        data-star-half={fullVal}
+                        onClick={() => setRating(fullVal)}
+                        onMouseEnter={() => setHoverRating(fullVal)}
+                        aria-label={`${fullVal} stars`}
+                        className="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              {rating > 0 && (
+                <span className="text-sm font-semibold text-primary">{rating.toFixed(1)}</span>
+              )}
             </div>
           </Field>
 
