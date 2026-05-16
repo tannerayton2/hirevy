@@ -22,6 +22,11 @@ import type { ImportedTestimonial } from "@/lib/importedTestimonials";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Check, Filter as FilterIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type TabKey = "reviews" | "imported";
 
@@ -50,27 +55,33 @@ interface Review {
   completeness_score: number;
 }
 
-type SortKey = "newest" | "highest" | "lowest" | "complete";
-type FilterKey = "all" | "partial" | "strong";
+type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "newest", label: "Most Recent" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "highest", label: "Best Rated" },
+  { value: "lowest", label: "Worst Rated" },
+  { value: "complete", label: "Strongest First" },
+  { value: "complete_asc", label: "Weakest First" },
+];
 
 type UnifiedReview =
   | { kind: "verified"; id: string; created_at: string; rating: number; score: number; data: Review }
   | { kind: "proof"; id: string; created_at: string; rating: number; score: number; data: ProofReview };
 
-function filterReviews(items: UnifiedReview[], f: FilterKey): UnifiedReview[] {
-  if (f === "partial") return items.filter((r) => r.score >= 34);
-  if (f === "strong") return items.filter((r) => r.score >= 67);
-  return items;
-}
-
 function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   const out = [...items];
-  const byDate = (a: UnifiedReview, b: UnifiedReview) =>
+  const byDateDesc = (a: UnifiedReview, b: UnifiedReview) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  if (key === "newest") out.sort(byDate);
-  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDate(a, b));
-  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDate(a, b));
-  if (key === "complete") out.sort((a, b) => b.score - a.score || byDate(a, b));
+  const byDateAsc = (a: UnifiedReview, b: UnifiedReview) =>
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  if (key === "newest") out.sort(byDateDesc);
+  if (key === "oldest") out.sort(byDateAsc);
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDateDesc(a, b));
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDateDesc(a, b));
+  if (key === "complete") out.sort((a, b) => b.score - a.score || byDateDesc(a, b));
+  if (key === "complete_asc") out.sort((a, b) => a.score - b.score || byDateDesc(a, b));
   return out;
 }
 
@@ -86,7 +97,7 @@ export default function Profile() {
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
-  const [reviewsFilter, setReviewsFilter] = useState<FilterKey>("all");
+  const [verifiedPurchasesOnly, setVerifiedPurchasesOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [responseMs, setResponseMs] = useState<number | null>(null);
@@ -191,10 +202,12 @@ export default function Profile() {
     return [...v, ...p];
   }, [reviews, proofReviews, pinnedReview]);
 
-  const visibleReviews = useMemo(
-    () => sortUnified(filterReviews(unifiedReviews, reviewsFilter), reviewsSort),
-    [unifiedReviews, reviewsFilter, reviewsSort],
-  );
+  const visibleReviews = useMemo(() => {
+    const base = verifiedPurchasesOnly
+      ? unifiedReviews.filter((u) => u.kind === "proof" && u.data.engagement_type === "paid_offer")
+      : unifiedReviews;
+    return sortUnified(base, reviewsSort);
+  }, [unifiedReviews, verifiedPurchasesOnly, reviewsSort]);
   const totalReviewsCount = reviews.length + proofReviews.length;
 
   // Category chips: service_category + up to 3 distinct offer categories
@@ -421,26 +434,44 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Sort + filter bar */}
+            {/* Filter + verified-purchases toggle */}
             {(unifiedReviews.length > 0 || pinnedReview) && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <Select value={reviewsSort} onValueChange={(v) => setReviewsSort(v as SortKey)}>
-                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Most Recent</SelectItem>
-                    <SelectItem value="highest">Highest Rated</SelectItem>
-                    <SelectItem value="complete">Most Complete</SelectItem>
-                    <SelectItem value="lowest">Lowest Rated</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={reviewsFilter} onValueChange={(v) => setReviewsFilter(v as FilterKey)}>
-                  <SelectTrigger className="h-8 w-[180px] text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Reviews</SelectItem>
-                    <SelectItem value="partial">Partial and above</SelectItem>
-                    <SelectItem value="strong">Strong only</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                      <FilterIcon className="mr-1 h-3.5 w-3.5" />
+                      Filter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    {SORT_OPTIONS.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onSelect={() => setReviewsSort(opt.value)}
+                        className="flex items-center justify-between text-xs"
+                      >
+                        <span>{opt.label}</span>
+                        {reviewsSort === opt.value && (
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <button
+                  type="button"
+                  onClick={() => setVerifiedPurchasesOnly((v) => !v)}
+                  aria-pressed={verifiedPurchasesOnly}
+                  className={cn(
+                    "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+                    verifiedPurchasesOnly
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-primary/60 text-primary hover:bg-primary/10",
+                  )}
+                >
+                  Verified purchases only
+                </button>
               </div>
             )}
 
