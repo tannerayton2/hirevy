@@ -115,7 +115,7 @@ export default function SubmitReview() {
 
   const validate = () => {
     if (!coachName.trim()) { toast({ title: "Coach name required", variant: "destructive" }); return false; }
-    if (rating < 1) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
+    if (rating < 0.5) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
     if (body.trim().length < MIN_BODY) { toast({ title: `Review must be at least ${MIN_BODY} characters`, variant: "destructive" }); return false; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast({ title: "Enter a valid email", variant: "destructive" }); return false; }
     return true;
