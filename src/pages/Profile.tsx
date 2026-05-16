@@ -55,27 +55,33 @@ interface Review {
   completeness_score: number;
 }
 
-type SortKey = "newest" | "highest" | "lowest" | "complete";
-type FilterKey = "all" | "partial" | "strong";
+type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "newest", label: "Most Recent" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "highest", label: "Best Rated" },
+  { value: "lowest", label: "Worst Rated" },
+  { value: "complete", label: "Strongest First" },
+  { value: "complete_asc", label: "Weakest First" },
+];
 
 type UnifiedReview =
   | { kind: "verified"; id: string; created_at: string; rating: number; score: number; data: Review }
   | { kind: "proof"; id: string; created_at: string; rating: number; score: number; data: ProofReview };
 
-function filterReviews(items: UnifiedReview[], f: FilterKey): UnifiedReview[] {
-  if (f === "partial") return items.filter((r) => r.score >= 34);
-  if (f === "strong") return items.filter((r) => r.score >= 67);
-  return items;
-}
-
 function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   const out = [...items];
-  const byDate = (a: UnifiedReview, b: UnifiedReview) =>
+  const byDateDesc = (a: UnifiedReview, b: UnifiedReview) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  if (key === "newest") out.sort(byDate);
-  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDate(a, b));
-  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDate(a, b));
-  if (key === "complete") out.sort((a, b) => b.score - a.score || byDate(a, b));
+  const byDateAsc = (a: UnifiedReview, b: UnifiedReview) =>
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  if (key === "newest") out.sort(byDateDesc);
+  if (key === "oldest") out.sort(byDateAsc);
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDateDesc(a, b));
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDateDesc(a, b));
+  if (key === "complete") out.sort((a, b) => b.score - a.score || byDateDesc(a, b));
+  if (key === "complete_asc") out.sort((a, b) => a.score - b.score || byDateDesc(a, b));
   return out;
 }
 
