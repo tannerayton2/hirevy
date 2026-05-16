@@ -1,212 +1,281 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Search, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { ExploreFilterPanel } from "@/components/ExploreFilterPanel";
-import {
-  parseFilters, filtersToParams, activeFilterCount, applyClientFilters,
-  SORT_LABELS, DEFAULT_FILTERS, type ExploreFilters, type SortKey,
-} from "@/lib/exploreFilters";
+import { StarRating } from "@/components/StarRating";
+import { TierBadge } from "@/components/TierBadge";
+import { tierForReviewCount } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 
+const BROWSE_CATEGORIES = [
+  "Business Coaching", "Sales", "Copywriting", "Fitness",
+  "Mindset", "Marketing", "Finance", "Life Coaching",
+];
+
+interface CoachRow {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  service_category: string | null;
+  review_count: number;
+  rating_sum: number;
+}
+
+function avgRating(r: { review_count: number; rating_sum: number }) {
+  return r.review_count > 0 ? r.rating_sum / r.review_count : 0;
+}
+
+function initialsOf(name: string) {
+  return name.trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
+}
+
+function CoachAvatar({ name, url, size = 56 }: { name: string; url: string | null; size?: number }) {
+  if (url) return <img src={url} alt="" style={{ width: size, height: size }} className="shrink-0 rounded-full object-cover" />;
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="flex shrink-0 items-center justify-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary ring-1 ring-primary/30"
+    >
+      {initialsOf(name)}
+    </div>
+  );
+}
+
 export default function Explore() {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const filters = useMemo(() => parseFilters(params), [params]);
+  const initialQ = params.get("q") ?? "";
+  const [query, setQuery] = useState(initialQ);
+  const [submitted, setSubmitted] = useState(initialQ);
+  const [recent, setRecent] = useState<CoachRow[]>([]);
+  const [results, setResults] = useState<CoachRow[] | null>(null);
+  const [loadingResults, setLoadingResults] = useState(false);
 
-  const [query, setQuery] = useState(filters.q);
-  const [offers, setOffers] = useState<OfferCardData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  useEffect(() => { setQuery(filters.q); }, [filters.q]);
-
-  const writeFilters = (next: ExploreFilters) => {
-    const p = filtersToParams(next);
-    setParams(p, { replace: true });
-  };
-
-  // Fetch (server filters: type, category, search, sort by created/priority); rest applied client-side
+  // Load recently reviewed providers
   useEffect(() => {
     let cancel = false;
-    const run = async () => {
-      setLoading(true);
-      let req = supabase
-        .from("offers")
-        .select(`
-          id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, created_at,
-          cta_link, cta_label, hosted_on_hirevy, offer_tier,
-          provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )
-        `)
-        .eq("is_active", true)
-        .order("priority", { ascending: false })
+    void (async () => {
+      const { data: rev } = await supabase
+        .from("reviews")
+        .select("provider_id, created_at")
         .order("created_at", { ascending: false })
-        .limit(200);
-
-      if (filters.type === "paid") req = req.eq("free_for_testimonial", false);
-      else if (filters.type === "free" || filters.freeOnly) req = req.eq("free_for_testimonial", true);
-
-      if (filters.categories.length) req = req.in("category", filters.categories);
-
-      if (filters.q.trim()) {
-        const term = `%${filters.q.trim()}%`;
-        req = req.or(`title.ilike.${term},description.ilike.${term}`);
+        .limit(40);
+      const seen = new Set<string>();
+      const orderedIds: string[] = [];
+      for (const r of (rev ?? []) as { provider_id: string }[]) {
+        if (!seen.has(r.provider_id)) { seen.add(r.provider_id); orderedIds.push(r.provider_id); }
+        if (orderedIds.length >= 10) break;
       }
-
-      const { data, error } = await req;
-      if (!cancel) {
-        if (error) console.error(error);
-        setOffers((data as unknown as OfferCardData[]) ?? []);
-        setLoading(false);
-      }
-    };
-    void run();
+      if (orderedIds.length === 0) { if (!cancel) setRecent([]); return; }
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum")
+        .in("id", orderedIds);
+      const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
+      const ordered = orderedIds.map((id) => byId.get(id)).filter(Boolean) as CoachRow[];
+      if (!cancel) setRecent(ordered);
+    })();
     return () => { cancel = true; };
-  }, [filters.type, filters.freeOnly, filters.categories.join(","), filters.q]);
+  }, []);
 
-  const visible = useMemo(() => applyClientFilters(offers as unknown as (OfferCardData & { created_at?: string })[], filters), [offers, filters]);
-  const count = activeFilterCount(filters);
+  // Run search when submitted query changes
+  useEffect(() => {
+    let cancel = false;
+    const q = submitted.trim();
+    if (!q) { setResults(null); return; }
+    setLoadingResults(true);
+    void (async () => {
+      const term = `%${q}%`;
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum")
+        .or(`username.ilike.${term},display_name.ilike.${term}`)
+        .limit(50);
+      if (!cancel) {
+        setResults((data as CoachRow[] | null) ?? []);
+        setLoadingResults(false);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [submitted]);
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    writeFilters({ ...filters, q: query });
+    const q = query.trim();
+    setSubmitted(q);
+    const next = new URLSearchParams(params);
+    if (q) next.set("q", q); else next.delete("q");
+    setParams(next, { replace: true });
   };
 
-  const setSort = (s: SortKey) => writeFilters({ ...filters, sort: s });
+  const filterByCategory = (cat: string) => {
+    setQuery(cat);
+    setSubmitted(cat);
+    const next = new URLSearchParams(params);
+    next.set("q", cat);
+    setParams(next, { replace: true });
+  };
+
+  const showingResults = submitted.trim().length > 0;
 
   return (
-    <div className="px-4 py-6 md:px-8 md:py-8">
-      {/* Hero */}
-      <div className="mb-6 max-w-3xl">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">The Marketplace</p>
-        <h1 className="text-balance font-display text-3xl font-bold leading-[1.05] md:text-5xl">
-          Hire by proof, not promises.
-        </h1>
-        <p className="mt-3 max-w-xl text-sm text-muted-foreground md:text-base">
-          Verified reviews. Real offers. Browse providers ranked by what their clients actually said.
-        </p>
-      </div>
+    <div className="relative px-4 py-6 md:px-8 md:py-8">
+      {/* Search */}
+      <form onSubmit={onSearch} className="relative mx-auto max-w-2xl">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search a coach or provider..."
+          className="h-12 pl-9 text-sm"
+          aria-label="Search a coach or provider"
+        />
+      </form>
+      <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-muted-foreground">
+        Search any coach — whether they're on HireVy or not.
+      </p>
 
-      {/* Search + controls */}
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center">
-        <form onSubmit={onSearch} className="relative flex-1 md:max-w-xl">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search offers, providers, tags…"
-            className="h-11 pl-9 text-sm"
-          />
-        </form>
+      <div className="mt-8">
+        {!showingResults && (
+          <>
+            <RecentlyReviewed coaches={recent} />
+            <BrowseByCategory onPick={filterByCategory} />
+          </>
+        )}
 
-        <div className="flex items-center gap-2">
-          {/* Mobile filter button */}
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="h-11 gap-2 lg:hidden">
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters
-                {count > 0 && (
-                  <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                    {count}
-                  </span>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-4">
-              <ExploreFilterPanel
-                filters={filters}
-                onChange={writeFilters}
-                onClose={() => setSheetOpen(false)}
-              />
-            </SheetContent>
-          </Sheet>
-
-          <Select value={filters.sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="h-11 w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
-                <SelectItem key={k} value={k}>{SORT_LABELS[k]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="flex gap-6">
-        {/* Desktop sidebar */}
-        <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-4 max-h-[calc(100vh-2rem)] rounded-md border border-border bg-card/40 p-4">
-            <ExploreFilterPanel filters={filters} onChange={writeFilters} />
-          </div>
-        </aside>
-
-        {/* Results */}
-        <div className="min-w-0 flex-1">
-          {/* Active filter summary */}
-          {count > 0 && (
-            <div className="mb-4 flex items-center justify-between text-xs text-muted-foreground">
-              <span>
-                {visible.length} {visible.length === 1 ? "result" : "results"} · {count} filter{count === 1 ? "" : "s"} active
-              </span>
-              <button
-                type="button"
-                onClick={() => writeFilters({ ...DEFAULT_FILTERS, q: filters.q })}
-                className="font-semibold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
-
-          {loading ? (
-            <div className={gridCls}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-[150px] animate-pulse rounded-md bg-card" />
+        {showingResults && (
+          loadingResults ? (
+            <div className="mx-auto max-w-3xl space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-[88px] animate-pulse rounded-md bg-card" />
               ))}
             </div>
-          ) : visible.length === 0 ? (
-            <EmptyState hasFilters={count > 0} onClear={() => writeFilters({ ...DEFAULT_FILTERS, q: filters.q })} />
+          ) : (results && results.length > 0) ? (
+            <div className="mx-auto max-w-3xl">
+              <p className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                {results.length} {results.length === 1 ? "match" : "matches"} for "{submitted}"
+              </p>
+              <div className="space-y-3">
+                {results.map((c) => <CoachResultCard key={c.id} coach={c} />)}
+              </div>
+            </div>
           ) : (
-            <div className={gridCls}>
-              {visible.map((o) => <OfferCard key={o.id} offer={o} referrer="explore" />)}
-            </div>
-          )}
+            <EmptySearchState
+              name={submitted}
+              onWriteReview={() => navigate(`/submit-review?coach=${encodeURIComponent(submitted)}`)}
+              onBrowse={() => { setQuery(""); setSubmitted(""); const n = new URLSearchParams(params); n.delete("q"); setParams(n, { replace: true }); }}
+            />
+          )
+        )}
+      </div>
+
+      {/* Floating "Review a Coach" FAB */}
+      <Link
+        to="/submit-review"
+        className="fixed bottom-24 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.55)] transition-transform hover:scale-[1.03] md:bottom-8"
+        aria-label="Review a Coach"
+      >
+        <Plus className="h-4 w-4" />
+        <span className="hidden sm:inline">Review a Coach</span>
+      </Link>
+    </div>
+  );
+}
+
+function RecentlyReviewed({ coaches }: { coaches: CoachRow[] }) {
+  if (coaches.length === 0) return null;
+  return (
+    <section className="mb-10">
+      <h2 className="mb-3 font-display text-lg font-semibold">Recently Reviewed</h2>
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+        {coaches.map((c) => <RecentCoachCard key={c.id} coach={c} />)}
+      </div>
+    </section>
+  );
+}
+
+function RecentCoachCard({ coach }: { coach: CoachRow }) {
+  const name = coach.display_name || coach.username;
+  const avg = avgRating(coach);
+  return (
+    <Link
+      to={`/@${coach.username}`}
+      className="flex w-[180px] shrink-0 flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition-colors hover:border-primary/40"
+    >
+      <CoachAvatar name={name} url={coach.avatar_url} size={56} />
+      <p className="line-clamp-1 w-full text-sm font-semibold">{name}</p>
+      {coach.service_category && (
+        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          {coach.service_category}
+        </span>
+      )}
+      <StarRating value={avg} count={coach.review_count} showValue size={12} />
+    </Link>
+  );
+}
+
+function BrowseByCategory({ onPick }: { onPick: (c: string) => void }) {
+  return (
+    <section>
+      <h2 className="mb-3 font-display text-lg font-semibold">Browse by Category</h2>
+      <div className="flex flex-wrap gap-2">
+        {BROWSE_CATEGORIES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => onPick(c)}
+            className={cn(
+              "rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground/90",
+              "transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+            )}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CoachResultCard({ coach }: { coach: CoachRow }) {
+  const name = coach.display_name || coach.username;
+  const tier = tierForReviewCount(coach.review_count);
+  const avg = avgRating(coach);
+  return (
+    <Link
+      to={`/@${coach.username}`}
+      className="flex items-center gap-4 rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40"
+    >
+      <CoachAvatar name={name} url={coach.avatar_url} size={52} />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="truncate font-semibold">{name}</p>
+          <TierBadge tier={tier} size="xs" />
         </div>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          {coach.service_category && <span>{coach.service_category}</span>}
+          <StarRating value={avg} count={coach.review_count} showValue size={12} />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function EmptySearchState({ name, onWriteReview, onBrowse }: { name: string; onWriteReview: () => void; onBrowse: () => void }) {
+  return (
+    <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+      <p className="font-display text-2xl font-bold text-primary">{name}</p>
+      <p className="mt-2 text-sm text-muted-foreground">No reviews yet for {name}.</p>
+      <div className="mt-6 flex flex-col gap-2">
+        <Button onClick={onWriteReview} className="w-full">Write the first review →</Button>
+        <Button variant="outline" onClick={onBrowse} className="w-full">Browse other coaches</Button>
       </div>
     </div>
   );
 }
 
-const gridCls = cn(
-  "grid gap-4",
-  "grid-cols-1 md:grid-cols-2",
-);
-
-function EmptyState({ hasFilters, onClear }: { hasFilters: boolean; onClear: () => void }) {
-  return (
-    <div className="rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
-      <p className="font-display text-xl font-semibold">
-        {hasFilters ? "No offers match these filters." : "Nothing here yet."}
-      </p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        {hasFilters
-          ? "Try clearing some filters or broadening your search."
-          : "Be among the first providers to list one."}
-      </p>
-      {hasFilters && (
-        <Button variant="outline" size="sm" className="mt-4" onClick={onClear}>
-          Clear filters
-        </Button>
-      )}
-    </div>
-  );
-}
+// Backward-compatible export used by some pages
+export type { CoachRow };
