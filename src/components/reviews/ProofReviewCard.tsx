@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProviderReply } from "./ProviderReply";
 import { ReviewCompletenessShield } from "./ReviewCompletenessShield";
+import { ExpandableReviewText } from "./ExpandableReviewText";
 import { amountLabel, dateRangeLabel, engagementLabel } from "@/lib/proofReviews";
 import { AlertTriangle, FileSearch, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -134,7 +135,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
         </div>
       </div>
 
-      <p className="whitespace-pre-line text-sm text-muted-foreground">{review.body}</p>
+      <ExpandableReviewText text={review.body} className="text-sm text-muted-foreground" />
 
       {/* Metadata */}
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-muted-foreground md:grid-cols-3">

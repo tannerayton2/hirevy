@@ -13,6 +13,7 @@ import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofRev
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
+import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
@@ -62,8 +63,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "oldest", label: "Oldest First" },
   { value: "highest", label: "Best Rated" },
   { value: "lowest", label: "Worst Rated" },
-  { value: "complete", label: "Strongest First" },
-  { value: "complete_asc", label: "Weakest First" },
+  { value: "complete", label: "Strongest Review First" },
+  { value: "complete_asc", label: "Weakest Review First" },
 ];
 
 type UnifiedReview =
@@ -489,7 +490,7 @@ export default function Profile() {
                     <ReviewCompletenessShield score={pinnedReview.completeness_score ?? 0} />
                   </div>
                 </div>
-                <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/95">{pinnedReview.body}</p>
+                <ExpandableReviewText text={pinnedReview.body} className="text-[15px] leading-relaxed text-foreground/95" />
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                     {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
@@ -525,7 +526,7 @@ export default function Profile() {
                         <ReviewCompletenessShield score={u.score} />
                       </div>
                     </div>
-                    <p className="whitespace-pre-line text-sm text-muted-foreground">{u.data.body}</p>
+                    <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                         {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
