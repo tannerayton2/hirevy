@@ -61,6 +61,45 @@ export type Database = {
           },
         ]
       }
+      claims_requests: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          profile_id: string
+          status: string
+          verification_method: string
+          verification_value: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          profile_id: string
+          status?: string
+          verification_method: string
+          verification_value?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          profile_id?: string
+          status?: string
+          verification_method?: string
+          verification_value?: string | null
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -451,6 +490,7 @@ export type Database = {
           display_name: string | null
           follower_count: number
           id: string
+          is_claimed: boolean
           paid_offer_limit: number
           pinned_review_id: string | null
           plan: string
@@ -468,6 +508,7 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id: string
+          is_claimed?: boolean
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
@@ -485,6 +526,7 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id?: string
+          is_claimed?: boolean
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
