@@ -166,11 +166,35 @@ export default function Profile() {
   const pinnedReview = profile?.pinned_review_id
     ? reviews.find((r) => r.id === profile.pinned_review_id) ?? null
     : null;
-  const sortedVerified = useMemo(() => {
-    const list = pinnedReview ? reviews.filter((r) => r.id !== pinnedReview.id) : reviews;
-    return sortReviews(list, verifiedSort);
-  }, [reviews, verifiedSort, pinnedReview]);
-  const sortedProof = useMemo(() => sortReviews(proofReviews, proofSort), [proofReviews, proofSort]);
+
+  // Unified reviews feed = verified + proof-backed (no data deleted)
+  const unifiedReviews = useMemo<UnifiedReview[]>(() => {
+    const v: UnifiedReview[] = reviews
+      .filter((r) => !pinnedReview || r.id !== pinnedReview.id)
+      .map((r) => ({
+        kind: "verified" as const,
+        id: r.id,
+        created_at: r.created_at,
+        rating: r.rating,
+        score: r.completeness_score ?? 0,
+        data: r,
+      }));
+    const p: UnifiedReview[] = proofReviews.map((r) => ({
+      kind: "proof" as const,
+      id: r.id,
+      created_at: r.created_at,
+      rating: r.rating,
+      score: r.completeness_score ?? 0,
+      data: r,
+    }));
+    return [...v, ...p];
+  }, [reviews, proofReviews, pinnedReview]);
+
+  const visibleReviews = useMemo(
+    () => sortUnified(filterReviews(unifiedReviews, reviewsFilter), reviewsSort),
+    [unifiedReviews, reviewsFilter, reviewsSort],
+  );
+  const totalReviewsCount = reviews.length + proofReviews.length;
 
   // Category chips: service_category + up to 3 distinct offer categories
   const categoryChips = useMemo(() => {
