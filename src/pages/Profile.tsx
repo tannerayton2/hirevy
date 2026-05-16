@@ -525,8 +525,8 @@ export default function Profile() {
         {/* Imported */}
         {activeTab === "imported" && (
           <div>
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported testimonials</h2>
+            <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported</h2>
               {isMe && imported.length > 0 && (
                 <Button
                   size="sm"
@@ -538,6 +538,9 @@ export default function Profile() {
                 </Button>
               )}
             </div>
+            <p className="mb-4 text-xs text-muted-foreground/80">
+              These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
+            </p>
 
             {imported.length === 0 ? (
               isMe ? (
