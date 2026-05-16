@@ -92,6 +92,16 @@ export default function SubmitReview() {
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const completenessScore = useMemo(
+    () => computeCompletenessScore({
+      body, purchased,
+      amountFilled: !!(purchased && amount),
+      offerFilled: !!offerUrl.trim(),
+      photoCount: files.length,
+    }),
+    [body, purchased, amount, offerUrl, files.length],
+  );
+
   const tier = useMemo(() => computeTier(purchased, files.length), [purchased, files.length]);
 
   const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
