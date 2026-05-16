@@ -13,6 +13,7 @@ import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofRev
 import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
+import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,6 +37,7 @@ interface ProfileFull {
   created_at: string;
   pinned_review_id: string | null;
   website_url: string | null;
+  is_claimed: boolean;
 }
 
 interface Review {
@@ -74,6 +76,7 @@ export default function Profile() {
   const [responseMs, setResponseMs] = useState<number | null>(null);
   const [importedModalOpen, setImportedModalOpen] = useState(false);
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
+  const [claimOpen, setClaimOpen] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -90,7 +93,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, is_claimed")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -239,8 +242,20 @@ export default function Profile() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{providerDisplayName}</h1>
               <TierBadge tier={tier} size="md" />
+              {!profile.is_claimed && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Unclaimed
+                </span>
+              )}
             </div>
             <p className="mt-1 text-sm text-muted-foreground">@{profile.username}</p>
+            {!profile.is_claimed && (
+              <div className="mt-2">
+                <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
+                  Claim this profile
+                </Button>
+              </div>
+            )}
 
             {/* Category chips */}
             {categoryChips.length > 0 && (
