@@ -86,14 +86,6 @@ export default function Profile() {
     setSearchParams(next, { replace: true });
   };
 
-  const offersOpen = searchParams.get("offers") === "open";
-  const setOffersOpen = (open: boolean) => {
-    const next = new URLSearchParams(searchParams);
-    if (open) next.set("offers", "open");
-    else { next.delete("offers"); next.delete("offerstab"); }
-    setSearchParams(next, { replace: true });
-  };
-
   const loadAll = async () => {
     setLoading(true);
     const { data: p } = await supabase
