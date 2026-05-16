@@ -14,6 +14,28 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+function computeCompletenessScore(opts: {
+  body: string;
+  purchased: boolean;
+  amountFilled: boolean;
+  offerFilled: boolean;
+  photoCount: number;
+}): number {
+  let s = 0;
+  if (opts.body && opts.body.trim().length > 0) s += 20;
+  if (opts.body && opts.body.length > 300) s += 20;
+  else if (opts.body && opts.body.length >= 100) s += 10;
+  if (opts.purchased) s += 25;
+  if (opts.amountFilled) s += 10;
+  if (opts.offerFilled) s += 10;
+  if (opts.photoCount >= 3) s += 10;
+  else if (opts.photoCount === 2) s += 8;
+  else if (opts.photoCount === 1) s += 5;
+  return Math.min(100, Math.max(0, s));
+}
 
 const AMOUNT_BRACKETS = [
   "Under $100",
