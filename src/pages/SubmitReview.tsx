@@ -15,6 +15,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+import { tierColor, tierLabel } from "@/components/reviews/ReviewCompletenessShield";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 function computeCompletenessScore(opts: {
