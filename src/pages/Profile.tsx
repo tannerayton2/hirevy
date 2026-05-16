@@ -1,16 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatOfferPrice, isContactPricing } from "@/lib/pricing";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
-import { OfferCard, type OfferCardData } from "@/components/OfferCard";
-import { OffersPanel, type OfferRow as PanelOfferRow } from "@/components/OffersPanel";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { ChevronDown, Clock, ExternalLink, Globe, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Star, Users } from "lucide-react";
+import { Clock, ExternalLink, Globe, Info, Link as LinkIcon, MessageSquare, Pin, PinOff, Plus, Share2, Star, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
