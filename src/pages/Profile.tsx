@@ -172,7 +172,7 @@ export default function Profile() {
 
   const isMe = me?.id === profile?.id;
   const tier = profile ? tierForReviewCount(profile.review_count) : "unranked";
-  const avg = profile && profile.review_count > 0 ? profile.rating_sum / profile.review_count : 0;
+  const avg = profile && profile.review_count > 0 ? Number(profile.rating_sum) / profile.review_count : 0;
 
   
 
