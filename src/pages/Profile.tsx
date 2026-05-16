@@ -105,15 +105,12 @@ export default function Profile() {
     setProfile(prof);
     if (!prof) { setLoading(false); return; }
 
-    const isOwner = user?.id === prof.id;
-    let offersQuery = supabase
+    const offersQuery = supabase
       .from("offers")
-      .select(`id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, is_pinned,
-               cta_link, cta_label, hosted_on_hirevy, offer_tier,
-               provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
+      .select("id, category, is_pinned")
       .eq("provider_id", prof.id)
+      .eq("is_active", true)
       .order("created_at", { ascending: false });
-    if (!isOwner) offersQuery = offersQuery.eq("is_active", true);
 
     const [offersRes, reviewsRes, proofRes, importedRes, followRes] = await Promise.all([
       offersQuery,
