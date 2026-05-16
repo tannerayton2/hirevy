@@ -434,11 +434,12 @@ function StrengthCard({ tier }: { tier: Tier }) {
 }
 
 function ConfirmModal({
-  open, onOpenChange, tier, saving, onSubmit,
+  open, onOpenChange, tier, score, saving, onSubmit,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   tier: Tier;
+  score: number;
   saving: boolean;
   onSubmit: () => void;
 }) {
@@ -451,13 +452,18 @@ function ConfirmModal({
           <DialogDescription className="sr-only">Confirm your review submission</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-3 py-2 text-center">
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
-            {meta.icon} {meta.label}
-          </span>
-          <p className="text-sm text-muted-foreground">{meta.desc}</p>
-          <p className="text-sm text-foreground/90">{meta.motivation}</p>
-        </div>
+        <TooltipProvider delayDuration={150}>
+          <div className="relative rounded-md border border-border bg-card/60 p-4 pl-5">
+            <ReviewValidityBar score={score} />
+            <div className="flex flex-col items-center gap-3 py-2 text-center">
+              <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
+                {meta.icon} {meta.label}
+              </span>
+              <p className="text-sm text-muted-foreground">{meta.desc}</p>
+              <p className="text-sm text-foreground/90">{meta.motivation}</p>
+            </div>
+          </div>
+        </TooltipProvider>
 
         <div className="mt-2 flex flex-col gap-2">
           <Button onClick={onSubmit} disabled={saving} className="h-11 w-full text-sm font-semibold">
