@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 /**
@@ -9,10 +9,18 @@ import { useAuth } from "@/hooks/useAuth";
  */
 export default function Landing() {
   const { user, loading } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "HireVy — Hire Verified Coaches & Service Providers";
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    navigate(q ? `/explore?q=${encodeURIComponent(q)}` : "/explore");
+  };
 
   if (loading) return <div style={{ background: "#0a0705", minHeight: "100vh" }} />;
   if (user) return <Navigate to="/explore" replace />;
@@ -39,43 +47,75 @@ export default function Landing() {
       <section className="hv-l-hero hv-l-container">
         <div className="hv-l-eyebrow hv-l-fade hv-l-fade-2">Now Live — Early Access</div>
         <h1 className="hv-l-fade hv-l-fade-2">
-          Hire verified coaches<br />
-          <span className="hv-l-italic">&amp; service providers.</span>
+          Hire Verified Coaches <span className="hv-l-italic">&amp; Service Providers</span> You Can Trust.
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          Search any coach. See what real clients said. Hire with confidence.
+          The only place where coach reviews come from real clients, not marketing budgets.
         </p>
-        <div className="hv-l-hero-cards hv-l-fade hv-l-fade-4">
-          <div className="hv-l-hero-card">
-            <div className="hv-l-hero-card-label">For Buyers</div>
-            <h3 className="hv-l-hero-card-title">Find a trusted coach</h3>
-            <p className="hv-l-hero-card-sub">Search reviews from real clients before you spend a dollar.</p>
-            <Link to="/explore" className="hv-l-btn hv-l-btn-primary hv-l-hero-card-btn">Search Reviews</Link>
-          </div>
-          <div className="hv-l-hero-card">
-            <div className="hv-l-hero-card-label">For Providers</div>
-            <h3 className="hv-l-hero-card-title">Prove your results</h3>
-            <p className="hv-l-hero-card-sub">Claim your profile and let your client results speak for themselves.</p>
-            <Link to="/sign-up" className="hv-l-btn hv-l-btn-outline-gold hv-l-hero-card-btn">Claim Your Profile</Link>
-          </div>
-        </div>
-        <div className="hv-l-hero-review-cta hv-l-fade hv-l-fade-5">
-          <Link to="/submit-review" className="hv-l-btn hv-l-btn-outline-gold">Review a Coach →</Link>
-          <div className="hv-l-hero-review-note">No account needed to leave a review.</div>
+
+        <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search any coach or provider..."
+            className="hv-l-search-input"
+            aria-label="Search any coach or provider"
+          />
+          <button type="submit" className="hv-l-search-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Search
+          </button>
+        </form>
+
+        <div className="hv-l-hero-links hv-l-fade hv-l-fade-4">
+          <Link to="/submit-review" className="hv-l-hero-link">Worked with someone? Leave a review →</Link>
+          <Link to="/explore" className="hv-l-hero-link">Browse all coaches →</Link>
         </div>
 
-        <div className="hv-l-trust-strip hv-l-fade hv-l-fade-5">
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">100%</div>
-            <div className="hv-l-trust-label">Verified Reviews</div>
+        <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
+          First 100 coaches to claim their profile get Premium free — forever. 67 spots remaining.
+        </div>
+      </section>
+
+      {/* VIDEO PLACEHOLDER */}
+      <section className="hv-l-video-wrap hv-l-container">
+        <div className="hv-l-video-card">
+          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="hv-l-how hv-l-container" id="how">
+        <div className="hv-l-section-head">
+          <div className="hv-l-section-label">How it works</div>
+          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
+        </div>
+
+        <div className="hv-l-steps">
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">01</div>
+            <h3 className="hv-l-step-title">Search Any Coach</h3>
+            <p className="hv-l-step-desc">
+              Whether they have a profile or not. Type any name and see what real clients said about working with them.
+            </p>
           </div>
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">0</div>
-            <div className="hv-l-trust-label">Fake Testimonials</div>
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">02</div>
+            <h3 className="hv-l-step-title">Read Real Reviews</h3>
+            <p className="hv-l-step-desc">
+              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. You always know the source.
+            </p>
           </div>
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">1:1</div>
-            <div className="hv-l-trust-label">Real Client Ratings</div>
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">03</div>
+            <h3 className="hv-l-step-title">Leave Your Own</h3>
+            <p className="hv-l-step-desc">
+              Worked with someone? Your honest review helps the next person make a smarter decision. Takes two minutes. No account needed.
+            </p>
           </div>
         </div>
       </section>
@@ -94,42 +134,6 @@ export default function Landing() {
         </p>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="hv-l-how hv-l-container" id="how">
-        <div className="hv-l-section-head">
-          <div className="hv-l-section-label">How it works</div>
-          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
-        </div>
-
-        <div className="hv-l-steps">
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">01</div>
-            <h3 className="hv-l-step-title">Browse Real Offers</h3>
-            <p className="hv-l-step-desc">
-              Every provider on HireVy has a verified profile, a public rating, and real reviews
-              tied to actual purchases.
-            </p>
-          </div>
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">02</div>
-            <h3 className="hv-l-step-title">Check Verified Reviews</h3>
-            <p className="hv-l-step-desc">
-              See what clients actually said after working together — no cherry-picked testimonials,
-              no anonymous praise farms.
-            </p>
-          </div>
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">03</div>
-            <h3 className="hv-l-step-title">Hire With Confidence</h3>
-            <p className="hv-l-step-desc">
-              Message providers, book offers, and build your network on a platform where reputation
-              is earned, not bought.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
       <section className="hv-l-features">
         <div className="hv-l-container">
           <div className="hv-l-section-head">
@@ -353,6 +357,73 @@ const LANDING_CSS = `
 
 .hv-l-hero-review-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 60px; }
 .hv-l-hero-review-note { font-size: 13px; color: var(--hv-muted); }
+
+/* Hero search */
+.hv-l-search {
+  display: flex; align-items: center; gap: 8px;
+  max-width: 640px; margin: 0 auto 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hv-line); border-radius: 999px;
+  padding: 6px 6px 6px 8px;
+  transition: all 0.3s ease;
+}
+.hv-l-search:focus-within { border-color: rgba(212, 162, 76, 0.5); box-shadow: var(--hv-shadow-gold); }
+.hv-l-search-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif; font-size: 15px; color: var(--hv-ivory);
+}
+.hv-l-search-input::placeholder { color: var(--hv-muted); }
+.hv-l-search-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--hv-gold-bright) 0%, var(--hv-gold) 50%, var(--hv-gold-deep) 100%);
+  color: #0a0705; font-weight: 600; font-size: 14px; letter-spacing: 0.05em;
+  border: none; border-radius: 999px;
+  padding: 12px 22px; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.hv-l-search-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212, 162, 76, 0.35); }
+
+.hv-l-hero-links {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  max-width: 640px; margin: 0 auto 18px;
+  flex-wrap: wrap;
+}
+.hv-l-hero-link {
+  font-size: 13px; color: var(--hv-muted); text-decoration: none;
+  transition: color 0.25s ease;
+}
+.hv-l-hero-link:hover { color: var(--hv-gold); }
+
+.hv-l-hero-premium {
+  font-size: 13px; color: var(--hv-gold);
+  text-align: center; margin: 0 auto;
+  letter-spacing: 0.02em;
+}
+
+/* Video placeholder */
+.hv-l-video-wrap { padding: 60px 24px 40px; display: flex; justify-content: center; }
+.hv-l-video-card {
+  width: 100%; max-width: 560px; aspect-ratio: 560 / 315;
+  border: 1px solid var(--hv-line); border-radius: 20px;
+  background: linear-gradient(180deg, rgba(212, 162, 76, 0.04) 0%, rgba(10, 7, 5, 0.6) 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; position: relative;
+  transition: all 0.3s ease;
+}
+.hv-l-video-card:hover { border-color: rgba(212, 162, 76, 0.4); box-shadow: var(--hv-shadow-gold); }
+.hv-l-video-play {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 1px solid var(--hv-gold);
+  background: rgba(212, 162, 76, 0.08); color: var(--hv-gold);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.3s ease;
+  padding-left: 4px;
+}
+.hv-l-video-play:hover { background: rgba(212, 162, 76, 0.18); transform: scale(1.05); }
+.hv-l-video-caption { font-size: 13px; color: var(--hv-muted); }
+
 
 .hv-l-trust-strip {
   display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
