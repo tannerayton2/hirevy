@@ -312,7 +312,7 @@ const LANDING_CSS = `
   font-size: clamp(42px, 7vw, 84px); line-height: 1.02; letter-spacing: -0.03em;
   color: var(--hv-ivory); margin: 0 0 28px;
 }
-.hv-landing h1 .hv-l-italic { font-style: italic; color: var(--hv-gold); font-weight: 400; }
+.hv-landing h1 .hv-l-italic { font-style: normal; color: var(--hv-gold); font-weight: 500; }
 
 .hv-l-hero-sub { font-size: 19px; color: var(--hv-muted); max-width: 620px; margin: 0 auto 48px; line-height: 1.5; }
 
