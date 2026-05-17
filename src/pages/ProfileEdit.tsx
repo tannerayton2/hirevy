@@ -105,6 +105,23 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
+    const socialInputs: { label: string; raw: string }[] = [
+      { label: "Instagram", raw: instagram },
+      { label: "X (Twitter)", raw: twitter },
+      { label: "YouTube", raw: youtube },
+      { label: "LinkedIn", raw: linkedin },
+      { label: "TikTok", raw: tiktok },
+    ];
+    const normalizedSocials: (string | null)[] = [];
+    for (const s of socialInputs) {
+      if (!s.raw.trim()) { normalizedSocials.push(null); continue; }
+      if (s.raw.length > WEBSITE_MAX) { toast({ title: `${s.label} URL too long`, variant: "destructive" }); return; }
+      const n = normalizeWebsite(s.raw);
+      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL", variant: "destructive" }); return; }
+      normalizedSocials.push(n);
+    }
+    const [instagramN, twitterN, youtubeN, linkedinN, tiktokN] = normalizedSocials;
+
     setBusy(true);
     try {
       let nextAvatar = avatarUrl;
@@ -127,6 +144,11 @@ export default function ProfileEdit() {
           service_category: category || null,
           avatar_url: nextAvatar,
           website_url: normalizedWebsite,
+          instagram_url: instagramN,
+          twitter_url: twitterN,
+          youtube_url: youtubeN,
+          linkedin_url: linkedinN,
+          tiktok_url: tiktokN,
         })
         .eq("id", profile.id);
       if (error) throw error;
