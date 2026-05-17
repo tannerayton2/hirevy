@@ -639,6 +639,8 @@ export default function Profile() {
           providerDisplayName={profile.username}
         />
       )}
+
+      <TierInfoModal open={tierModalOpen} onOpenChange={setTierModalOpen} currentTier={tier} />
     </div>
     </TooltipProvider>
   );
