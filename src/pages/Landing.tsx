@@ -136,8 +136,8 @@ export default function Landing() {
       <section className="hv-l-features">
         <div className="hv-l-container">
           <div className="hv-l-section-head">
-            <div className="hv-l-section-label">Built In</div>
-            <h2>Every offer, <span className="hv-l-italic">proven.</span></h2>
+            <div className="hv-l-section-label">What Makes Us Different</div>
+            <h2>Every review, <span className="hv-l-italic">verified.</span></h2>
           </div>
 
           <div className="hv-l-feature-grid">
