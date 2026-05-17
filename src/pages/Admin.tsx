@@ -633,8 +633,3 @@ function ManageUnclaimedProfiles() {
     </Card>
   );
 }
-        </>
-      )}
-    </div>
-  );
-}
