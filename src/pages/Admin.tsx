@@ -495,6 +495,9 @@ export default function Admin() {
               </TableBody>
             </Table>
           </Card>
+
+          <SectionTitle icon={UserPlus}>Create Coach Profile</SectionTitle>
+          <CreateCoachProfileForm />
         </>
       )}
     </div>
