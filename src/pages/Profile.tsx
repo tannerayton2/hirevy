@@ -127,7 +127,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, is_claimed")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
