@@ -302,7 +302,14 @@ export default function Profile() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{providerDisplayName}</h1>
-              <TierBadge tier={tier} size="md" />
+              <button
+                type="button"
+                onClick={() => setTierModalOpen(true)}
+                className="rounded-[3px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label="View verification tiers"
+              >
+                <TierBadge tier={tier} size="md" />
+              </button>
               {!profile.is_claimed && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Unclaimed
@@ -318,24 +325,13 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Category chips */}
-            {categoryChips.length > 0 && (
-              <div className="mt-2.5 flex flex-wrap gap-1.5">
-                {categoryChips.map((c) => <CategoryChip key={c} category={c} />)}
-              </div>
-            )}
-
-            {/* Dense stat strip */}
+            {/* Stat strip — member since + review count */}
             <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
-              <StatItem>
-                <StarRating value={avg} count={profile.review_count} showValue size={13} />
-              </StatItem>
-              <Dot />
-              <StatItem>
-                <Users className="h-3 w-3" /> {profile.follower_count} {profile.follower_count === 1 ? "follower" : "followers"}
-              </StatItem>
-              <Dot />
               <StatItem>Member since {memberSince}</StatItem>
+              <Dot />
+              <StatItem>
+                {totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"}
+              </StatItem>
               {responseMs != null && (
                 <>
                   <Dot />
@@ -344,25 +340,10 @@ export default function Profile() {
                   </StatItem>
                 </>
               )}
-              <Dot />
-              <StatItem>
-                {profile.review_count} verified · {proofReviews.length} proof-backed
-              </StatItem>
             </div>
 
-            {/* Website link */}
-            {profile.website_url && (
-              <a
-                href={profile.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
-              >
-                <Globe className="h-3 w-3" />
-                <span className="underline-offset-4 hover:underline">{prettyDomain(profile.website_url)}</span>
-                <ExternalLink className="h-3 w-3 opacity-60" />
-              </a>
-            )}
+            {/* Social links row */}
+            <SocialLinksRow profile={profile} />
           </div>
         </div>
 
