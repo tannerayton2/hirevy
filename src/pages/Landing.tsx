@@ -437,7 +437,7 @@ const LANDING_CSS = `
 .hv-l-manifesto { padding: 100px 0; text-align: center; }
 .hv-l-section-label { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--hv-gold); margin-bottom: 24px; }
 .hv-l-manifesto-quote {
-  font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+  font-family: 'Fraunces', serif; font-style: normal; font-weight: 500;
   font-size: clamp(28px, 4vw, 44px); line-height: 1.3; color: var(--hv-ivory);
   max-width: 880px; margin: 0 auto; letter-spacing: -0.01em;
 }
