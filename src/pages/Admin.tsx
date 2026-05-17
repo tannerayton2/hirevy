@@ -522,7 +522,117 @@ export default function Admin() {
           </Card>
 
           <SectionTitle icon={UserPlus}>Create Coach Profile</SectionTitle>
-          <CreateCoachProfileForm />
+          <CreateCoachProfileForm onCreated={() => void fetchAll()} />
+
+          <SectionTitle icon={Trash2}>Manage Profiles</SectionTitle>
+          <ManageUnclaimedProfiles />
+        </>
+      )}
+    </div>
+  );
+}
+
+type UnclaimedRow = {
+  id: string;
+  username: string;
+  display_name: string | null;
+  service_category: string | null;
+  created_at: string;
+};
+
+function ManageUnclaimedProfiles() {
+  const [rows, setRows] = useState<UnclaimedRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase.rpc("admin_list_unclaimed_profiles" as never);
+    if (error) setErr(error.message);
+    else setRows((data as unknown as UnclaimedRow[]) ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    const { error } = await supabase.rpc("admin_delete_unclaimed_profile" as never, { p_profile_id: id } as never);
+    setDeletingId(null);
+    if (error) { setErr(error.message); return; }
+    setRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  return (
+    <Card className="border-border/60 bg-card/60">
+      {err && (
+        <div className="border-b border-destructive/40 bg-destructive/10 px-5 py-3 text-sm text-destructive">{err}</div>
+      )}
+      {loading ? (
+        <div className="px-5 py-6 text-sm text-muted-foreground">Loading…</div>
+      ) : rows.length === 0 ? (
+        <div className="px-5 py-6 text-sm text-muted-foreground">No unclaimed profiles.</div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Slug</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.display_name ?? "—"}</TableCell>
+                <TableCell>
+                  <Link to={`/coach/${r.username}`} className="text-muted-foreground hover:text-primary">
+                    /coach/{r.username}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{r.service_category ?? "—"}</TableCell>
+                <TableCell className="text-right">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={deletingId === r.id}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {deletingId === r.id ? "Deleting…" : "Delete"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete profile?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this profile? This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => void handleDelete(r.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Card>
+  );
+}
         </>
       )}
     </div>
