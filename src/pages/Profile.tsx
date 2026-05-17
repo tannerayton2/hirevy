@@ -680,6 +680,111 @@ function Dot() {
   return <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />;
 }
 
+type SocialKey = "website_url" | "instagram_url" | "twitter_url" | "youtube_url" | "linkedin_url" | "tiktok_url";
+
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.7 20.1a6.34 6.34 0 0 0 10.86-4.43V9.34a8.16 8.16 0 0 0 4.77 1.52V7.42a4.85 4.85 0 0 1-1.74-.73z" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M18.244 2H21l-6.55 7.49L22 22h-6.81l-4.78-6.26L4.8 22H2.04l7.02-8.03L2 2h6.91l4.33 5.74L18.244 2zm-2.39 18h1.86L7.25 4H5.29l10.564 16z" />
+    </svg>
+  );
+}
+
+const SOCIAL_DEFS: { key: SocialKey; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: "website_url", label: "Website", Icon: ({ className }) => <Globe className={className} /> },
+  { key: "instagram_url", label: "Instagram", Icon: ({ className }) => <Instagram className={className} /> },
+  { key: "twitter_url", label: "X (Twitter)", Icon: XIcon },
+  { key: "youtube_url", label: "YouTube", Icon: ({ className }) => <Youtube className={className} /> },
+  { key: "linkedin_url", label: "LinkedIn", Icon: ({ className }) => <Linkedin className={className} /> },
+  { key: "tiktok_url", label: "TikTok", Icon: TikTokIcon },
+];
+
+function SocialLinksRow({ profile }: { profile: ProfileFull }) {
+  const items = SOCIAL_DEFS.filter((s) => {
+    const v = profile[s.key];
+    return typeof v === "string" && v.trim().length > 0;
+  });
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+      {items.map(({ key, label, Icon }) => (
+        <a
+          key={key}
+          href={profile[key] as string}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+          title={label}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/40 text-primary/80 transition-colors hover:border-primary hover:text-primary"
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+const TIER_DETAILS: { tier: Tier; description: string }[] = [
+  { tier: "bronze", description: "Profile claimed and identity verified." },
+  { tier: "silver", description: "10 or more verified reviews." },
+  { tier: "gold", description: "50 or more verified reviews with a strong average review strength." },
+];
+
+function TierInfoModal({
+  open,
+  onOpenChange,
+  currentTier,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  currentTier: Tier;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md border-border bg-card">
+        <DialogHeader>
+          <DialogTitle className="font-display text-xl">Verification Tiers</DialogTitle>
+        </DialogHeader>
+        <div className="mt-2 space-y-2">
+          {TIER_DETAILS.map(({ tier, description }) => {
+            const isCurrent = currentTier === tier;
+            return (
+              <div
+                key={tier}
+                className={cn(
+                  "flex items-start gap-3 rounded-md border border-border/60 p-3 transition-colors",
+                  isCurrent && "border-primary/40 bg-primary/5",
+                )}
+              >
+                <TierBadge tier={tier} size="md" showLabel={false} className="mt-0.5" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-display text-sm font-semibold">{TIER_LABEL[tier]}</p>
+                    {isCurrent && (
+                      <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">
+                        Current
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function TabButton({ active, onClick, count, label }: { active: boolean; onClick: () => void; count: number; label: string }) {
   const dim = count === 0 && !active;
   return (
