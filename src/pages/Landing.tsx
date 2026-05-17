@@ -402,7 +402,8 @@ const LANDING_CSS = `
 }
 
 /* Video placeholder */
-.hv-l-video-wrap { padding: 60px 24px 40px; display: flex; justify-content: center; }
+.hv-l-video-wrap { padding: 60px 24px 40px; display: flex; flex-direction: column; align-items: center; }
+.hv-l-video-head { margin-bottom: 40px; }
 .hv-l-video-card {
   width: 100%; max-width: 560px; aspect-ratio: 560 / 315;
   border: 1px solid var(--hv-line); border-radius: 20px;
