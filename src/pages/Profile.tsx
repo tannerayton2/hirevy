@@ -112,6 +112,7 @@ export default function Profile() {
   const [importedModalOpen, setImportedModalOpen] = useState(false);
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
   const [claimOpen, setClaimOpen] = useState(false);
+  const [tierModalOpen, setTierModalOpen] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
