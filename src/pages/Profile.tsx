@@ -46,6 +46,11 @@ interface ProfileFull {
   created_at: string;
   pinned_review_id: string | null;
   website_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  linkedin_url: string | null;
+  tiktok_url: string | null;
   is_claimed: boolean;
 }
 
