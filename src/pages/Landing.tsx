@@ -455,7 +455,7 @@ const LANDING_CSS = `
 .hv-l-how { padding: 80px 0 120px; }
 .hv-l-section-head { text-align: center; margin-bottom: 80px; }
 .hv-landing h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(36px, 5vw, 56px); letter-spacing: -0.02em; color: var(--hv-ivory); line-height: 1.1; margin: 0; }
-.hv-landing h2 .hv-l-italic { font-style: italic; color: var(--hv-gold); }
+.hv-landing h2 .hv-l-italic { font-style: normal; color: var(--hv-gold); }
 
 .hv-l-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
 @media (max-width: 768px) { .hv-l-steps { grid-template-columns: 1fr; } }
