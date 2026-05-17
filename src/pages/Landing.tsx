@@ -43,14 +43,25 @@ export default function Landing() {
           <span className="hv-l-italic">&amp; service providers.</span>
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          A trust layer for the info industry. Browse real offers, ranked by what clients
-          actually said — not what was promised in the ad.
+          Search any coach. See what real clients said. Hire with confidence.
         </p>
-        <div className="hv-l-cta-row hv-l-fade hv-l-fade-4">
-          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">
-            Browse verified offers →
-          </Link>
-          <a href="#how" className="hv-l-btn hv-l-btn-secondary">How it works</a>
+        <div className="hv-l-hero-cards hv-l-fade hv-l-fade-4">
+          <div className="hv-l-hero-card">
+            <div className="hv-l-hero-card-label">For Buyers</div>
+            <h3 className="hv-l-hero-card-title">Find a trusted coach</h3>
+            <p className="hv-l-hero-card-sub">Search reviews from real clients before you spend a dollar.</p>
+            <Link to="/explore" className="hv-l-btn hv-l-btn-primary hv-l-hero-card-btn">Search Reviews</Link>
+          </div>
+          <div className="hv-l-hero-card">
+            <div className="hv-l-hero-card-label">For Providers</div>
+            <h3 className="hv-l-hero-card-title">Prove your results</h3>
+            <p className="hv-l-hero-card-sub">Claim your profile and let your client results speak for themselves.</p>
+            <Link to="/sign-up" className="hv-l-btn hv-l-btn-outline-gold hv-l-hero-card-btn">Claim Your Profile</Link>
+          </div>
+        </div>
+        <div className="hv-l-hero-review-cta hv-l-fade hv-l-fade-5">
+          <Link to="/submit-review" className="hv-l-btn hv-l-btn-outline-gold">Review a Coach →</Link>
+          <div className="hv-l-hero-review-note">No account needed to leave a review.</div>
         </div>
 
         <div className="hv-l-trust-strip hv-l-fade hv-l-fade-5">
