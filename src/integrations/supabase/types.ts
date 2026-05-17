@@ -801,21 +801,55 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_create_unclaimed_profile: {
-        Args: {
-          p_bio: string
-          p_display_name: string
-          p_instagram_url: string
-          p_linkedin_url: string
-          p_service_category: string
-          p_tiktok_url: string
-          p_twitter_url: string
-          p_username: string
-          p_website_url: string
-          p_youtube_url: string
-        }
+      admin_create_unclaimed_profile:
+        | {
+            Args: {
+              p_bio: string
+              p_display_name: string
+              p_instagram_url: string
+              p_linkedin_url: string
+              p_service_category: string
+              p_tiktok_url: string
+              p_twitter_url: string
+              p_username: string
+              p_website_url: string
+              p_youtube_url: string
+            }
+            Returns: {
+              id: string
+              username: string
+            }[]
+          }
+        | {
+            Args: {
+              p_avatar_url?: string
+              p_bio: string
+              p_display_name: string
+              p_instagram_url: string
+              p_linkedin_url: string
+              p_service_category: string
+              p_tiktok_url: string
+              p_twitter_url: string
+              p_username: string
+              p_website_url: string
+              p_youtube_url: string
+            }
+            Returns: {
+              id: string
+              username: string
+            }[]
+          }
+      admin_delete_unclaimed_profile: {
+        Args: { p_profile_id: string }
+        Returns: undefined
+      }
+      admin_list_unclaimed_profiles: {
+        Args: never
         Returns: {
+          created_at: string
+          display_name: string
           id: string
+          service_category: string
           username: string
         }[]
       }
