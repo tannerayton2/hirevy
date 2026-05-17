@@ -102,6 +102,7 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
         p_youtube_url: youtubeUrl.trim(),
         p_linkedin_url: linkedinUrl.trim(),
         p_tiktok_url: tiktokUrl.trim(),
+        p_avatar_url: avatarUrl.trim(),
       } as never,
     );
     setSubmitting(false);
@@ -113,8 +114,10 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
     if (created) {
       setSuccess({ slug: created.username });
       setFullName(""); setSlug(""); setSlugTouched(false); setCategory("");
+      setAvatarUrl("");
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
       setLinkedinUrl(""); setTiktokUrl(""); setBio("");
+      onCreated?.();
     }
   };
 
