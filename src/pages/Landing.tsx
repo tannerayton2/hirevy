@@ -47,43 +47,75 @@ export default function Landing() {
       <section className="hv-l-hero hv-l-container">
         <div className="hv-l-eyebrow hv-l-fade hv-l-fade-2">Now Live — Early Access</div>
         <h1 className="hv-l-fade hv-l-fade-2">
-          Hire verified coaches<br />
-          <span className="hv-l-italic">&amp; service providers.</span>
+          Hire Verified Coaches <span className="hv-l-italic">&amp; Service Providers</span> You Can Trust.
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          Search any coach. See what real clients said. Hire with confidence.
+          The only place where coach reviews come from real clients, not marketing budgets.
         </p>
-        <div className="hv-l-hero-cards hv-l-fade hv-l-fade-4">
-          <div className="hv-l-hero-card">
-            <div className="hv-l-hero-card-label">For Buyers</div>
-            <h3 className="hv-l-hero-card-title">Find a trusted coach</h3>
-            <p className="hv-l-hero-card-sub">Search reviews from real clients before you spend a dollar.</p>
-            <Link to="/explore" className="hv-l-btn hv-l-btn-primary hv-l-hero-card-btn">Search Reviews</Link>
-          </div>
-          <div className="hv-l-hero-card">
-            <div className="hv-l-hero-card-label">For Providers</div>
-            <h3 className="hv-l-hero-card-title">Prove your results</h3>
-            <p className="hv-l-hero-card-sub">Claim your profile and let your client results speak for themselves.</p>
-            <Link to="/sign-up" className="hv-l-btn hv-l-btn-outline-gold hv-l-hero-card-btn">Claim Your Profile</Link>
-          </div>
-        </div>
-        <div className="hv-l-hero-review-cta hv-l-fade hv-l-fade-5">
-          <Link to="/submit-review" className="hv-l-btn hv-l-btn-outline-gold">Review a Coach →</Link>
-          <div className="hv-l-hero-review-note">No account needed to leave a review.</div>
+
+        <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search any coach or provider..."
+            className="hv-l-search-input"
+            aria-label="Search any coach or provider"
+          />
+          <button type="submit" className="hv-l-search-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Search
+          </button>
+        </form>
+
+        <div className="hv-l-hero-links hv-l-fade hv-l-fade-4">
+          <Link to="/submit-review" className="hv-l-hero-link">Worked with someone? Leave a review →</Link>
+          <Link to="/explore" className="hv-l-hero-link">Browse all coaches →</Link>
         </div>
 
-        <div className="hv-l-trust-strip hv-l-fade hv-l-fade-5">
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">100%</div>
-            <div className="hv-l-trust-label">Verified Reviews</div>
+        <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
+          First 100 coaches to claim their profile get Premium free — forever. 67 spots remaining.
+        </div>
+      </section>
+
+      {/* VIDEO PLACEHOLDER */}
+      <section className="hv-l-video-wrap hv-l-container">
+        <div className="hv-l-video-card">
+          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="hv-l-how hv-l-container" id="how">
+        <div className="hv-l-section-head">
+          <div className="hv-l-section-label">How it works</div>
+          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
+        </div>
+
+        <div className="hv-l-steps">
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">01</div>
+            <h3 className="hv-l-step-title">Search Any Coach</h3>
+            <p className="hv-l-step-desc">
+              Whether they have a profile or not. Type any name and see what real clients said about working with them.
+            </p>
           </div>
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">0</div>
-            <div className="hv-l-trust-label">Fake Testimonials</div>
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">02</div>
+            <h3 className="hv-l-step-title">Read Real Reviews</h3>
+            <p className="hv-l-step-desc">
+              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. You always know the source.
+            </p>
           </div>
-          <div className="hv-l-trust-item">
-            <div className="hv-l-trust-num">1:1</div>
-            <div className="hv-l-trust-label">Real Client Ratings</div>
+          <div className="hv-l-step">
+            <div className="hv-l-step-num">03</div>
+            <h3 className="hv-l-step-title">Leave Your Own</h3>
+            <p className="hv-l-step-desc">
+              Worked with someone? Your honest review helps the next person make a smarter decision. Takes two minutes. No account needed.
+            </p>
           </div>
         </div>
       </section>
@@ -102,42 +134,6 @@ export default function Landing() {
         </p>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="hv-l-how hv-l-container" id="how">
-        <div className="hv-l-section-head">
-          <div className="hv-l-section-label">How it works</div>
-          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
-        </div>
-
-        <div className="hv-l-steps">
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">01</div>
-            <h3 className="hv-l-step-title">Browse Real Offers</h3>
-            <p className="hv-l-step-desc">
-              Every provider on HireVy has a verified profile, a public rating, and real reviews
-              tied to actual purchases.
-            </p>
-          </div>
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">02</div>
-            <h3 className="hv-l-step-title">Check Verified Reviews</h3>
-            <p className="hv-l-step-desc">
-              See what clients actually said after working together — no cherry-picked testimonials,
-              no anonymous praise farms.
-            </p>
-          </div>
-          <div className="hv-l-step">
-            <div className="hv-l-step-num">03</div>
-            <h3 className="hv-l-step-title">Hire With Confidence</h3>
-            <p className="hv-l-step-desc">
-              Message providers, book offers, and build your network on a platform where reputation
-              is earned, not bought.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
       <section className="hv-l-features">
         <div className="hv-l-container">
           <div className="hv-l-section-head">
