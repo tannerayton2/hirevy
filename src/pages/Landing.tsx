@@ -43,14 +43,25 @@ export default function Landing() {
           <span className="hv-l-italic">&amp; service providers.</span>
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          A trust layer for the info industry. Browse real offers, ranked by what clients
-          actually said — not what was promised in the ad.
+          Search any coach. See what real clients said. Hire with confidence.
         </p>
-        <div className="hv-l-cta-row hv-l-fade hv-l-fade-4">
-          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">
-            Browse verified offers →
-          </Link>
-          <a href="#how" className="hv-l-btn hv-l-btn-secondary">How it works</a>
+        <div className="hv-l-hero-cards hv-l-fade hv-l-fade-4">
+          <div className="hv-l-hero-card">
+            <div className="hv-l-hero-card-label">For Buyers</div>
+            <h3 className="hv-l-hero-card-title">Find a trusted coach</h3>
+            <p className="hv-l-hero-card-sub">Search reviews from real clients before you spend a dollar.</p>
+            <Link to="/explore" className="hv-l-btn hv-l-btn-primary hv-l-hero-card-btn">Search Reviews</Link>
+          </div>
+          <div className="hv-l-hero-card">
+            <div className="hv-l-hero-card-label">For Providers</div>
+            <h3 className="hv-l-hero-card-title">Prove your results</h3>
+            <p className="hv-l-hero-card-sub">Claim your profile and let your client results speak for themselves.</p>
+            <Link to="/sign-up" className="hv-l-btn hv-l-btn-outline-gold hv-l-hero-card-btn">Claim Your Profile</Link>
+          </div>
+        </div>
+        <div className="hv-l-hero-review-cta hv-l-fade hv-l-fade-5">
+          <Link to="/submit-review" className="hv-l-btn hv-l-btn-outline-gold">Review a Coach →</Link>
+          <div className="hv-l-hero-review-note">No account needed to leave a review.</div>
         </div>
 
         <div className="hv-l-trust-strip hv-l-fade hv-l-fade-5">
@@ -318,6 +329,30 @@ const LANDING_CSS = `
 .hv-l-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(212, 162, 76, 0.4); }
 .hv-l-btn-secondary { background: transparent; color: var(--hv-ivory); border: 1px solid var(--hv-line); }
 .hv-l-btn-secondary:hover { border-color: var(--hv-gold); background: rgba(212, 162, 76, 0.05); }
+.hv-l-btn-outline-gold { background: transparent; color: var(--hv-gold); border: 1px solid var(--hv-gold); }
+.hv-l-btn-outline-gold:hover { background: rgba(212, 162, 76, 0.08); border-color: var(--hv-gold-bright); color: var(--hv-gold-bright); }
+
+/* Hero cards */
+.hv-l-hero-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  max-width: 760px; margin: 0 auto 32px;
+}
+@media (max-width: 640px) { .hv-l-hero-cards { grid-template-columns: 1fr; } }
+.hv-l-hero-card {
+  background: linear-gradient(180deg, rgba(212, 162, 76, 0.04) 0%, transparent 100%);
+  border: 1px solid var(--hv-line); border-radius: 20px;
+  padding: 32px 28px; text-align: left;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: all 0.3s ease;
+}
+.hv-l-hero-card:hover { border-color: rgba(212, 162, 76, 0.4); box-shadow: var(--hv-shadow-gold); }
+.hv-l-hero-card-label { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--hv-gold); }
+.hv-l-hero-card-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500; color: var(--hv-ivory); margin: 0; letter-spacing: -0.01em; }
+.hv-l-hero-card-sub { font-size: 14px; color: var(--hv-muted); margin: 0 0 8px; line-height: 1.5; }
+.hv-l-hero-card-btn { align-self: flex-start; margin-top: auto; }
+
+.hv-l-hero-review-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 60px; }
+.hv-l-hero-review-note { font-size: 13px; color: var(--hv-muted); }
 
 .hv-l-trust-strip {
   display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
