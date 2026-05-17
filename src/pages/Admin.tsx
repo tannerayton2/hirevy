@@ -142,6 +142,16 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
         </div>
 
         <div>
+          <Label htmlFor="cc-avatar">Profile photo URL</Label>
+          <Input
+            id="cc-avatar"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://…"
+          />
+        </div>
+
+        <div>
           <Label>Category *</Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
