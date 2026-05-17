@@ -32,11 +32,10 @@ export default function Marketplace() {
       <div className="w-full max-w-md text-center">
         <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Coming Soon</p>
         <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-          The verified marketplace is launching.
+          The marketplace for coaches and service providers.
         </h1>
         <p className="mt-3 text-sm text-muted-foreground md:text-base">
-          Browse coaches ranked by verified client results — not follower count or ad spend.
-          Be first to know when it opens.
+          Advertise your services, browse and compare offers, and connect with buyers actively looking to hire. New to coaching? List your offer free and start building real testimonials before you scale.
         </p>
 
         <form onSubmit={submit} className="mt-7 space-y-3 text-left">
