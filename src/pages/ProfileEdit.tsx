@@ -41,6 +41,11 @@ export default function ProfileEdit() {
   const [category, setCategory] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [tiktok, setTiktok] = useState("");
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
@@ -53,6 +58,15 @@ export default function ProfileEdit() {
     setCategory(profile.service_category ?? "");
     setAvatarUrl(profile.avatar_url);
     setWebsite(profile.website_url ?? "");
+    const p = profile as typeof profile & {
+      instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
+      linkedin_url?: string | null; tiktok_url?: string | null;
+    };
+    setInstagram(p.instagram_url ?? "");
+    setTwitter(p.twitter_url ?? "");
+    setYoutube(p.youtube_url ?? "");
+    setLinkedin(p.linkedin_url ?? "");
+    setTiktok(p.tiktok_url ?? "");
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
