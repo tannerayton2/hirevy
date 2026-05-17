@@ -801,6 +801,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_unclaimed_profile: {
+        Args: {
+          p_bio: string
+          p_display_name: string
+          p_instagram_url: string
+          p_linkedin_url: string
+          p_service_category: string
+          p_tiktok_url: string
+          p_twitter_url: string
+          p_username: string
+          p_website_url: string
+          p_youtube_url: string
+        }
+        Returns: {
+          id: string
+          username: string
+        }[]
+      }
       admin_list_users: {
         Args: never
         Returns: {
