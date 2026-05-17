@@ -329,6 +329,30 @@ const LANDING_CSS = `
 .hv-l-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(212, 162, 76, 0.4); }
 .hv-l-btn-secondary { background: transparent; color: var(--hv-ivory); border: 1px solid var(--hv-line); }
 .hv-l-btn-secondary:hover { border-color: var(--hv-gold); background: rgba(212, 162, 76, 0.05); }
+.hv-l-btn-outline-gold { background: transparent; color: var(--hv-gold); border: 1px solid var(--hv-gold); }
+.hv-l-btn-outline-gold:hover { background: rgba(212, 162, 76, 0.08); border-color: var(--hv-gold-bright); color: var(--hv-gold-bright); }
+
+/* Hero cards */
+.hv-l-hero-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  max-width: 760px; margin: 0 auto 32px;
+}
+@media (max-width: 640px) { .hv-l-hero-cards { grid-template-columns: 1fr; } }
+.hv-l-hero-card {
+  background: linear-gradient(180deg, rgba(212, 162, 76, 0.04) 0%, transparent 100%);
+  border: 1px solid var(--hv-line); border-radius: 20px;
+  padding: 32px 28px; text-align: left;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: all 0.3s ease;
+}
+.hv-l-hero-card:hover { border-color: rgba(212, 162, 76, 0.4); box-shadow: var(--hv-shadow-gold); }
+.hv-l-hero-card-label { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--hv-gold); }
+.hv-l-hero-card-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500; color: var(--hv-ivory); margin: 0; letter-spacing: -0.01em; }
+.hv-l-hero-card-sub { font-size: 14px; color: var(--hv-muted); margin: 0 0 8px; line-height: 1.5; }
+.hv-l-hero-card-btn { align-self: flex-start; margin-top: auto; }
+
+.hv-l-hero-review-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 60px; }
+.hv-l-hero-review-note { font-size: 13px; color: var(--hv-muted); }
 
 .hv-l-trust-strip {
   display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
