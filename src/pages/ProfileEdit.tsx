@@ -41,6 +41,11 @@ export default function ProfileEdit() {
   const [category, setCategory] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [tiktok, setTiktok] = useState("");
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
@@ -53,6 +58,15 @@ export default function ProfileEdit() {
     setCategory(profile.service_category ?? "");
     setAvatarUrl(profile.avatar_url);
     setWebsite(profile.website_url ?? "");
+    const p = profile as typeof profile & {
+      instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
+      linkedin_url?: string | null; tiktok_url?: string | null;
+    };
+    setInstagram(p.instagram_url ?? "");
+    setTwitter(p.twitter_url ?? "");
+    setYoutube(p.youtube_url ?? "");
+    setLinkedin(p.linkedin_url ?? "");
+    setTiktok(p.tiktok_url ?? "");
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
@@ -91,6 +105,23 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
+    const socialInputs: { label: string; raw: string }[] = [
+      { label: "Instagram", raw: instagram },
+      { label: "X (Twitter)", raw: twitter },
+      { label: "YouTube", raw: youtube },
+      { label: "LinkedIn", raw: linkedin },
+      { label: "TikTok", raw: tiktok },
+    ];
+    const normalizedSocials: (string | null)[] = [];
+    for (const s of socialInputs) {
+      if (!s.raw.trim()) { normalizedSocials.push(null); continue; }
+      if (s.raw.length > WEBSITE_MAX) { toast({ title: `${s.label} URL too long`, variant: "destructive" }); return; }
+      const n = normalizeWebsite(s.raw);
+      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL", variant: "destructive" }); return; }
+      normalizedSocials.push(n);
+    }
+    const [instagramN, twitterN, youtubeN, linkedinN, tiktokN] = normalizedSocials;
+
     setBusy(true);
     try {
       let nextAvatar = avatarUrl;
@@ -113,6 +144,11 @@ export default function ProfileEdit() {
           service_category: category || null,
           avatar_url: nextAvatar,
           website_url: normalizedWebsite,
+          instagram_url: instagramN,
+          twitter_url: twitterN,
+          youtube_url: youtubeN,
+          linkedin_url: linkedinN,
+          tiktok_url: tiktokN,
         })
         .eq("id", profile.id);
       if (error) throw error;
@@ -209,6 +245,22 @@ export default function ProfileEdit() {
           </p>
         </Field>
 
+        {/* Social links */}
+        <Field label="Instagram (optional)">
+          <Input type="url" value={instagram} onChange={(e) => setInstagram(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://instagram.com/yourhandle" />
+        </Field>
+        <Field label="X / Twitter (optional)">
+          <Input type="url" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://x.com/yourhandle" />
+        </Field>
+        <Field label="YouTube (optional)">
+          <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://youtube.com/@yourchannel" />
+        </Field>
+        <Field label="LinkedIn (optional)">
+          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/you" />
+        </Field>
+        <Field label="TikTok (optional)">
+          <Input type="url" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://tiktok.com/@yourhandle" />
+        </Field>
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
           <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>

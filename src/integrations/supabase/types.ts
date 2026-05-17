@@ -490,16 +490,21 @@ export type Database = {
           display_name: string | null
           follower_count: number
           id: string
+          instagram_url: string | null
           is_claimed: boolean
+          linkedin_url: string | null
           paid_offer_limit: number
           pinned_review_id: string | null
           plan: string
           rating_sum: number
           review_count: number
           service_category: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
           updated_at: string
           username: string
           website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -508,16 +513,21 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id: string
+          instagram_url?: string | null
           is_claimed?: boolean
+          linkedin_url?: string | null
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
           service_category?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           username: string
           website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -526,16 +536,21 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id?: string
+          instagram_url?: string | null
           is_claimed?: boolean
+          linkedin_url?: string | null
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
           service_category?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           username?: string
           website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
