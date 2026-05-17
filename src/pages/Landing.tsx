@@ -78,23 +78,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* VIDEO PLACEHOLDER */}
-      <section className="hv-l-video-wrap hv-l-container">
-        <div className="hv-l-video-card">
-          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS — steps */}
       <section className="hv-l-how hv-l-container" id="how">
-        <div className="hv-l-section-head">
-          <div className="hv-l-section-label">How it works</div>
-          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
-        </div>
-
         <div className="hv-l-steps">
           <div className="hv-l-step">
             <div className="hv-l-step-num">01</div>
