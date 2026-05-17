@@ -50,7 +50,7 @@ export default function Landing() {
           Hire Verified Coaches <span className="hv-l-italic">&amp; Service Providers</span> You Can Trust.
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          The only place where coach reviews come from real clients, not marketing budgets.
+          The only place where reviews come from real clients, not marketing budgets.
         </p>
 
         <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
