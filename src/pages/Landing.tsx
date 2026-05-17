@@ -78,23 +78,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* VIDEO PLACEHOLDER */}
-      <section className="hv-l-video-wrap hv-l-container">
-        <div className="hv-l-video-card">
-          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS — steps */}
       <section className="hv-l-how hv-l-container" id="how">
-        <div className="hv-l-section-head">
-          <div className="hv-l-section-label">How it works</div>
-          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
-        </div>
-
         <div className="hv-l-steps">
           <div className="hv-l-step">
             <div className="hv-l-step-num">01</div>
@@ -120,6 +105,20 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* VIDEO PLACEHOLDER with How It Works heading */}
+      <section className="hv-l-video-wrap hv-l-container">
+        <div className="hv-l-section-head hv-l-video-head">
+          <div className="hv-l-section-label">How it works</div>
+          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
+        </div>
+        <div className="hv-l-video-card">
+          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
+        </div>
+      </section>
+
       {/* MANIFESTO */}
       <section className="hv-l-manifesto hv-l-container">
         <div className="hv-l-section-label">The Problem</div>
@@ -137,8 +136,8 @@ export default function Landing() {
       <section className="hv-l-features">
         <div className="hv-l-container">
           <div className="hv-l-section-head">
-            <div className="hv-l-section-label">Built In</div>
-            <h2>Every offer, <span className="hv-l-italic">proven.</span></h2>
+            <div className="hv-l-section-label">What Makes Us Different</div>
+            <h2>Every review, <span className="hv-l-italic">verified.</span></h2>
           </div>
 
           <div className="hv-l-feature-grid">
@@ -313,7 +312,7 @@ const LANDING_CSS = `
   font-size: clamp(42px, 7vw, 84px); line-height: 1.02; letter-spacing: -0.03em;
   color: var(--hv-ivory); margin: 0 0 28px;
 }
-.hv-landing h1 .hv-l-italic { font-style: italic; color: var(--hv-gold); font-weight: 400; }
+.hv-landing h1 .hv-l-italic { font-style: normal; color: var(--hv-gold); font-weight: 500; }
 
 .hv-l-hero-sub { font-size: 19px; color: var(--hv-muted); max-width: 620px; margin: 0 auto 48px; line-height: 1.5; }
 
@@ -403,7 +402,8 @@ const LANDING_CSS = `
 }
 
 /* Video placeholder */
-.hv-l-video-wrap { padding: 60px 24px 40px; display: flex; justify-content: center; }
+.hv-l-video-wrap { padding: 60px 24px 40px; display: flex; flex-direction: column; align-items: center; }
+.hv-l-video-head { margin-bottom: 40px; }
 .hv-l-video-card {
   width: 100%; max-width: 560px; aspect-ratio: 560 / 315;
   border: 1px solid var(--hv-line); border-radius: 20px;
@@ -438,7 +438,7 @@ const LANDING_CSS = `
 .hv-l-manifesto { padding: 100px 0; text-align: center; }
 .hv-l-section-label { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--hv-gold); margin-bottom: 24px; }
 .hv-l-manifesto-quote {
-  font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+  font-family: 'Fraunces', serif; font-style: normal; font-weight: 500;
   font-size: clamp(28px, 4vw, 44px); line-height: 1.3; color: var(--hv-ivory);
   max-width: 880px; margin: 0 auto; letter-spacing: -0.01em;
 }
@@ -456,7 +456,7 @@ const LANDING_CSS = `
 .hv-l-how { padding: 80px 0 120px; }
 .hv-l-section-head { text-align: center; margin-bottom: 80px; }
 .hv-landing h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(36px, 5vw, 56px); letter-spacing: -0.02em; color: var(--hv-ivory); line-height: 1.1; margin: 0; }
-.hv-landing h2 .hv-l-italic { font-style: italic; color: var(--hv-gold); }
+.hv-landing h2 .hv-l-italic { font-style: normal; color: var(--hv-gold); }
 
 .hv-l-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
 @media (max-width: 768px) { .hv-l-steps { grid-template-columns: 1fr; } }
