@@ -1,12 +1,22 @@
 import { useEffect, useState, useCallback } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag } from "lucide-react";
+import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUsername } from "@/lib/admin";
 import { tierForReviewCount, TIER_LABEL } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -15,6 +25,156 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+const COACH_CATEGORIES = [
+  "Business Coaching",
+  "Sales",
+  "Copywriting",
+  "Fitness & Health",
+  "Mindset",
+  "Marketing",
+  "Finance",
+  "Life Coaching",
+  "Other",
+] as const;
+
+function slugifyName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+function CreateCoachProfileForm() {
+  const [fullName, setFullName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [category, setCategory] = useState<string>("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [twitterUrl, setTwitterUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
+  const [bio, setBio] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<{ slug: string } | null>(null);
+
+  const handleNameChange = (v: string) => {
+    setFullName(v);
+    if (!slugTouched) setSlug(slugifyName(v));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    if (!fullName.trim() || !slug.trim() || !category) {
+      setError("Full name, slug, and category are required.");
+      return;
+    }
+    setSubmitting(true);
+    const { data, error: rpcErr } = await supabase.rpc(
+      "admin_create_unclaimed_profile" as never,
+      {
+        p_username: slug,
+        p_display_name: fullName.trim(),
+        p_service_category: category,
+        p_bio: bio.trim(),
+        p_website_url: websiteUrl.trim(),
+        p_instagram_url: instagramUrl.trim(),
+        p_twitter_url: twitterUrl.trim(),
+        p_youtube_url: youtubeUrl.trim(),
+        p_linkedin_url: linkedinUrl.trim(),
+        p_tiktok_url: tiktokUrl.trim(),
+      } as never,
+    );
+    setSubmitting(false);
+    if (rpcErr) {
+      setError(rpcErr.message);
+      return;
+    }
+    const created = (data as Array<{ id: string; username: string }> | null)?.[0];
+    if (created) {
+      setSuccess({ slug: created.username });
+      setFullName(""); setSlug(""); setSlugTouched(false); setCategory("");
+      setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
+      setLinkedinUrl(""); setTiktokUrl(""); setBio("");
+    }
+  };
+
+  return (
+    <Card className="border-border/60 bg-card/60 p-5">
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="cc-name">Full name *</Label>
+            <Input id="cc-name" value={fullName} onChange={(e) => handleNameChange(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="cc-slug">Profile slug *</Label>
+            <Input
+              id="cc-slug"
+              value={slug}
+              onChange={(e) => { setSlugTouched(true); setSlug(slugifyName(e.target.value)); }}
+              required
+            />
+            <p className="mt-1 text-xs text-muted-foreground">URL: /coach/{slug || "your-slug"}</p>
+          </div>
+        </div>
+
+        <div>
+          <Label>Category *</Label>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+            <SelectContent>
+              {COACH_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div><Label htmlFor="cc-web">Website URL</Label><Input id="cc-web" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-ig">Instagram URL</Label><Input id="cc-ig" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-tw">Twitter/X URL</Label><Input id="cc-tw" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-yt">YouTube URL</Label><Input id="cc-yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-li">LinkedIn URL</Label><Input id="cc-li" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-tt">TikTok URL</Label><Input id="cc-tt" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} /></div>
+        </div>
+
+        <div>
+          <Label htmlFor="cc-bio">Short bio</Label>
+          <Textarea id="cc-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
+        </div>
+
+        {error && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+        )}
+        {success && (
+          <div className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
+            Profile created.{" "}
+            <Link to={`/coach/${success.slug}`} className="font-medium text-primary underline">
+              View /coach/{success.slug}
+            </Link>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          {submitting ? "Creating…" : "Create Profile"}
+        </Button>
+      </form>
+    </Card>
+  );
+}
 
 type AdminUserRow = {
   id: string;
