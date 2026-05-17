@@ -58,10 +58,11 @@ function slugifyName(name: string): string {
     .slice(0, 60);
 }
 
-function CreateCoachProfileForm() {
+function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
   const [fullName, setFullName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [category, setCategory] = useState<string>("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
