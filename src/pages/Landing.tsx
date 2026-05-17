@@ -9,10 +9,18 @@ import { useAuth } from "@/hooks/useAuth";
  */
 export default function Landing() {
   const { user, loading } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "HireVy — Hire Verified Coaches & Service Providers";
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    navigate(q ? `/explore?q=${encodeURIComponent(q)}` : "/explore");
+  };
 
   if (loading) return <div style={{ background: "#0a0705", minHeight: "100vh" }} />;
   if (user) return <Navigate to="/explore" replace />;
