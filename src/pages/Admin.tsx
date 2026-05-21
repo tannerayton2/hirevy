@@ -62,7 +62,8 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
   const [fullName, setFullName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
@@ -80,6 +81,13 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
     if (!slugTouched) setSlug(slugifyName(v));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0] ?? null;
+    setAvatarFile(f);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(f ? URL.createObjectURL(f) : null);
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -89,6 +97,29 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
       return;
     }
     setSubmitting(true);
+
+    let uploadedAvatarUrl = "";
+    if (avatarFile) {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) {
+        setSubmitting(false);
+        setError("Not authenticated.");
+        return;
+      }
+      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${uid}/unclaimed/${Date.now()}-${slug}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type || "image/jpeg" });
+      if (upErr) {
+        setSubmitting(false);
+        setError(`Image upload failed: ${upErr.message}`);
+        return;
+      }
+      uploadedAvatarUrl = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+    }
+
     const { data, error: rpcErr } = await supabase.rpc(
       "admin_create_unclaimed_profile" as never,
       {
@@ -102,7 +133,7 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
         p_youtube_url: youtubeUrl.trim(),
         p_linkedin_url: linkedinUrl.trim(),
         p_tiktok_url: tiktokUrl.trim(),
-        p_avatar_url: avatarUrl.trim(),
+        p_avatar_url: uploadedAvatarUrl,
       } as never,
     );
     setSubmitting(false);
@@ -114,7 +145,8 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
     if (created) {
       setSuccess({ slug: created.username });
       setFullName(""); setSlug(""); setSlugTouched(false); setCategory("");
-      setAvatarUrl("");
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+      setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
       setLinkedinUrl(""); setTiktokUrl(""); setBio("");
       onCreated?.();
@@ -142,14 +174,24 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
         </div>
 
         <div>
-          <Label htmlFor="cc-avatar">Profile photo URL</Label>
+          <Label htmlFor="cc-avatar">Profile photo (optional)</Label>
+          {avatarPreview && (
+            <div className="mt-2 mb-2">
+              <img
+                src={avatarPreview}
+                alt="Profile preview"
+                className="h-20 w-20 rounded-full object-cover border border-border"
+              />
+            </div>
+          )}
           <Input
             id="cc-avatar"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://…"
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
           />
         </div>
+
 
         <div>
           <Label>Category *</Label>
