@@ -140,6 +140,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     </button>
                     <button
                       type="button"
+                      onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Send us a message
+                    </button>
+                    <button
+                      type="button"
                       onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
                       className="mt-1 flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                     >
