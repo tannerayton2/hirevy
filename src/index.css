@@ -107,21 +107,12 @@
 }
 
 @layer utilities {
-  .gem-plate::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 20px;
-    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
-    transform: translateX(-150%);
-    animation: gem-shimmer-move 3s linear infinite;
-    pointer-events: none;
+  @keyframes shimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.12); }
   }
-  @keyframes gem-shimmer-move {
-    0% { transform: translateX(-150%) skewX(-15deg); }
-    100% { transform: translateX(900%) skewX(-15deg); }
+  .tier-gem {
+    animation: shimmer 3s ease-in-out infinite;
   }
 }
 
