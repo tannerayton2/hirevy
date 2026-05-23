@@ -393,195 +393,499 @@ export default function Admin() {
         <div className="mt-10 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <>
-          {/* Users */}
-          <SectionTitle icon={Users}>Users</SectionTitle>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Total users" value={stats.users.total} />
-            <StatCard label="Signups 24h" value={stats.users.last_24h} />
-            <StatCard label="Signups 7d" value={stats.users.last_7d} />
-            <StatCard
-              label="Top provider"
-              value={stats.reviews.top_provider?.count ?? 0}
-              hint={stats.reviews.top_provider ? `@${stats.reviews.top_provider.username}` : "—"}
-            />
-          </div>
-
-          {/* Reviews */}
-          <SectionTitle icon={Star}>Reviews</SectionTitle>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Verified total" value={stats.reviews.verified_total} />
-            <StatCard label="Proof-backed total" value={stats.reviews.proof_total} />
-            <StatCard label="Reviews 24h" value={stats.reviews.last_24h} hint="Both types" />
-            <StatCard label="Reviews 7d" value={stats.reviews.last_7d} hint="Both types" />
-          </div>
-
-          {/* Offers */}
-          <SectionTitle icon={Package}>Offers</SectionTitle>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Total offers" value={stats.offers.total} />
-            <StatCard label="Paid offers" value={stats.offers.paid} />
-            <StatCard label="Free-for-testimonial" value={stats.offers.free_for_testimonial} />
-            <StatCard label="Created 7d" value={stats.offers.last_7d} />
-          </div>
-
-          {/* Activity */}
-          <SectionTitle icon={MessageSquare}>Activity</SectionTitle>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Messages total" value={stats.activity.messages_total} />
-            <StatCard label="Messages 24h" value={stats.activity.messages_24h} />
-            <StatCard label="Active threads 7d" value={stats.activity.active_threads_7d} />
-            <StatCard label="Total follows" value={stats.activity.follows_total} />
-          </div>
-
-          {/* Moderation */}
-          <SectionTitle icon={Flag}>Moderation queue</SectionTitle>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <StatCard label="Open disputes" value={stats.moderation.open_disputes_count} />
-            <StatCard
-              label="Pending proof requests"
-              value={stats.moderation.pending_proof_requests_count}
-            />
-            <StatCard label="Disputed reviews" value={stats.moderation.disputed_reviews_count} />
-          </div>
-
-          {stats.moderation.open_disputes.length > 0 && (
-            <Card className="mt-4 border-border/60 bg-card/60">
-              <div className="border-b border-border/60 px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Open disputes
+          {/* 1. Platform Stats */}
+          <Section icon={ShieldAlert} title="Platform Stats">
+            <div className="space-y-6">
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Users</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatCard label="Total users" value={stats.users.total} />
+                  <StatCard label="Signups 24h" value={stats.users.last_24h} />
+                  <StatCard label="Signups 7d" value={stats.users.last_7d} />
+                  <StatCard
+                    label="Top provider"
+                    value={stats.reviews.top_provider?.count ?? 0}
+                    hint={stats.reviews.top_provider ? `@${stats.reviews.top_provider.username}` : "—"}
+                  />
+                </div>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Provider</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Filed</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.moderation.open_disputes.map((d) => (
-                    <TableRow key={d.id}>
-                      <TableCell className="font-medium">
-                        @{d.provider_username ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{d.review_type}</TableCell>
-                      <TableCell className="max-w-md truncate text-muted-foreground">
-                        {d.reason}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{fmt(d.created_at)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
-
-          {stats.moderation.pending_proof_requests.length > 0 && (
-            <Card className="mt-4 border-border/60 bg-card/60">
-              <div className="border-b border-border/60 px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Pending proof access requests
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reviews</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatCard label="Verified total" value={stats.reviews.verified_total} />
+                  <StatCard label="Proof-backed total" value={stats.reviews.proof_total} />
+                  <StatCard label="Reviews 24h" value={stats.reviews.last_24h} hint="Both types" />
+                  <StatCard label="Reviews 7d" value={stats.reviews.last_7d} hint="Both types" />
+                </div>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Requester</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>Filed</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.moderation.pending_proof_requests.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell>{r.requester_email ?? "—"}</TableCell>
-                      <TableCell className="max-w-md truncate text-muted-foreground">
-                        {r.requester_message ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{fmt(r.created_at)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
-
-          {stats.moderation.disputed_reviews.length > 0 && (
-            <Card className="mt-4 border-border/60 bg-card/60">
-              <div className="border-b border-border/60 px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Disputed proof-backed reviews
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Offers</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatCard label="Total offers" value={stats.offers.total} />
+                  <StatCard label="Paid offers" value={stats.offers.paid} />
+                  <StatCard label="Free-for-testimonial" value={stats.offers.free_for_testimonial} />
+                  <StatCard label="Created 7d" value={stats.offers.last_7d} />
+                </div>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Provider</TableHead>
-                    <TableHead>Reviewer</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead>Disputed</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.moderation.disputed_reviews.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium">
-                        @{r.provider_username ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{r.reviewer_name}</TableCell>
-                      <TableCell className="text-muted-foreground">{r.rating}★</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {r.disputed_at ? fmt(r.disputed_at) : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Activity</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatCard label="Messages total" value={stats.activity.messages_total} />
+                  <StatCard label="Messages 24h" value={stats.activity.messages_24h} />
+                  <StatCard label="Active threads 7d" value={stats.activity.active_threads_7d} />
+                  <StatCard label="Total follows" value={stats.activity.follows_total} />
+                </div>
+              </div>
+            </div>
+          </Section>
 
-          {/* Users table */}
-          <SectionTitle icon={Users}>All users</SectionTitle>
-          <Card className="border-border/60 bg-card/60">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead>Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((u) => {
-                  const tier = tierForReviewCount(u.review_count);
-                  return (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">
-                        <Link to={`/@${u.username}`} className="hover:text-primary">
-                          @{u.username}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {u.display_name ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{u.email ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {TIER_LABEL[tier]}{" "}
-                        <span className="text-xs">({u.review_count})</span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{fmt(u.created_at)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Card>
+          {/* 2. Moderation Queue */}
+          <Section icon={Flag} title="Moderation Queue">
+            <Tabs defaultValue="reports">
+              <TabsList>
+                <TabsTrigger value="reports">Reported Profiles</TabsTrigger>
+                <TabsTrigger value="disputes">Disputed Reviews</TabsTrigger>
+                <TabsTrigger value="flagged">Flagged Content</TabsTrigger>
+              </TabsList>
+              <TabsContent value="reports" className="mt-4">
+                <ReportedProfilesPanel />
+              </TabsContent>
+              <TabsContent value="disputes" className="mt-4">
+                <EmptyState icon={AlertTriangle} message="No disputes yet." />
+              </TabsContent>
+              <TabsContent value="flagged" className="mt-4">
+                <EmptyState icon={FileWarning} message="No flagged content yet." />
+              </TabsContent>
+            </Tabs>
+          </Section>
 
-          <SectionTitle icon={UserPlus}>Create Coach Profile</SectionTitle>
-          <CreateCoachProfileForm onCreated={() => void fetchAll()} />
+          {/* 3. Claim Requests */}
+          <Section icon={UserPlus} title="Claim Requests">
+            <ClaimRequestsPanel />
+          </Section>
 
-          <SectionTitle icon={Trash2}>Manage Profiles</SectionTitle>
-          <ManageUnclaimedProfiles />
+          {/* 4. Team Messages */}
+          <Section icon={MessageSquare} title="Team Messages">
+            <TeamMessagesPanel />
+          </Section>
+
+          {/* 5. User Management */}
+          <Section icon={Users} title="User Management">
+            <UserManagementPanel users={users} onReload={() => void fetchAll()} />
+          </Section>
+
+          {/* 6. Create Coach Profile */}
+          <Section icon={UserPlus} title="Create Coach Profile">
+            <CreateCoachProfileForm onCreated={() => void fetchAll()} />
+          </Section>
+
+          {/* 7. Manage Profiles */}
+          <Section icon={Trash2} title="Manage Profiles">
+            <ManageUnclaimedProfiles />
+          </Section>
         </>
       )}
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, message }: { icon: typeof Users; message: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/30 px-6 py-10 text-center">
+      <Icon className="h-5 w-5 text-muted-foreground" />
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+}
+
+// ---------------- Reported Profiles ----------------
+
+type ReportRow = {
+  id: string;
+  reason: string;
+  details: string | null;
+  status: string;
+  created_at: string;
+  reporter_user_id: string | null;
+  reported_profile_id: string;
+  reporter_username: string | null;
+  reported_username: string | null;
+  reported_display_name: string | null;
+};
+
+function ReportedProfilesPanel() {
+  const [rows, setRows] = useState<ReportRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase
+      .from("profile_reports")
+      .select("id, reason, details, status, created_at, reporter_user_id, reported_profile_id")
+      .order("created_at", { ascending: false });
+    if (error) { setErr(error.message); setLoading(false); return; }
+    const reports = (data ?? []) as Array<Omit<ReportRow, "reporter_username" | "reported_username" | "reported_display_name">>;
+    const ids = Array.from(new Set([
+      ...reports.map((r) => r.reporter_user_id).filter(Boolean) as string[],
+      ...reports.map((r) => r.reported_profile_id),
+    ]));
+    const profMap = new Map<string, { username: string; display_name: string | null }>();
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, username, display_name").in("id", ids);
+      for (const p of (profs ?? []) as Array<{ id: string; username: string; display_name: string | null }>) {
+        profMap.set(p.id, { username: p.username, display_name: p.display_name });
+      }
+    }
+    setRows(reports.map((r) => ({
+      ...r,
+      reporter_username: r.reporter_user_id ? profMap.get(r.reporter_user_id)?.username ?? null : null,
+      reported_username: profMap.get(r.reported_profile_id)?.username ?? null,
+      reported_display_name: profMap.get(r.reported_profile_id)?.display_name ?? null,
+    })));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const dismiss = async (id: string) => {
+    const { error } = await supabase.from("profile_reports").update({ status: "dismissed" }).eq("id", id);
+    if (error) { toast({ title: "Couldn't dismiss", description: error.message, variant: "destructive" }); return; }
+    setRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const warn = (r: ReportRow) => {
+    toast({ title: "User warned", description: `@${r.reported_username ?? "user"} has been flagged for warning.` });
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (err) return <div className="text-sm text-destructive">{err}</div>;
+  const pending = rows.filter((r) => r.status === "pending");
+  if (pending.length === 0) return <EmptyState icon={Flag} message="No reported profiles." />;
+
+  return (
+    <div className="space-y-2">
+      {pending.map((r) => (
+        <div key={r.id} className="rounded-md border border-border bg-card/60 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm">
+                <span className="text-muted-foreground">Reporter:</span>{" "}
+                <span className="font-medium">@{r.reporter_username ?? "anonymous"}</span>
+                {" · "}
+                <span className="text-muted-foreground">Reported:</span>{" "}
+                {r.reported_username ? (
+                  <Link to={`/@${r.reported_username}`} className="font-medium hover:text-primary">
+                    @{r.reported_username}
+                  </Link>
+                ) : "—"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Reason: {r.reason}</p>
+              {r.details && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{r.details}</p>}
+              <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(r.created_at)}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => dismiss(r.id)}>
+                <XIcon className="h-3.5 w-3.5" /> Dismiss
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => warn(r)}>
+                <AlertTriangle className="h-3.5 w-3.5" /> Warn User
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------------- Claim Requests ----------------
+
+type ClaimRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  verification_method: string;
+  verification_value: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+  profile_id: string;
+};
+
+function ClaimRequestsPanel() {
+  const [rows, setRows] = useState<ClaimRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase
+      .from("claims_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) setErr(error.message);
+    else setRows((data ?? []) as ClaimRow[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const setStatus = async (id: string, status: "approved" | "rejected") => {
+    const { error } = await supabase.from("claims_requests").update({ status }).eq("id", id);
+    if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (err) return <div className="text-sm text-destructive">{err}</div>;
+
+  const pending = rows.filter((r) => r.status === "pending");
+  const resolved = rows.filter((r) => r.status !== "pending");
+
+  return (
+    <div className="space-y-4">
+      {pending.length === 0 ? (
+        <EmptyState icon={UserPlus} message="No pending claim requests." />
+      ) : (
+        <div className="space-y-2">
+          {pending.map((r) => (
+            <ClaimRow key={r.id} row={r} onApprove={() => setStatus(r.id, "approved")} onReject={() => setStatus(r.id, "rejected")} />
+          ))}
+        </div>
+      )}
+      {resolved.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+              Resolved ({resolved.length})
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2 space-y-2">
+            {resolved.map((r) => (
+              <ClaimRow key={r.id} row={r} resolved />
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
+  );
+}
+
+function ClaimRow({ row, onApprove, onReject, resolved }: { row: ClaimRow; onApprove?: () => void; onReject?: () => void; resolved?: boolean }) {
+  return (
+    <div className={`rounded-md border border-border bg-card/60 p-4 ${resolved ? "opacity-70" : ""}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">{row.full_name}</p>
+          <p className="text-xs text-muted-foreground">{row.email}{row.phone ? ` · ${row.phone}` : ""}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Verification: <span className="text-foreground">{row.verification_method}</span>
+            {row.verification_value ? ` — ${row.verification_value}` : ""}
+          </p>
+          {row.notes && <p className="mt-1 text-xs text-muted-foreground">Notes: {row.notes}</p>}
+          <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(row.created_at)} · {row.status}</p>
+        </div>
+        {!resolved && (
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={onReject}>
+              <XIcon className="h-3.5 w-3.5" /> Reject
+            </Button>
+            <Button size="sm" onClick={onApprove}>
+              <Check className="h-3.5 w-3.5" /> Approve
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Team Messages ----------------
+
+type TeamMsg = {
+  id: string;
+  user_id: string;
+  sender_id: string;
+  from_admin: boolean;
+  body: string;
+  created_at: string;
+};
+
+function TeamMessagesPanel() {
+  const { user } = useAuth();
+  const [msgs, setMsgs] = useState<TeamMsg[]>([]);
+  const [profs, setProfs] = useState<Map<string, { username: string; display_name: string | null }>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
+  const [sendingFor, setSendingFor] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase
+      .from("team_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) { setErr(error.message); setLoading(false); return; }
+    const list = (data ?? []) as TeamMsg[];
+    setMsgs(list);
+    const ids = Array.from(new Set(list.map((m) => m.user_id)));
+    if (ids.length) {
+      const { data: ps } = await supabase.from("profiles").select("id, username, display_name").in("id", ids);
+      const map = new Map<string, { username: string; display_name: string | null }>();
+      for (const p of (ps ?? []) as Array<{ id: string; username: string; display_name: string | null }>) {
+        map.set(p.id, { username: p.username, display_name: p.display_name });
+      }
+      setProfs(map);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  // Show one row per incoming user message (from_admin=false). Reply input sends from_admin=true.
+  const incoming = msgs.filter((m) => !m.from_admin);
+
+  const sendReply = async (userId: string) => {
+    if (!user) return;
+    const body = (replyDraft[userId] || "").trim();
+    if (!body) return;
+    setSendingFor(userId);
+    const { error } = await supabase.from("team_messages").insert({
+      user_id: userId,
+      sender_id: user.id,
+      from_admin: true,
+      body: body.slice(0, 4000),
+    });
+    setSendingFor(null);
+    if (error) { toast({ title: "Send failed", description: error.message, variant: "destructive" }); return; }
+    setReplyDraft((prev) => ({ ...prev, [userId]: "" }));
+    toast({ title: "Reply sent" });
+    void load();
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (err) return <div className="text-sm text-destructive">{err}</div>;
+  if (incoming.length === 0) return <EmptyState icon={MessageSquare} message="No team messages yet." />;
+
+  return (
+    <div className="space-y-2">
+      {incoming.map((m) => {
+        const p = profs.get(m.user_id);
+        return (
+          <div key={m.id} className="rounded-md border border-border bg-card/60 p-4">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm font-medium">@{p?.username ?? m.user_id.slice(0, 8)}</p>
+              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(m.created_at)}</span>
+            </div>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{m.body}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <Input
+                value={replyDraft[m.user_id] ?? ""}
+                onChange={(e) => setReplyDraft((prev) => ({ ...prev, [m.user_id]: e.target.value }))}
+                placeholder="Reply to user…"
+                maxLength={4000}
+              />
+              <Button
+                size="sm"
+                onClick={() => void sendReply(m.user_id)}
+                disabled={sendingFor === m.user_id || !(replyDraft[m.user_id] || "").trim()}
+              >
+                <Send className="h-3.5 w-3.5" /> Send
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------- User Management ----------------
+
+function UserManagementPanel({ users, onReload }: { users: AdminUserRow[]; onReload: () => void }) {
+  const [query, setQuery] = useState("");
+  const [banningId, setBanningId] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      u.username.toLowerCase().includes(q)
+      || (u.display_name ?? "").toLowerCase().includes(q)
+      || (u.email ?? "").toLowerCase().includes(q),
+    );
+  }, [users, query]);
+
+  const ban = async (id: string) => {
+    setBanningId(id);
+    const { error } = await supabase.rpc("admin_set_banned" as never, { p_user: id, p_banned: true } as never);
+    setBanningId(null);
+    if (error) { toast({ title: "Ban failed", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "User banned" });
+    onReload();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by username, name, or email…"
+          className="pl-9"
+        />
+      </div>
+      <Card className="border-border/60 bg-card/60">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Username</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Tier</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((u) => {
+              const tier = tierForReviewCount(u.review_count);
+              return (
+                <TableRow key={u.id}>
+                  <TableCell className="font-medium">
+                    <Link to={`/@${u.username}`} className="hover:text-primary">@{u.username}</Link>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{u.display_name ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{u.email ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {TIER_LABEL[tier]} <span className="text-xs">({u.review_count})</span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{fmt(u.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => void ban(u.id)}
+                      disabled={banningId === u.id}
+                    >
+                      <Ban className="h-3.5 w-3.5" />
+                      {banningId === u.id ? "Banning…" : "Ban"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
