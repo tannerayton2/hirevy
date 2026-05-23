@@ -33,6 +33,7 @@ import {
 import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
+import { ensureHttps } from "@/lib/socialHandles";
 
 type TabKey = "reviews" | "imported";
 
@@ -948,7 +949,7 @@ function SocialLinksRow({ profile }: { profile: ProfileFull }) {
       {items.map(({ key, label, Icon }) => (
         <a
           key={key}
-          href={profile[key] as string}
+          href={ensureHttps(profile[key] as string)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}

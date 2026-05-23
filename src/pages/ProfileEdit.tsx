@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
 
+import { normalizeSocialHandle } from "@/lib/socialHandles";
+
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
 const WEBSITE_MAX = 200;
@@ -105,19 +107,20 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
-    const socialInputs: { label: string; raw: string }[] = [
-      { label: "Instagram", raw: instagram },
-      { label: "X (Twitter)", raw: twitter },
+    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" }[] = [
+      { label: "Instagram", raw: instagram, handlePlatform: "instagram" },
+      { label: "X (Twitter)", raw: twitter, handlePlatform: "twitter" },
       { label: "YouTube", raw: youtube },
       { label: "LinkedIn", raw: linkedin },
-      { label: "TikTok", raw: tiktok },
+      { label: "TikTok", raw: tiktok, handlePlatform: "tiktok" },
     ];
     const normalizedSocials: (string | null)[] = [];
     for (const s of socialInputs) {
       if (!s.raw.trim()) { normalizedSocials.push(null); continue; }
       if (s.raw.length > WEBSITE_MAX) { toast({ title: `${s.label} URL too long`, variant: "destructive" }); return; }
-      const n = normalizeWebsite(s.raw);
-      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL", variant: "destructive" }); return; }
+      const candidate = s.handlePlatform ? normalizeSocialHandle(s.handlePlatform, s.raw) : s.raw;
+      const n = normalizeWebsite(candidate);
+      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL or handle", variant: "destructive" }); return; }
       normalizedSocials.push(n);
     }
     const [instagramN, twitterN, youtubeN, linkedinN, tiktokN] = normalizedSocials;
@@ -247,19 +250,19 @@ export default function ProfileEdit() {
 
         {/* Social links */}
         <Field label="Instagram (optional)">
-          <Input type="url" value={instagram} onChange={(e) => setInstagram(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://instagram.com/yourhandle" />
+          <Input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <Field label="X / Twitter (optional)">
-          <Input type="url" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://x.com/yourhandle" />
+          <Input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <Field label="YouTube (optional)">
           <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://youtube.com/@yourchannel" />
         </Field>
         <Field label="LinkedIn (optional)">
-          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/you" />
+          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/yourprofile" />
         </Field>
         <Field label="TikTok (optional)">
-          <Input type="url" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://tiktok.com/@yourhandle" />
+          <Input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>

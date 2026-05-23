@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUsername } from "@/lib/admin";
+import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { tierForReviewCount, TIER_LABEL } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -141,11 +142,11 @@ function CreateCoachProfileForm({
         p_service_category: category,
         p_bio: bio.trim(),
         p_website_url: websiteUrl.trim(),
-        p_instagram_url: instagramUrl.trim(),
-        p_twitter_url: twitterUrl.trim(),
+        p_instagram_url: instagramUrl.trim() ? normalizeSocialHandle("instagram", instagramUrl) : "",
+        p_twitter_url: twitterUrl.trim() ? normalizeSocialHandle("twitter", twitterUrl) : "",
         p_youtube_url: youtubeUrl.trim(),
         p_linkedin_url: linkedinUrl.trim(),
-        p_tiktok_url: tiktokUrl.trim(),
+        p_tiktok_url: tiktokUrl.trim() ? normalizeSocialHandle("tiktok", tiktokUrl) : "",
         p_avatar_url: uploadedAvatarUrl,
       } as never,
     );
@@ -220,11 +221,11 @@ function CreateCoachProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><Label htmlFor="cc-web">Website URL</Label><Input id="cc-web" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-ig">Instagram URL</Label><Input id="cc-ig" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-tw">Twitter/X URL</Label><Input id="cc-tw" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-yt">YouTube URL</Label><Input id="cc-yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-li">LinkedIn URL</Label><Input id="cc-li" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-tt">TikTok URL</Label><Input id="cc-tt" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-ig">Instagram</Label><Input id="cc-ig" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@yourhandle" /></div>
+          <div><Label htmlFor="cc-tw">Twitter/X</Label><Input id="cc-tw" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} placeholder="@yourhandle" /></div>
+          <div><Label htmlFor="cc-yt">YouTube URL</Label><Input id="cc-yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/@yourchannel" /></div>
+          <div><Label htmlFor="cc-li">LinkedIn URL</Label><Input id="cc-li" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" /></div>
+          <div><Label htmlFor="cc-tt">TikTok</Label><Input id="cc-tt" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} placeholder="@yourhandle" /></div>
         </div>
 
         <div>
