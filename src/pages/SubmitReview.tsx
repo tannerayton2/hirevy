@@ -145,6 +145,7 @@ export default function SubmitReview() {
 
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
+    setReviewedUsername(p.username);
     setIsUnmatched(false);
     setCoachName(p.display_name || p.username);
     setCoachQuery(p.display_name || p.username);
