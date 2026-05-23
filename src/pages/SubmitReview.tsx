@@ -268,6 +268,42 @@ export default function SubmitReview() {
   const barColor = tierColor(completenessScore);
   const barLabel = tierLabel(completenessScore);
 
+  const resetForm = () => {
+    setSubmitted(false);
+    setReviewedUsername(null);
+    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setIsUnmatched(false); setNameLocked(false);
+    setUnmatchedLink(""); setUnmatchedDescription("");
+    setCategory(""); setWebsite(""); setInstagram(""); setTwitter(""); setYoutube(""); setLinkedin(""); setOfferUrl("");
+    setShowMoreProfile(false);
+    setRating(0); setHoverRating(0); setBody(""); setPurchased(false); setAmount(""); setFiles([]); setEmail("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (submitted) {
+    const profileTarget = reviewedUsername ?? prefilledCoach;
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <CheckCircle2 className="mx-auto h-20 w-20 text-primary" strokeWidth={1.5} />
+        <h1 className="mt-6 font-display text-3xl font-bold md:text-4xl">Your review is live.</h1>
+        <p className="mt-3 text-sm text-muted-foreground">Thank you for helping keep the info industry honest.</p>
+        <div className="mt-8 flex flex-col gap-3">
+          {user ? (
+            <Button asChild className="h-12 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
+              <Link to={profileTarget ? `/@${profileTarget}` : "/explore"}>See your review →</Link>
+            </Button>
+          ) : (
+            <Button asChild className="h-12 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
+              <Link to="/signup">Create an account to track your reviews →</Link>
+            </Button>
+          )}
+          <Button variant="outline" onClick={resetForm} className="h-12 w-full border-primary text-primary hover:bg-primary/10 hover:text-primary">
+            Review another coach
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Sticky completeness bar — sits directly below the app header */}
