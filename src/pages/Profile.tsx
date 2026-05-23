@@ -6,7 +6,7 @@ import { StarRating } from "@/components/StarRating";
 import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
+import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, MoreHorizontal, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TIER_LABEL, type Tier } from "@/lib/tiers";
 import { CongratsModal } from "@/components/CongratsModal";
