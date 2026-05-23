@@ -11,6 +11,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { VoiceRecorder } from "@/components/messages/VoiceRecorder";
 import { VoiceNotePlayer } from "@/components/messages/VoiceNotePlayer";
 import { ReactionPicker } from "@/components/messages/ReactionPicker";
+import { TeamChatPane } from "@/components/messages/TeamChatPane";
 
 interface ThreadRow { id: string; user_a: string; user_b: string; last_message_at: string }
 interface OtherProfile { id: string; username: string; display_name: string | null; avatar_url: string | null }
