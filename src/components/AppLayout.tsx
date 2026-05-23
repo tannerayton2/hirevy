@@ -93,8 +93,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
             <Logo />
           </NavLink>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {user && <NotificationsBell />}
             {isOwnProfile ? (
+
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                   <button
