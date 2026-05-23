@@ -133,7 +133,7 @@ export default function SubmitReview() {
       const paths: string[] = [];
       for (const f of files) {
         const ext = f.name.split(".").pop()?.toLowerCase() || "bin";
-        const path = `${crypto.randomUUID()}.${ext}`;
+        const path = `unclaimed/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("review-evidence")
           .upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
