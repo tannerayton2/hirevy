@@ -10,6 +10,8 @@ import { isAdminUsername } from "@/lib/admin";
 import { shareReviewUrl } from "@/lib/shareLinks";
 import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
+import { NotificationsBell } from "@/components/NotificationsBell";
+
 
 function UnreadBadge({ count }: { count: number }) {
   if (!count) return null;
