@@ -276,6 +276,7 @@ export default function SubmitReview() {
     setCategory(""); setWebsite(""); setInstagram(""); setTwitter(""); setYoutube(""); setLinkedin(""); setOfferUrl("");
     setShowMoreProfile(false);
     setRating(0); setHoverRating(0); setBody(""); setPurchased(false); setAmount(""); setFiles([]); setEmail("");
+    navigate("/submit-review", { replace: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
