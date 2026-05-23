@@ -28,9 +28,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Check, Filter as FilterIcon } from "lucide-react";
+import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
 
 type TabKey = "reviews" | "imported";
