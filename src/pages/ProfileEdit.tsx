@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
 
+import { normalizeSocialHandle } from "@/lib/socialHandles";
+
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
 const WEBSITE_MAX = 200;
