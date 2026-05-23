@@ -6,7 +6,7 @@ import { StarRating } from "@/components/StarRating";
 import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, MessageSquare, Pin, PinOff, Plus, Share2, Star, Twitter, Users, Youtube } from "lucide-react";
+import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TIER_LABEL, type Tier } from "@/lib/tiers";
 import { CongratsModal } from "@/components/CongratsModal";
@@ -28,9 +28,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Check, Filter as FilterIcon } from "lucide-react";
+import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
 
 type TabKey = "reviews" | "imported";
@@ -108,7 +109,8 @@ type OfferRow = { id: string; category: string; is_pinned?: boolean };
 export default function Profile() {
   const { username = "" } = useParams();
   const handle = username.startsWith("@") ? username.slice(1) : username;
-  const { user, profile: me } = useAuth();
+  const { user, profile: me, signOut } = useAuth();
+  const [reportOpen, setReportOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -458,14 +460,8 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {isMe ? (
-            <>
-              <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
-              <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
-              
-            </>
-          ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          {!isMe && (
             <>
               <Button variant={following ? "outline" : "default"} onClick={toggleFollow}>
                 {following ? "Following" : "Follow"}
@@ -476,8 +472,57 @@ export default function Profile() {
           <Button variant="outline" onClick={copyProfileLink}>
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="More options">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {isMe ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Edit Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={copyReviewLink}>
+                    <LinkIcon className="mr-2 h-4 w-4" /> Copy Review Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/following"><UserCheck className="mr-2 h-4 w-4" /> Following</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={async () => { await signOut(); navigate("/"); }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Log Out
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem onSelect={copyProfileLink}>
+                    <Share2 className="mr-2 h-4 w-4" /> Share Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (!user) { navigate("/auth"); return; }
+                      setReportOpen(true);
+                    }}
+                  >
+                    <Flag className="mr-2 h-4 w-4" /> Report Profile
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      {profile && !isMe && (
+        <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
+      )}
 
       {/* Bio */}
       {profile.bio && (
