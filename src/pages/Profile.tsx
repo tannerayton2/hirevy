@@ -144,7 +144,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus, role, incomplete_banner_dismissed")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -348,6 +348,33 @@ export default function Profile() {
   return (
     <TooltipProvider delayDuration={150}>
     <div className="px-4 py-6 md:px-8 md:py-8">
+      {isMe && profile.role === "provider" && !profile.incomplete_banner_dismissed && (() => {
+        const missing = !profile.avatar_url || !profile.bio || !(profile.website_url || profile.instagram_url || profile.twitter_url || profile.youtube_url || profile.tiktok_url || profile.linkedin_url);
+        if (!missing) return null;
+        return (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/[0.06] px-4 py-3 text-sm">
+            <span className="text-foreground/90">
+              Your profile is incomplete — finish setting up to get discovered.
+            </span>
+            <div className="flex items-center gap-3">
+              <Link to="/onboarding?step=2&role=provider" className="font-semibold text-primary hover:underline">
+                Complete profile →
+              </Link>
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.from("profiles").update({ incomplete_banner_dismissed: true }).eq("id", profile.id);
+                  setProfile({ ...profile, incomplete_banner_dismissed: true });
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        );
+      })()}
       {/* Header */}
       <div className="flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div className="flex items-start gap-4">
