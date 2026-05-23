@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
-import { Logo } from "@/components/Logo";
+// Logo not used; HireVy mark rendered inline as text avatar
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
