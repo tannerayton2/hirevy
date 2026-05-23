@@ -857,11 +857,14 @@ export type Database = {
           evidence_paths: string[]
           id: string
           instagram_handle: string | null
+          needs_profile: boolean
           offer_url: string | null
           purchased: boolean
           rating: number
           reviewer_email: string
           strength_tier: string
+          unmatched_description: string | null
+          unmatched_link: string | null
         }
         Insert: {
           amount_paid_bracket?: string | null
@@ -872,11 +875,14 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          needs_profile?: boolean
           offer_url?: string | null
           purchased?: boolean
           rating: number
           reviewer_email: string
           strength_tier?: string
+          unmatched_description?: string | null
+          unmatched_link?: string | null
         }
         Update: {
           amount_paid_bracket?: string | null
@@ -887,11 +893,14 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          needs_profile?: boolean
           offer_url?: string | null
           purchased?: boolean
           rating?: number
           reviewer_email?: string
           strength_tier?: string
+          unmatched_description?: string | null
+          unmatched_link?: string | null
         }
         Relationships: []
       }

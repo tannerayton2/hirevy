@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus, Trash2, Search, Ban, Check, X as XIcon, Send, AlertTriangle, FileWarning } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,14 +61,22 @@ function slugifyName(name: string): string {
     .slice(0, 60);
 }
 
-function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
-  const [fullName, setFullName] = useState("");
-  const [slug, setSlug] = useState("");
+export type CoachPrefill = { fullName?: string; websiteUrl?: string };
+
+function CreateCoachProfileForm({
+  onCreated,
+  initial,
+}: {
+  onCreated?: (info: { username: string }) => void;
+  initial?: CoachPrefill;
+}) {
+  const [fullName, setFullName] = useState(initial?.fullName ?? "");
+  const [slug, setSlug] = useState(initial?.fullName ? slugifyName(initial.fullName) : "");
   const [slugTouched, setSlugTouched] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -152,7 +160,7 @@ function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
       setLinkedinUrl(""); setTiktokUrl(""); setBio("");
-      onCreated?.();
+      onCreated?.({ username: created.username });
     }
   };
 
@@ -342,6 +350,11 @@ export default function Admin() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [coachPrefill, setCoachPrefill] = useState<CoachPrefill | undefined>(undefined);
+  const [prefillKey, setPrefillKey] = useState(0);
+  const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
+  const [profileRequestsReloadKey, setProfileRequestsReloadKey] = useState(0);
+  const createFormRef = useRef<HTMLDivElement | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -459,27 +472,54 @@ export default function Admin() {
             </Tabs>
           </Section>
 
-          {/* 3. Claim Requests */}
+          {/* 3. Profile Requests */}
+          <Section icon={FileWarning} title="Profile Requests">
+            <ProfileRequestsPanel
+              reloadKey={profileRequestsReloadKey}
+              onCreateProfile={(row) => {
+                setCoachPrefill({ fullName: row.coach_name, websiteUrl: row.unmatched_link ?? "" });
+                setPrefillKey((k) => k + 1);
+                setPendingReviewId(row.id);
+                setTimeout(() => createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              }}
+            />
+          </Section>
+
+          {/* 4. Claim Requests */}
           <Section icon={UserPlus} title="Claim Requests">
             <ClaimRequestsPanel />
           </Section>
 
-          {/* 4. Team Messages */}
+          {/* 5. Team Messages */}
           <Section icon={MessageSquare} title="Team Messages">
             <TeamMessagesPanel />
           </Section>
 
-          {/* 5. User Management */}
+          {/* 6. User Management */}
           <Section icon={Users} title="User Management">
             <UserManagementPanel users={users} onReload={() => void fetchAll()} />
           </Section>
 
-          {/* 6. Create Coach Profile */}
-          <Section icon={UserPlus} title="Create Coach Profile">
-            <CreateCoachProfileForm onCreated={() => void fetchAll()} />
-          </Section>
+          {/* 7. Create Coach Profile */}
+          <div ref={createFormRef}>
+            <Section icon={UserPlus} title="Create Coach Profile">
+              <CreateCoachProfileForm
+                key={prefillKey}
+                initial={coachPrefill}
+                onCreated={async () => {
+                  if (pendingReviewId) {
+                    await supabase.from("unclaimed_reviews").update({ needs_profile: false } as never).eq("id", pendingReviewId);
+                    setPendingReviewId(null);
+                    setCoachPrefill(undefined);
+                    setProfileRequestsReloadKey((k) => k + 1);
+                  }
+                  void fetchAll();
+                }}
+              />
+            </Section>
+          </div>
 
-          {/* 7. Manage Profiles */}
+          {/* 8. Manage Profiles */}
           <Section icon={Trash2} title="Manage Profiles">
             <ManageUnclaimedProfiles />
           </Section>
@@ -991,3 +1031,82 @@ function ManageUnclaimedProfiles() {
     </Card>
   );
 }
+
+// ---------------- Profile Requests ----------------
+
+type ProfileRequestRow = {
+  id: string;
+  coach_name: string;
+  unmatched_link: string | null;
+  unmatched_description: string | null;
+  rating: number;
+  body: string;
+  created_at: string;
+};
+
+function ProfileRequestsPanel({
+  reloadKey,
+  onCreateProfile,
+}: {
+  reloadKey: number;
+  onCreateProfile: (row: ProfileRequestRow) => void;
+}) {
+  const [rows, setRows] = useState<ProfileRequestRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase
+      .from("unclaimed_reviews")
+      .select("id, coach_name, unmatched_link, unmatched_description, rating, body, created_at")
+      .eq("needs_profile" as never, true as never)
+      .order("created_at", { ascending: false });
+    if (error) setErr(error.message);
+    else setRows((data ?? []) as ProfileRequestRow[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load, reloadKey]);
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (err) return <div className="text-sm text-destructive">{err}</div>;
+  if (rows.length === 0) return <EmptyState icon={UserPlus} message="No profile requests pending." />;
+
+  return (
+    <div className="space-y-2">
+      {rows.map((r) => (
+        <div key={r.id} className="rounded-md border border-border bg-card/60 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="text-sm font-semibold">{r.coach_name}</p>
+              <p className="text-xs text-primary">★ {Number(r.rating).toFixed(1)}</p>
+              {r.unmatched_link && (
+                <p className="text-xs text-muted-foreground">
+                  Link:{" "}
+                  <a href={r.unmatched_link} target="_blank" rel="noreferrer" className="underline hover:text-primary">
+                    {r.unmatched_link}
+                  </a>
+                </p>
+              )}
+              {r.unmatched_description && (
+                <p className="text-xs text-muted-foreground">Note: {r.unmatched_description}</p>
+              )}
+              <p className="line-clamp-2 text-xs text-muted-foreground/90">{r.body}</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(r.created_at)}</p>
+            </div>
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => onCreateProfile(r)}
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Create Profile
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
