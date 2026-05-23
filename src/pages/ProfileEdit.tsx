@@ -107,19 +107,20 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
-    const socialInputs: { label: string; raw: string }[] = [
-      { label: "Instagram", raw: instagram },
-      { label: "X (Twitter)", raw: twitter },
+    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" }[] = [
+      { label: "Instagram", raw: instagram, handlePlatform: "instagram" },
+      { label: "X (Twitter)", raw: twitter, handlePlatform: "twitter" },
       { label: "YouTube", raw: youtube },
       { label: "LinkedIn", raw: linkedin },
-      { label: "TikTok", raw: tiktok },
+      { label: "TikTok", raw: tiktok, handlePlatform: "tiktok" },
     ];
     const normalizedSocials: (string | null)[] = [];
     for (const s of socialInputs) {
       if (!s.raw.trim()) { normalizedSocials.push(null); continue; }
       if (s.raw.length > WEBSITE_MAX) { toast({ title: `${s.label} URL too long`, variant: "destructive" }); return; }
-      const n = normalizeWebsite(s.raw);
-      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL", variant: "destructive" }); return; }
+      const candidate = s.handlePlatform ? normalizeSocialHandle(s.handlePlatform, s.raw) : s.raw;
+      const n = normalizeWebsite(candidate);
+      if (!n) { toast({ title: `Invalid ${s.label} URL`, description: "Please enter a valid URL or handle", variant: "destructive" }); return; }
       normalizedSocials.push(n);
     }
     const [instagramN, twitterN, youtubeN, linkedinN, tiktokN] = normalizedSocials;
