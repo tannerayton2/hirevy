@@ -228,42 +228,26 @@ export default function Profile() {
     }
   }, [profile, isMe]);
 
-  // Congratulatory popup logic — only own profile, only once per event (ever).
-  // Source of truth: user_notification_flags table.
+  // Congratulatory popup logic — only for first-review-received now.
+  // Tier-up is delivered exclusively via the notifications panel.
   const congratsFiredRef = useRef(false);
   useEffect(() => {
     if (!profile || !isMe) return;
     if (congratsFiredRef.current) return;
-
-    const fireFirstReceived = profile.review_count >= 1;
-    const fireTierUp = tier !== "unranked";
-    if (!fireFirstReceived && !fireTierUp) return;
-
+    if (profile.review_count < 1) return;
     congratsFiredRef.current = true;
-
     (async () => {
-      const flagsToCheck: string[] = [];
-      if (fireFirstReceived) flagsToCheck.push("first_review_received");
-      if (fireTierUp) flagsToCheck.push(`tier_up_${tier}`);
-
       const { data: existing } = await supabase
         .from("user_notification_flags")
         .select("flag_name")
         .eq("user_id", profile.id)
-        .in("flag_name", flagsToCheck);
-      const seen = new Set((existing ?? []).map((r: { flag_name: string }) => r.flag_name));
-
-      if (fireFirstReceived && !seen.has("first_review_received")) {
-        await supabase.from("user_notification_flags").insert({ user_id: profile.id, flag_name: "first_review_received" });
-        setCongrats({ kind: "first-received" });
-        return;
-      }
-      if (fireTierUp && !seen.has(`tier_up_${tier}`)) {
-        await supabase.from("user_notification_flags").insert({ user_id: profile.id, flag_name: `tier_up_${tier}` });
-        setCongrats({ kind: "tier-up", tier, points, pointsToNext });
-      }
+        .eq("flag_name", "first_review_received");
+      if (existing && existing.length > 0) return;
+      await supabase.from("user_notification_flags").insert({ user_id: profile.id, flag_name: "first_review_received" });
+      setCongrats({ kind: "first-received" });
     })();
-  }, [profile, isMe, tier, points, pointsToNext]);
+  }, [profile, isMe]);
+
 
   
 

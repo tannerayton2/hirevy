@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_broadcasts: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          sent_count: number
+          title: string
+          type: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          sent_count?: number
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          sent_count?: number
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       admin_disputes: {
         Row: {
           contact_email: string
@@ -351,6 +381,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       offer_clicks: {
         Row: {
@@ -951,6 +1011,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_broadcast_notification: {
+        Args: { p_body: string; p_title: string; p_type: string }
+        Returns: number
+      }
       admin_create_unclaimed_profile:
         | {
             Args: {

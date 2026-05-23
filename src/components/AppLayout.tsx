@@ -10,18 +10,21 @@ import { isAdminUsername } from "@/lib/admin";
 import { shareReviewUrl } from "@/lib/shareLinks";
 import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
+import { NotificationsBell } from "@/components/NotificationsBell";
+
 
 function UnreadBadge({ count }: { count: number }) {
   if (!count) return null;
   return (
     <span
       aria-label={`${count} unread thread${count === 1 ? "" : "s"}`}
-      className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
+      className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background"
     >
       {count >= 10 ? "9+" : count}
     </span>
   );
 }
+
 
 function SoonPill() {
   return (
@@ -90,8 +93,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
             <Logo />
           </NavLink>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {user && <NotificationsBell />}
             {isOwnProfile ? (
+
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                   <button
