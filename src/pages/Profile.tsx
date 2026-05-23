@@ -460,14 +460,8 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {isMe ? (
-            <>
-              <Button variant="outline" onClick={copyReviewLink}><LinkIcon className="mr-1.5 h-4 w-4" /> Copy review link</Button>
-              <Button asChild variant="outline"><Link to="/settings/profile">Edit profile</Link></Button>
-              
-            </>
-          ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          {!isMe && (
             <>
               <Button variant={following ? "outline" : "default"} onClick={toggleFollow}>
                 {following ? "Following" : "Follow"}
@@ -478,8 +472,57 @@ export default function Profile() {
           <Button variant="outline" onClick={copyProfileLink}>
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="More options">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {isMe ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Edit Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={copyReviewLink}>
+                    <LinkIcon className="mr-2 h-4 w-4" /> Copy Review Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/following"><UserCheck className="mr-2 h-4 w-4" /> Following</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={async () => { await signOut(); navigate("/"); }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Log Out
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem onSelect={copyProfileLink}>
+                    <Share2 className="mr-2 h-4 w-4" /> Share Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (!user) { navigate("/auth"); return; }
+                      setReportOpen(true);
+                    }}
+                  >
+                    <Flag className="mr-2 h-4 w-4" /> Report Profile
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      {profile && !isMe && (
+        <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
+      )}
 
       {/* Bio */}
       {profile.bio && (
