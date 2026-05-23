@@ -73,7 +73,11 @@ export default function Messages() {
   const [params, setParams] = useSearchParams();
   const activeId = params.get("t");
   const teamMode = params.get("team") === "1";
-  const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null })[]>([]);
+  const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null; lastMsg: Msg | null })[]>([]);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeQuery, setComposeQuery] = useState("");
+  const [composeResults, setComposeResults] = useState<OtherProfile[]>([]);
+  const navigate = useNavigate();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [reads, setReads] = useState<ReadMarker[]>([]);
