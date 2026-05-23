@@ -493,11 +493,15 @@ export type Database = {
           instagram_url: string | null
           is_claimed: boolean
           linkedin_url: string | null
+          notified_first_review_received: boolean
+          notified_first_review_submitted: boolean
+          notified_tier: string
           paid_offer_limit: number
           pinned_review_id: string | null
           plan: string
           rating_sum: number
           review_count: number
+          score_sum: number
           service_category: string | null
           tiktok_url: string | null
           twitter_url: string | null
@@ -516,11 +520,15 @@ export type Database = {
           instagram_url?: string | null
           is_claimed?: boolean
           linkedin_url?: string | null
+          notified_first_review_received?: boolean
+          notified_first_review_submitted?: boolean
+          notified_tier?: string
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
+          score_sum?: number
           service_category?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
@@ -539,11 +547,15 @@ export type Database = {
           instagram_url?: string | null
           is_claimed?: boolean
           linkedin_url?: string | null
+          notified_first_review_received?: boolean
+          notified_first_review_submitted?: boolean
+          notified_tier?: string
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           rating_sum?: number
           review_count?: number
+          score_sum?: number
           service_category?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
