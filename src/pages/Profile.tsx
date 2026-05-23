@@ -696,46 +696,74 @@ export default function Profile() {
               <Empty msg="No reviews yet." />
             ) : visibleReviews.length === 0 ? (
               <Empty msg="No reviews match the current filter." />
-            ) : (
-              <div className="space-y-3">
-                {visibleReviews.map((u) => u.kind === "verified" ? (
-                  <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="font-semibold">{u.data.reviewer_name}</p>
-                      <div className="flex items-center gap-2">
-                        <StarRating value={u.data.rating} size={14} />
-                        <ReviewCompletenessShield score={u.score} />
-                      </div>
+            ) : (() => {
+              const showWall = !user && visibleReviews.length > 3;
+              const shown = showWall ? visibleReviews.slice(0, 3) : visibleReviews;
+              const hidden = showWall ? visibleReviews.slice(3) : [];
+              const renderReview = (u: typeof visibleReviews[number]) => u.kind === "verified" ? (
+                <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-semibold">{u.data.reviewer_name}</p>
+                    <div className="flex items-center gap-2">
+                      <StarRating value={u.data.rating} size={14} />
+                      <ReviewCompletenessShield score={u.score} />
                     </div>
-                    <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                        {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                      </p>
-                      {isMe && (
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
-                          <Pin className="mr-1 h-3 w-3" /> Pin this review
-                        </Button>
-                      )}
-                    </div>
-                    <ProviderReply
-                      reviewId={u.id}
-                      reviewType="verified"
-                      providerId={profile.id}
-                      providerDisplayName={providerDisplayName}
-                      isProviderViewer={isMe}
-                    />
-                  </article>
-                ) : (
-                  <ProofReviewCard
-                    key={u.id}
-                    review={u.data}
+                  </div>
+                  <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                      {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                    </p>
+                    {isMe && (
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
+                        <Pin className="mr-1 h-3 w-3" /> Pin this review
+                      </Button>
+                    )}
+                  </div>
+                  <ProviderReply
+                    reviewId={u.id}
+                    reviewType="verified"
+                    providerId={profile.id}
                     providerDisplayName={providerDisplayName}
                     isProviderViewer={isMe}
                   />
-                ))}
-              </div>
-            )}
+                </article>
+              ) : (
+                <ProofReviewCard
+                  key={u.id}
+                  review={u.data}
+                  providerDisplayName={providerDisplayName}
+                  isProviderViewer={isMe}
+                />
+              );
+              return (
+                <div className="space-y-3">
+                  {shown.map(renderReview)}
+                  {showWall && (
+                    <div className="relative">
+                      <div aria-hidden className="pointer-events-none select-none space-y-3 blur-md">
+                        {hidden.map(renderReview)}
+                      </div>
+                      <div className="absolute inset-0 flex items-start justify-center px-4 pt-8">
+                        <div className="w-full max-w-sm rounded-lg border border-primary/40 bg-card/95 p-6 text-center shadow-[0_8px_30px_-12px_hsl(40_55%_52%/0.4)] backdrop-blur">
+                          <h3 className="font-display text-xl font-semibold text-foreground">See all reviews</h3>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Create a free account to read every review on HireVy — no credit card required.
+                          </p>
+                          <Button asChild className="mt-5 h-11 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
+                            <Link to="/signup">Sign up free</Link>
+                          </Button>
+                          <p className="mt-3 text-xs text-muted-foreground">
+                            Already have an account?{" "}
+                            <Link to="/auth" className="text-primary hover:underline">Sign in</Link>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
