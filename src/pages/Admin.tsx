@@ -160,7 +160,7 @@ function CreateCoachProfileForm({
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
       setLinkedinUrl(""); setTiktokUrl(""); setBio("");
-      onCreated?.();
+      onCreated?.({ username: created.username });
     }
   };
 
