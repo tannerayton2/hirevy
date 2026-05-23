@@ -948,7 +948,7 @@ function SocialLinksRow({ profile }: { profile: ProfileFull }) {
       {items.map(({ key, label, Icon }) => (
         <a
           key={key}
-          href={profile[key] as string}
+          href={ensureHttps(profile[key] as string)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
