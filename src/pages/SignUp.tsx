@@ -126,7 +126,7 @@ export default function SignUp() {
         return;
       }
       if (result.redirected) return;
-      nav("/onboarding", { replace: true });
+      nav("/explore", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Google sign-up failed";
       toast({ title: "Sign-up failed", description: message, variant: "destructive" });
