@@ -485,6 +485,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          awarded_claim_bonus: boolean
+          awarded_first_review_submitted_bonus: boolean
+          awarded_profile_complete_bonus: boolean
           bio: string | null
           created_at: string
           display_name: string | null
@@ -495,10 +498,12 @@ export type Database = {
           linkedin_url: string | null
           notified_first_review_received: boolean
           notified_first_review_submitted: boolean
+          notified_points_tier: string
           notified_tier: string
           paid_offer_limit: number
           pinned_review_id: string | null
           plan: string
+          points: number
           rating_sum: number
           review_count: number
           score_sum: number
@@ -512,6 +517,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          awarded_claim_bonus?: boolean
+          awarded_first_review_submitted_bonus?: boolean
+          awarded_profile_complete_bonus?: boolean
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -522,10 +530,12 @@ export type Database = {
           linkedin_url?: string | null
           notified_first_review_received?: boolean
           notified_first_review_submitted?: boolean
+          notified_points_tier?: string
           notified_tier?: string
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
+          points?: number
           rating_sum?: number
           review_count?: number
           score_sum?: number
@@ -539,6 +549,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          awarded_claim_bonus?: boolean
+          awarded_first_review_submitted_bonus?: boolean
+          awarded_profile_complete_bonus?: boolean
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -549,10 +562,12 @@ export type Database = {
           linkedin_url?: string | null
           notified_first_review_received?: boolean
           notified_first_review_submitted?: boolean
+          notified_points_tier?: string
           notified_tier?: string
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
+          points?: number
           rating_sum?: number
           review_count?: number
           score_sum?: number
@@ -929,6 +944,7 @@ export type Database = {
           reviewer_name: string
         }[]
       }
+      points_for_rating: { Args: { r: number }; Returns: number }
       record_offer_click: {
         Args: {
           p_clicked_ip?: string
