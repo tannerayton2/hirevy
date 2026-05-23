@@ -72,10 +72,13 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
 const MIN_BODY = 150;
 
 export default function SubmitReview() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const prefilledCoach = params.get("coach") ?? "";
   const hideSection1 = !!prefilledCoach;
+  const [submitted, setSubmitted] = useState(false);
+  const [reviewedUsername, setReviewedUsername] = useState<string | null>(null);
 
   const [coachName, setCoachName] = useState(prefilledCoach);
   const [coachQuery, setCoachQuery] = useState(prefilledCoach);
