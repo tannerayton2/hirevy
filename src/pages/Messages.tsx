@@ -437,25 +437,30 @@ export default function Messages() {
           <p className="p-4 text-sm text-muted-foreground">No conversations yet. Message a provider from their profile.</p>
         ) : (
           <ul>
-            {threads.map((t) => (
+            {threads.map((t) => {
+              const isUnread = unreadThreadIds.has(t.id) && activeId !== t.id;
+              return (
               <li key={t.id}>
                 <button
-                  onClick={() => setParams({ t: t.id }, { replace: true })}
+                  onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   className={cn(
                     "flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-sm font-semibold">
+                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-sm font-semibold">
                     {t.other?.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other?.display_name ?? t.other?.username ?? "?").slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{t.other?.display_name || `@${t.other?.username}`}</p>
-                    <p className="truncate text-xs text-muted-foreground">@{t.other?.username}</p>
+                    <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold")}>{t.other?.display_name || `@${t.other?.username}`}</p>
+                    <p className={cn("truncate text-xs", isUnread ? "font-semibold text-foreground" : "text-muted-foreground")}>@{t.other?.username}</p>
                   </div>
+                  {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
                 </button>
               </li>
-            ))}
+              );
+            })}
+
           </ul>
         )}
       </aside>
