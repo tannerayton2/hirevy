@@ -442,14 +442,51 @@ export default function Messages() {
     return id;
   }, [otherRead, msgs, user]);
 
+  // Compose: debounced profile search
+  useEffect(() => {
+    if (!composeOpen) return;
+    const q = composeQuery.trim();
+    if (!q) { setComposeResults([]); return; }
+    let cancelled = false;
+    const handle = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+        .neq("id", user?.id ?? "")
+        .limit(20);
+      if (!cancelled) setComposeResults(((data as OtherProfile[]) ?? []));
+    }, 200);
+    return () => { cancelled = true; window.clearTimeout(handle); };
+  }, [composeQuery, composeOpen, user]);
+
+  const startThreadWith = async (otherId: string) => {
+    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: otherId });
+    if (error) { toast({ title: "Could not open thread", description: error.message, variant: "destructive" }); return; }
+    setComposeOpen(false);
+    setComposeQuery("");
+    setComposeResults([]);
+    setParams({ t: data as unknown as string }, { replace: true });
+  };
+
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[280px_1fr]">
+    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[320px_1fr]">
       {/* Inbox */}
       <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
-        <div className="border-b border-border px-4 py-3">
-          <h1 className="font-display text-lg font-semibold">Messages</h1>
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => setComposeOpen(true)}
+            aria-label="New message"
+            className="text-primary hover:text-primary"
+          >
+            <PenSquare className="h-5 w-5" />
+          </Button>
         </div>
         {/* Pinned HireVy Team thread */}
         <button
@@ -459,46 +496,105 @@ export default function Messages() {
             teamMode && "bg-primary/15",
           )}
         >
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
+          <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
             HV
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+            <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">HireVy Team</p>
+            <p className="truncate text-sm font-semibold text-foreground">HireVy Team</p>
             <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
           </div>
         </button>
         {threads.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No conversations yet. Message a provider from their profile.</p>
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h2 className="font-display text-lg font-semibold text-foreground">No messages yet</h2>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">Message a coach or provider to get started.</p>
+            <Button className="mt-5" onClick={() => navigate("/explore")}>Browse Coaches</Button>
+          </div>
         ) : (
-          <ul>
+          <ul className="divide-y divide-border">
             {threads.map((t) => {
               const isUnread = unreadThreadIds.has(t.id) && activeId !== t.id;
+              const name = t.other?.display_name || `@${t.other?.username ?? "user"}`;
+              const preview = t.lastMsg ? snippet(t.lastMsg) : `@${t.other?.username ?? ""}`;
+              const ts = t.lastMsg?.created_at ?? t.last_message_at;
               return (
               <li key={t.id}>
                 <button
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   className={cn(
-                    "flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary",
+                    "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
-                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-sm font-semibold">
+                  <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">
                     {t.other?.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other?.display_name ?? t.other?.username ?? "?").slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold")}>{t.other?.display_name || `@${t.other?.username}`}</p>
-                    <p className={cn("truncate text-xs", isUnread ? "font-semibold text-foreground" : "text-muted-foreground")}>@{t.other?.username}</p>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
+                    </div>
+                    <div className="mt-0.5 flex items-center justify-between gap-2">
+                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/80" : "text-muted-foreground")}>{preview}</p>
+                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+                    </div>
                   </div>
-                  {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
                 </button>
               </li>
               );
             })}
-
           </ul>
         )}
       </aside>
+
+      {/* Compose new message dialog */}
+      <Dialog open={composeOpen} onOpenChange={(o) => { setComposeOpen(o); if (!o) { setComposeQuery(""); setComposeResults([]); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New message</DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={composeQuery}
+              onChange={(e) => setComposeQuery(e.target.value)}
+              placeholder="Search by name or @handle"
+              className="pl-9"
+            />
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {composeQuery.trim() && composeResults.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">No users found</p>
+            )}
+            <ul className="divide-y divide-border">
+              {composeResults.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => startThreadWith(p.id)}
+                    className="flex w-full items-center gap-3 px-1 py-2 text-left transition-colors hover:bg-secondary"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">
+                      {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.display_name ?? p.username ?? "?").slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{p.display_name || `@${p.username}`}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{p.username}</p>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
 
 
       {/* Conversation */}
