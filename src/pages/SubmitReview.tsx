@@ -73,8 +73,22 @@ export default function SubmitReview() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const prefilledCoach = params.get("coach") ?? "";
+  const hideSection1 = !!prefilledCoach;
 
   const [coachName, setCoachName] = useState(prefilledCoach);
+  const [coachQuery, setCoachQuery] = useState(prefilledCoach);
+  const [linkedProfileId, setLinkedProfileId] = useState<string | null>(null);
+  const [isUnmatched, setIsUnmatched] = useState(false);
+  const [nameLocked, setNameLocked] = useState(hideSection1);
+  const [unmatchedLink, setUnmatchedLink] = useState("");
+  const [unmatchedDescription, setUnmatchedDescription] = useState("");
+
+  type ProfileHit = { id: string; username: string; display_name: string | null; avatar_url: string | null };
+  const [searchResults, setSearchResults] = useState<ProfileHit[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement | null>(null);
+
   const [category, setCategory] = useState<string>("");
   const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
@@ -93,6 +107,67 @@ export default function SubmitReview() {
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Debounced profile search
+  useEffect(() => {
+    if (hideSection1 || nameLocked) return;
+    const q = coachQuery.trim();
+    if (q.length < 2) { setSearchResults([]); return; }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .or(`display_name.ilike.%${q}%,username.ilike.%${q}%`)
+        .limit(6);
+      if (!cancelled) {
+        setSearchResults((data ?? []) as ProfileHit[]);
+        setSearching(false);
+      }
+    }, 200);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [coachQuery, hideSection1, nameLocked]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!searchBoxRef.current?.contains(e.target as Node)) setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  const selectExisting = (p: ProfileHit) => {
+    setLinkedProfileId(p.id);
+    setIsUnmatched(false);
+    setCoachName(p.display_name || p.username);
+    setCoachQuery(p.display_name || p.username);
+    setNameLocked(true);
+    setSearchOpen(false);
+    setUnmatchedLink("");
+    setUnmatchedDescription("");
+  };
+
+  const selectUnmatched = () => {
+    setLinkedProfileId(null);
+    setIsUnmatched(true);
+    setCoachName(coachQuery.trim());
+    setNameLocked(true);
+    setSearchOpen(false);
+  };
+
+  const clearName = () => {
+    setLinkedProfileId(null);
+    setIsUnmatched(false);
+    setNameLocked(false);
+    setCoachName("");
+    setCoachQuery("");
+    setUnmatchedLink("");
+    setUnmatchedDescription("");
+  };
+
+
 
   const completenessScore = useMemo(
     () => computeCompletenessScore({
