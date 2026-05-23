@@ -10,29 +10,27 @@ interface TierBadgeProps {
 }
 
 /**
- * Pill-shaped credential badge with metallic gradient per tier.
+ * Raised 3D metallic plate badge.
  * Renders nothing for "unranked".
  */
-const tierGradient: Record<Tier, string> = {
-  unranked: "linear-gradient(135deg,#888 0%,#666 100%)",
-  bronze: "linear-gradient(135deg,#E8A87C 0%,#CD7F32 45%,#8B4F1E 100%)",
-  silver: "linear-gradient(135deg,#F5F5F5 0%,#C0C0C0 45%,#7d7d7d 100%)",
-  gold: "linear-gradient(135deg,#FFE98A 0%,#FFD700 45%,#B8860B 100%)",
-  platinum: "linear-gradient(135deg,#FFFFFF 0%,#E5E4E2 45%,#A8A8A8 100%)",
-  diamond: "linear-gradient(135deg,#9FF5F0 0%,#00CED1 45%,#0892A5 100%)",
+type TierStyle = {
+  top: string;
+  mid: string;
+  bot: string;
+  shadow: string;
+  border: string;
 };
 
-const tierTextColor: Record<Tier, string> = {
-  unranked: "#fff",
-  bronze: "#fff",
-  silver: "#1a1a1a",
-  gold: "#3a2a00",
-  platinum: "#1a1a1a",
-  diamond: "#fff",
+const TIER_STYLES: Record<Exclude<Tier, "unranked">, TierStyle> = {
+  bronze:   { top: "#E8A96A", mid: "#CD7F32", bot: "#8B5A1E", shadow: "#4A2F0A", border: "#F2BC85" },
+  silver:   { top: "#F0F0F0", mid: "#C0C0C0", bot: "#808080", shadow: "#404040", border: "#FFFFFF" },
+  gold:     { top: "#FFE87C", mid: "#FFD700", bot: "#B8860B", shadow: "#5A4000", border: "#FFF2A8" },
+  platinum: { top: "#FFFFFF", mid: "#E5E4E2", bot: "#A8A8A8", shadow: "#505050", border: "#FFFFFF" },
+  diamond:  { top: "#7FFFFF", mid: "#00CED1", bot: "#006B6E", shadow: "#003333", border: "#B8FFFF" },
 };
 
 function IconFor({ tier, size }: { tier: Tier; size: number }) {
-  const props = { width: size, height: size, strokeWidth: 2.2 } as const;
+  const props = { width: size, height: size, strokeWidth: 2.4 } as const;
   switch (tier) {
     case "bronze":
     case "silver":
@@ -49,42 +47,51 @@ function IconFor({ tier, size }: { tier: Tier; size: number }) {
 }
 
 const sizeMap = {
-  xs: { h: 20, px: 8, font: 9, icon: 10, gap: 4 },
-  sm: { h: 24, px: 10, font: 10, icon: 12, gap: 5 },
-  md: { h: 26, px: 12, font: 11, icon: 13, gap: 6 },
-  lg: { h: 32, px: 14, font: 12, icon: 15, gap: 7 },
+  xs: { h: 22, w: 80,  px: 8,  font: 9,  icon: 10, gap: 4, radius: 6 },
+  sm: { h: 26, w: 90,  px: 10, font: 10, icon: 12, gap: 5, radius: 7 },
+  md: { h: 32, w: 100, px: 12, font: 11, icon: 13, gap: 6, radius: 8 },
+  lg: { h: 40, w: 124, px: 14, font: 13, icon: 16, gap: 7, radius: 10 },
 };
 
 export function TierBadge({ tier, size = "md", showLabel = true, className }: TierBadgeProps) {
   if (tier === "unranked") return null;
   const s = sizeMap[size];
+  const t = TIER_STYLES[tier];
+
+  const background = `linear-gradient(to bottom, ${t.top} 0%, ${t.top} 15%, ${t.mid} 50%, ${t.mid} 70%, ${t.bot} 95%, ${t.bot} 100%)`;
+
+  // Layered shadows: outer elevation + inner top highlight + inner bottom shade
+  const boxShadow = [
+    `0 2px 3px ${t.shadow}`,                     // ambient/below
+    `0 3px 6px -1px ${t.shadow}`,                // soft elevation
+    `inset 0 1px 0 ${t.top}`,                    // top highlight rim
+    `inset 0 -1px 0 ${t.shadow}`,                // bottom shade rim
+    `inset 0 2px 3px rgba(255,255,255,0.35)`,    // specular top glow
+    `inset 0 -2px 3px rgba(0,0,0,0.25)`,         // inner bottom depth
+  ].join(", ");
+
   return (
     <span
       title={`${TIER_LABEL[tier]} tier`}
       className={cn(
-        "relative inline-flex select-none items-center justify-center overflow-hidden rounded-full font-bold uppercase tracking-[0.12em]",
-        "shadow-[0_1px_2px_rgba(0,0,0,0.4),0_2px_6px_-1px_rgba(0,0,0,0.35)] ring-1 ring-black/25",
-        tier === "diamond" && "tier-shimmer",
+        "tier-plate relative inline-flex select-none items-center justify-center overflow-hidden font-bold uppercase tracking-[0.12em]",
         className,
       )}
       style={{
         height: s.h,
-        minWidth: showLabel ? 90 : s.h,
+        minWidth: showLabel ? s.w : s.h,
         paddingLeft: s.px,
         paddingRight: s.px,
         gap: s.gap,
-        background: tierGradient[tier],
-        color: tierTextColor[tier],
+        background,
+        color: "#fff",
         fontSize: s.font,
-        textShadow:
-          tier === "silver" || tier === "platinum" || tier === "gold"
-            ? "0 1px 0 rgba(255,255,255,0.4)"
-            : "0 1px 0 rgba(0,0,0,0.35)",
+        borderRadius: s.radius,
+        border: `1px solid ${t.border}`,
+        boxShadow,
+        textShadow: `0 1px 1px ${t.shadow}, 0 1px 2px rgba(0,0,0,0.45)`,
       }}
     >
-      <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-full" style={{
-        background: "linear-gradient(to bottom, rgba(255,255,255,0.35), transparent)",
-      }} />
       <IconFor tier={tier} size={s.icon} />
       {showLabel && <span className="relative z-10">{TIER_LABEL[tier]}</span>}
     </span>
