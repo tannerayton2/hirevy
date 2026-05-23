@@ -316,10 +316,19 @@ function StatCard({ label, value, hint }: { label: string; value: number | strin
 
 function SectionTitle({ icon: Icon, children }: { icon: typeof Users; children: React.ReactNode }) {
   return (
-    <div className="mb-3 mt-10 flex items-center gap-2">
+    <div className="mb-4 flex items-center gap-2 border-b border-border pb-3">
       <Icon className="h-4 w-4 text-primary" />
       <h2 className="font-serif text-xl text-foreground">{children}</h2>
     </div>
+  );
+}
+
+function Section({ icon, title, children }: { icon: typeof Users; title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-8 rounded-lg border border-border bg-card/40 p-5 sm:p-6">
+      <SectionTitle icon={icon}>{title}</SectionTitle>
+      {children}
+    </section>
   );
 }
 
