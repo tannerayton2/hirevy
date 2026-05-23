@@ -27,26 +27,16 @@ export default function Following() {
     if (!user) { navigate("/auth"); return; }
     void (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("follows")
-        .select("following_id, profiles!follows_following_id_fkey(id, username, display_name, avatar_url, review_count, points)")
-        .eq("follower_id", user.id);
-      // Fallback if FK alias not available — query in two steps
+      const { data: rows } = await supabase
+        .from("follows").select("following_id").eq("follower_id", user.id);
+      const ids = (rows ?? []).map((r) => r.following_id as string);
       let result: FollowedProfile[] = [];
-      if (data && data.length > 0 && (data[0] as { profiles?: unknown }).profiles) {
-        result = (data as unknown as { profiles: FollowedProfile }[])
-          .map((r) => r.profiles).filter(Boolean);
-      } else {
-        const { data: rows } = await supabase
-          .from("follows").select("following_id").eq("follower_id", user.id);
-        const ids = (rows ?? []).map((r) => r.following_id as string);
-        if (ids.length) {
-          const { data: profs } = await supabase
-            .from("profiles")
-            .select("id, username, display_name, avatar_url, review_count, points")
-            .in("id", ids);
-          result = (profs as FollowedProfile[]) ?? [];
-        }
+      if (ids.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, review_count, points")
+          .in("id", ids);
+        result = (profs as FollowedProfile[]) ?? [];
       }
       setItems(result);
       setLoading(false);
