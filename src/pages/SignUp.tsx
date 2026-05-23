@@ -53,7 +53,7 @@ export default function SignUp() {
     return () => clearTimeout(t);
   }, [username]);
 
-  if (!loading && user) return <Navigate to={safeRedirect ?? "/onboarding"} replace />;
+  if (!loading && user) return <Navigate to={safeRedirect ?? "/explore"} replace />;
 
   const usernameMsg = useMemo(() => {
     switch (usernameStatus) {
