@@ -406,7 +406,13 @@ export default function Admin() {
         <div className="mt-10 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <>
+          {/* 0. Send Notification to All Users */}
+          <Section icon={Send} title="Send Notification to All Users">
+            <BroadcastPanel />
+          </Section>
+
           {/* 1. Platform Stats */}
+
           <Section icon={ShieldAlert} title="Platform Stats">
             <div className="space-y-6">
               <div>
