@@ -60,6 +60,8 @@ interface ProfileFull {
   notified_points_tier: string;
   awarded_claim_bonus: boolean;
   awarded_profile_complete_bonus: boolean;
+  role: string | null;
+  incomplete_banner_dismissed: boolean;
 }
 
 interface Review {
