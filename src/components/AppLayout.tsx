@@ -1,12 +1,15 @@
-import { NavLink } from "react-router-dom";
-import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUnreadDocumentTitle } from "@/hooks/useUnreadThreads";
 import { isAdminUsername } from "@/lib/admin";
-import type { ReactNode } from "react";
+import { shareReviewUrl } from "@/lib/shareLinks";
+import { toast } from "@/hooks/use-toast";
+import { useState, type ReactNode } from "react";
 
 function UnreadBadge({ count }: { count: number }) {
   if (!count) return null;
@@ -42,9 +45,12 @@ const baseItems: NavItem[] = [
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const unread = useUnreadDocumentTitle("HireVy");
   const isAdmin = isAdminUsername(profile?.username);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const items = baseItems.filter((i) => {
     if (i.admin && !isAdmin) return false;
@@ -52,6 +58,24 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return true;
   });
   const profilePath = profile?.username ? `/@${profile.username}` : "/me";
+
+  // Detect when the user is viewing their own profile (any of the profile URL shapes).
+  const myHandle = profile?.username?.toLowerCase();
+  const profileMatch = pathname.match(/^\/(?:@|coach\/)?([^/]+)\/?$/);
+  const routeHandle = profileMatch?.[1]?.toLowerCase();
+  const isOwnProfile = !!(user && myHandle && routeHandle && routeHandle === myHandle);
+
+  const copyReviewLink = async () => {
+    if (!profile?.username) return;
+    const url = shareReviewUrl(profile.username);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Review link copied", description: url });
+    } catch {
+      toast({ title: "Copy failed", description: url, variant: "destructive" });
+    }
+  };
+
   const mobileCols =
     items.length === 5 ? "grid-cols-5" :
     items.length === 4 ? "grid-cols-4" :
@@ -67,7 +91,64 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <Logo />
           </NavLink>
           <div className="flex items-center gap-2">
-            {user ? (
+            {isOwnProfile ? (
+              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Open profile menu"
+                    className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-secondary"
+                  >
+                    <span className="text-xs uppercase tracking-[0.18em] text-primary">
+                      @{profile?.username}
+                    </span>
+                    <Menu className="h-5 w-5 text-primary" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
+                >
+                  <nav className="flex flex-col gap-0.5 p-4 pt-12">
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <SettingsIcon className="h-4 w-4" /> Edit Profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); void copyReviewLink(); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <LinkIcon className="h-4 w-4" /> Copy Review Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); navigate("/settings/following"); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <UserCheck className="h-4 w-4" /> Following
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <SettingsIcon className="h-4 w-4" /> Settings
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
+                      className="mt-1 flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <LogOut className="h-4 w-4" /> Log Out
+                    </button>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            ) : user ? (
               <NavLink to={profilePath} className="text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
                 @{profile?.username ?? "you"}
               </NavLink>

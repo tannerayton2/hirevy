@@ -496,72 +496,41 @@ export default function Profile() {
           <SocialLinksRow profile={profile} />
         </div>
 
-        {/* Action buttons row */}
-        <div className="mt-5 flex items-center gap-2">
-          {!isMe ? (
-            <>
-              <Button
-                variant={following ? "outline" : "default"}
-                onClick={toggleFollow}
-                className="basis-1/2"
-              >
-                {following ? "Following" : "Follow"}
-              </Button>
-              <Button variant="outline" onClick={startMessage} className="basis-[35%]">
-                <MessageSquare className="mr-1.5 h-4 w-4" /> Message
-              </Button>
-            </>
-          ) : (
-            <Button asChild variant="default" className="flex-1">
-              <Link to="/settings/profile">Edit Profile</Link>
+        {/* Action buttons row — hidden on own profile (actions live in nav sidebar) */}
+        {!isMe && (
+          <div className="mt-5 flex items-center gap-2">
+            <Button
+              variant={following ? "outline" : "default"}
+              onClick={toggleFollow}
+              className="basis-1/2"
+            >
+              {following ? "Following" : "Follow"}
             </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="More options" className="shrink-0">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {isMe ? (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Edit Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={copyReviewLink}>
-                    <LinkIcon className="mr-2 h-4 w-4" /> Copy Review Link
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings/following"><UserCheck className="mr-2 h-4 w-4" /> Following</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings/profile"><SettingsIcon className="mr-2 h-4 w-4" /> Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={async () => { await signOut(); navigate("/"); }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" /> Log Out
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem onSelect={copyProfileLink}>
-                    <Share2 className="mr-2 h-4 w-4" /> Share Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      if (!user) { navigate("/auth"); return; }
-                      setReportOpen(true);
-                    }}
-                  >
-                    <Flag className="mr-2 h-4 w-4" /> Report Profile
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            <Button variant="outline" onClick={startMessage} className="basis-[35%]">
+              <MessageSquare className="mr-1.5 h-4 w-4" /> Message
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="More options" className="shrink-0">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onSelect={copyProfileLink}>
+                  <Share2 className="mr-2 h-4 w-4" /> Share Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    if (!user) { navigate("/auth"); return; }
+                    setReportOpen(true);
+                  }}
+                >
+                  <Flag className="mr-2 h-4 w-4" /> Report Profile
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
 
         {/* Bio */}
         {profile.bio && (
