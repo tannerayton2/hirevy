@@ -202,24 +202,29 @@ export default function ProofReviewSubmit() {
     setDone({ id: (data as { id: string }).id });
     setBusy(false);
 
-    // First review submitted ever → +5 points bonus + popup, awarded only once
+    // First review submitted ever → +5 points bonus + popup, shown only once.
     if (user) {
       const { data: prof } = await supabase
         .from("profiles")
-        .select("notified_first_review_submitted, awarded_first_review_submitted_bonus, points")
+        .select("awarded_first_review_submitted_bonus, points")
         .eq("id", user.id)
         .maybeSingle();
-      const row = prof as { notified_first_review_submitted: boolean; awarded_first_review_submitted_bonus: boolean; points: number } | null;
+      const row = prof as { awarded_first_review_submitted_bonus: boolean; points: number } | null;
       if (row && !row.awarded_first_review_submitted_bonus) {
         await supabase.from("profiles").update({
-          notified_first_review_submitted: true,
           awarded_first_review_submitted_bonus: true,
           points: (row.points ?? 0) + 5,
         }).eq("id", user.id);
+      }
+      const { data: flag } = await supabase
+        .from("user_notification_flags")
+        .select("flag_name")
+        .eq("user_id", user.id)
+        .eq("flag_name", "first_review_submitted")
+        .maybeSingle();
+      if (!flag) {
+        await supabase.from("user_notification_flags").insert({ user_id: user.id, flag_name: "first_review_submitted" });
         setShowFirstSubmittedPopup(true);
-      } else if (row && !row.notified_first_review_submitted) {
-        setShowFirstSubmittedPopup(true);
-        await supabase.from("profiles").update({ notified_first_review_submitted: true }).eq("id", user.id);
       }
     }
   };
