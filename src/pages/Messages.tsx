@@ -130,7 +130,7 @@ export default function Messages() {
     })();
 
     const channel = supabase
-      .channel(`thread:${activeId}`, { config: { broadcast: { self: false }, presence: { key: user.id } } })
+      .channel(`thread:${activeId}`, { config: { private: true, broadcast: { self: false }, presence: { key: user.id } } })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `thread_id=eq.${activeId}` }, (payload) => {
         const m = payload.new as unknown as Msg;
         setMsgs((prev) => prev.some((x) => x.id === m.id) ? prev : [...prev, m]);
