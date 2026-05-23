@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus, Trash2, Search, Ban, Check, X as XIcon, Send, AlertTriangle, FileWarning } from "lucide-react";
+import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus, Trash2, Search, Ban, Check, X as XIcon, Send, AlertTriangle, FileWarning, LayoutDashboard, Radio } from "lucide-react";
+import { Logo } from "@/components/Logo";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/hooks/use-toast";
@@ -378,162 +380,215 @@ export default function Admin() {
     return <Navigate to="/explore" replace />;
   }
 
+  type SectionKey =
+    | "dashboard"
+    | "moderation"
+    | "claims"
+    | "profile-requests"
+    | "team-messages"
+    | "broadcast"
+    | "users"
+    | "create-profile"
+    | "manage-profiles";
+
+  const NAV: { key: SectionKey; label: string; icon: typeof Users }[] = [
+    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { key: "moderation", label: "Moderation", icon: Flag },
+    { key: "claims", label: "Claim Requests", icon: UserPlus },
+    { key: "profile-requests", label: "Profile Requests", icon: FileWarning },
+    { key: "team-messages", label: "Team Messages", icon: MessageSquare },
+    { key: "broadcast", label: "Broadcast", icon: Radio },
+    { key: "users", label: "User Management", icon: Users },
+    { key: "create-profile", label: "Create Profile", icon: UserPlus },
+    { key: "manage-profiles", label: "Manage Profiles", icon: Trash2 },
+  ];
+
+  const [active, setActive] = useState<SectionKey>("dashboard");
+
+  const sectionTitle = NAV.find((n) => n.key === active)?.label ?? "";
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-primary">
-            <ShieldAlert className="h-3.5 w-3.5" /> Admin
+    <div className="flex min-h-[calc(100vh-56px)] w-full">
+      {/* Admin sidebar */}
+      <aside className="hidden w-[200px] shrink-0 border-r border-border bg-card/40 md:block">
+        <div className="sticky top-14 flex h-[calc(100vh-56px)] flex-col">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-4">
+            <Logo />
           </div>
-          <h1 className="mt-1 font-serif text-3xl text-foreground">Platform stats</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Live numbers from the database. Private to allowlisted accounts.
-          </p>
+          <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
+            {NAV.map((item) => {
+              const isActive = item.key === active;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setActive(item.key)}
+                  className={cn(
+                    "flex items-center gap-2.5 border-l-2 px-3 py-2 text-left text-sm transition-colors",
+                    isActive
+                      ? "border-primary bg-secondary text-foreground"
+                      : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
-        <Button onClick={fetchAll} disabled={loading} variant="outline" size="sm">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
-      </div>
+      </aside>
 
-      {error ? (
-        <div className="mt-6 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+      {/* Main */}
+      <div className="min-w-0 flex-1">
+        {/* Mobile section picker */}
+        <div className="border-b border-border bg-card/40 px-4 py-3 md:hidden">
+          <Select value={active} onValueChange={(v) => setActive(v as SectionKey)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {NAV.map((n) => <SelectItem key={n.key} value={n.key}>{n.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
-      ) : null}
 
-      {!stats ? (
-        <div className="mt-10 text-sm text-muted-foreground">Loading…</div>
-      ) : (
-        <>
-          {/* 0. Send Notification to All Users */}
-          <Section icon={Send} title="Send Notification to All Users">
-            <BroadcastPanel />
-          </Section>
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-8">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-primary">
+                <ShieldAlert className="h-3.5 w-3.5" /> Admin
+              </div>
+              <h1 className="mt-1 truncate font-serif text-3xl text-foreground">{sectionTitle}</h1>
+            </div>
+            <Button onClick={fetchAll} disabled={loading} variant="outline" size="sm">
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
 
-          {/* 1. Platform Stats */}
+          {error ? (
+            <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              {error}
+            </div>
+          ) : null}
 
-          <Section icon={ShieldAlert} title="Platform Stats">
-            <div className="space-y-6">
-              <div>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Users</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Total users" value={stats.users.total} />
-                  <StatCard label="Signups 24h" value={stats.users.last_24h} />
-                  <StatCard label="Signups 7d" value={stats.users.last_7d} />
-                  <StatCard
-                    label="Top provider"
-                    value={stats.reviews.top_provider?.count ?? 0}
-                    hint={stats.reviews.top_provider ? `@${stats.reviews.top_provider.username}` : "—"}
+          {!stats ? (
+            <div className="text-sm text-muted-foreground">Loading…</div>
+          ) : (
+            <div className="min-w-0">
+              {active === "dashboard" && (
+                <div className="space-y-6">
+                  <div>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Users</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <StatCard label="Total users" value={stats.users.total} />
+                      <StatCard label="Signups 24h" value={stats.users.last_24h} />
+                      <StatCard label="Signups 7d" value={stats.users.last_7d} />
+                      <StatCard
+                        label="Top provider"
+                        value={stats.reviews.top_provider?.count ?? 0}
+                        hint={stats.reviews.top_provider ? `@${stats.reviews.top_provider.username}` : "—"}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reviews</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <StatCard label="Verified total" value={stats.reviews.verified_total} />
+                      <StatCard label="Proof-backed total" value={stats.reviews.proof_total} />
+                      <StatCard label="Reviews 24h" value={stats.reviews.last_24h} hint="Both types" />
+                      <StatCard label="Reviews 7d" value={stats.reviews.last_7d} hint="Both types" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Offers</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <StatCard label="Total offers" value={stats.offers.total} />
+                      <StatCard label="Paid offers" value={stats.offers.paid} />
+                      <StatCard label="Free-for-testimonial" value={stats.offers.free_for_testimonial} />
+                      <StatCard label="Created 7d" value={stats.offers.last_7d} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Activity</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <StatCard label="Messages total" value={stats.activity.messages_total} />
+                      <StatCard label="Messages 24h" value={stats.activity.messages_24h} />
+                      <StatCard label="Active threads 7d" value={stats.activity.active_threads_7d} />
+                      <StatCard label="Total follows" value={stats.activity.follows_total} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {active === "moderation" && (
+                <Tabs defaultValue="reports">
+                  <TabsList>
+                    <TabsTrigger value="reports">Reported Profiles</TabsTrigger>
+                    <TabsTrigger value="disputes">Disputed Reviews</TabsTrigger>
+                    <TabsTrigger value="flagged">Flagged Content</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="reports" className="mt-4">
+                    <ReportedProfilesPanel />
+                  </TabsContent>
+                  <TabsContent value="disputes" className="mt-4">
+                    <EmptyState icon={AlertTriangle} message="No disputes yet." />
+                  </TabsContent>
+                  <TabsContent value="flagged" className="mt-4">
+                    <EmptyState icon={FileWarning} message="No flagged content yet." />
+                  </TabsContent>
+                </Tabs>
+              )}
+
+              {active === "claims" && <ClaimRequestsPanel />}
+
+              {active === "profile-requests" && (
+                <ProfileRequestsPanel
+                  reloadKey={profileRequestsReloadKey}
+                  onCreateProfile={(row) => {
+                    setCoachPrefill({ fullName: row.coach_name, websiteUrl: row.unmatched_link ?? "" });
+                    setPrefillKey((k) => k + 1);
+                    setPendingReviewId(row.id);
+                    setActive("create-profile");
+                    setTimeout(() => createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                  }}
+                />
+              )}
+
+              {active === "team-messages" && <TeamMessagesPanel />}
+
+              {active === "broadcast" && <BroadcastPanel />}
+
+              {active === "users" && (
+                <UserManagementPanel users={users} onReload={() => void fetchAll()} />
+              )}
+
+              {active === "create-profile" && (
+                <div ref={createFormRef}>
+                  <CreateCoachProfileForm
+                    key={prefillKey}
+                    initial={coachPrefill}
+                    onCreated={async () => {
+                      if (pendingReviewId) {
+                        await supabase.from("unclaimed_reviews").update({ needs_profile: false } as never).eq("id", pendingReviewId);
+                        setPendingReviewId(null);
+                        setCoachPrefill(undefined);
+                        setProfileRequestsReloadKey((k) => k + 1);
+                      }
+                      void fetchAll();
+                    }}
                   />
                 </div>
-              </div>
-              <div>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reviews</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Verified total" value={stats.reviews.verified_total} />
-                  <StatCard label="Proof-backed total" value={stats.reviews.proof_total} />
-                  <StatCard label="Reviews 24h" value={stats.reviews.last_24h} hint="Both types" />
-                  <StatCard label="Reviews 7d" value={stats.reviews.last_7d} hint="Both types" />
-                </div>
-              </div>
-              <div>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Offers</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Total offers" value={stats.offers.total} />
-                  <StatCard label="Paid offers" value={stats.offers.paid} />
-                  <StatCard label="Free-for-testimonial" value={stats.offers.free_for_testimonial} />
-                  <StatCard label="Created 7d" value={stats.offers.last_7d} />
-                </div>
-              </div>
-              <div>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Activity</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Messages total" value={stats.activity.messages_total} />
-                  <StatCard label="Messages 24h" value={stats.activity.messages_24h} />
-                  <StatCard label="Active threads 7d" value={stats.activity.active_threads_7d} />
-                  <StatCard label="Total follows" value={stats.activity.follows_total} />
-                </div>
-              </div>
+              )}
+
+              {active === "manage-profiles" && <ManageUnclaimedProfiles />}
             </div>
-          </Section>
-
-          {/* 2. Moderation Queue */}
-          <Section icon={Flag} title="Moderation Queue">
-            <Tabs defaultValue="reports">
-              <TabsList>
-                <TabsTrigger value="reports">Reported Profiles</TabsTrigger>
-                <TabsTrigger value="disputes">Disputed Reviews</TabsTrigger>
-                <TabsTrigger value="flagged">Flagged Content</TabsTrigger>
-              </TabsList>
-              <TabsContent value="reports" className="mt-4">
-                <ReportedProfilesPanel />
-              </TabsContent>
-              <TabsContent value="disputes" className="mt-4">
-                <EmptyState icon={AlertTriangle} message="No disputes yet." />
-              </TabsContent>
-              <TabsContent value="flagged" className="mt-4">
-                <EmptyState icon={FileWarning} message="No flagged content yet." />
-              </TabsContent>
-            </Tabs>
-          </Section>
-
-          {/* 3. Profile Requests */}
-          <Section icon={FileWarning} title="Profile Requests">
-            <ProfileRequestsPanel
-              reloadKey={profileRequestsReloadKey}
-              onCreateProfile={(row) => {
-                setCoachPrefill({ fullName: row.coach_name, websiteUrl: row.unmatched_link ?? "" });
-                setPrefillKey((k) => k + 1);
-                setPendingReviewId(row.id);
-                setTimeout(() => createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-              }}
-            />
-          </Section>
-
-          {/* 4. Claim Requests */}
-          <Section icon={UserPlus} title="Claim Requests">
-            <ClaimRequestsPanel />
-          </Section>
-
-          {/* 5. Team Messages */}
-          <Section icon={MessageSquare} title="Team Messages">
-            <TeamMessagesPanel />
-          </Section>
-
-          {/* 6. User Management */}
-          <Section icon={Users} title="User Management">
-            <UserManagementPanel users={users} onReload={() => void fetchAll()} />
-          </Section>
-
-          {/* 7. Create Coach Profile */}
-          <div ref={createFormRef}>
-            <Section icon={UserPlus} title="Create Coach Profile">
-              <CreateCoachProfileForm
-                key={prefillKey}
-                initial={coachPrefill}
-                onCreated={async () => {
-                  if (pendingReviewId) {
-                    await supabase.from("unclaimed_reviews").update({ needs_profile: false } as never).eq("id", pendingReviewId);
-                    setPendingReviewId(null);
-                    setCoachPrefill(undefined);
-                    setProfileRequestsReloadKey((k) => k + 1);
-                  }
-                  void fetchAll();
-                }}
-              />
-            </Section>
-          </div>
-
-          {/* 8. Manage Profiles */}
-          <Section icon={Trash2} title="Manage Profiles">
-            <ManageUnclaimedProfiles />
-          </Section>
-        </>
-      )}
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
 
 function EmptyState({ icon: Icon, message }: { icon: typeof Users; message: string }) {
   return (
