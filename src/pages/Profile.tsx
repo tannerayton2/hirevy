@@ -378,100 +378,126 @@ export default function Profile() {
         );
       })()}
       {/* Header */}
-      <div className="flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground md:h-24 md:w-24">
+      <div className="mx-auto max-w-xl border-b border-border pb-6">
+        {/* Avatar */}
+        <div className="flex justify-center">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground ring-2 ring-primary ring-offset-2 ring-offset-background">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
               (profile.display_name || profile.username).slice(0, 1).toUpperCase()
             )}
           </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-2xl font-bold leading-none md:text-3xl">{providerDisplayName}</h1>
-              <button
-                type="button"
-                onClick={() => setTierModalOpen(true)}
-                className="rounded-[3px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label="View verification tiers"
-              >
-                <TierBadge tier={tier} size="md" />
-              </button>
-              {!profile.is_claimed && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Unclaimed
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">@{profile.username}</p>
-
-            {/* Points + progress (owner view only) */}
-            {isMe && (
-              <div className="mt-2.5 max-w-[260px]">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-display text-sm font-bold text-foreground">
-                    {points.toLocaleString()} {points === 1 ? "point" : "points"}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
-                  <div
-                    className="h-full rounded-full transition-[width] duration-500"
-                    style={{
-                      width: `${progressPct}%`,
-                      background: "linear-gradient(90deg,#FFE98A,#FFD700,#B8860B)",
-                    }}
-                  />
-                </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {tierNext
-                    ? `${pointsToNext} ${pointsToNext === 1 ? "point" : "points"} to ${TIER_LABEL_MAP[tierNext]}.`
-                    : "Maximum tier reached."}
-                </p>
-              </div>
-            )}
-            {!profile.is_claimed && (
-              <div className="mt-2">
-                <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
-                  Claim this profile
-                </Button>
-              </div>
-            )}
-
-            {/* Stat strip — member since + review count */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
-              <StatItem>Member since {memberSince}</StatItem>
-              <Dot />
-              <StatItem>
-                {totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"}
-              </StatItem>
-              {responseMs != null && (
-                <>
-                  <Dot />
-                  <StatItem>
-                    <Clock className="h-3 w-3" /> Responds within {formatResponseTime(responseMs)}
-                  </StatItem>
-                </>
-              )}
-            </div>
-
-            {/* Social links row */}
-            <SocialLinksRow profile={profile} />
-          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {!isMe && (
+        {/* Name */}
+        <h1 className="mt-4 text-center font-display text-2xl font-bold leading-tight md:text-3xl">{providerDisplayName}</h1>
+
+        {/* Handle */}
+        <p className="mt-1 text-center text-sm text-muted-foreground">@{profile.username}</p>
+
+        {/* Tier badge */}
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setTierModalOpen(true)}
+            className="rounded-[3px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label="View verification tiers"
+          >
+            <TierBadge tier={tier} size="md" />
+          </button>
+        </div>
+
+        {!profile.is_claimed && (
+          <div className="mt-3 flex flex-col items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Unclaimed
+            </span>
+            <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
+              Claim this profile
+            </Button>
+          </div>
+        )}
+
+        {/* Owner-only points progress */}
+        {isMe && (
+          <div className="mx-auto mt-4 max-w-[280px]">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-display text-sm font-bold text-foreground">
+                {points.toLocaleString()} {points === 1 ? "point" : "points"}
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {tierNext ? `${pointsToNext} to ${TIER_LABEL_MAP[tierNext]}` : "Max tier"}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
+              <div
+                className="h-full rounded-full transition-[width] duration-500"
+                style={{
+                  width: `${progressPct}%`,
+                  background: "linear-gradient(90deg,#FFE98A,#FFD700,#B8860B)",
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Trust card — 3 stats */}
+        <div className="mt-5 grid grid-cols-3 items-center gap-2 rounded-lg border border-primary/30 bg-card/60 px-2 py-4 sm:px-4">
+          <TrustStat
+            value={avg > 0 ? avg.toFixed(1) : "—"}
+            label="Avg rating"
+            valueClassName="text-primary"
+          />
+          <TrustStat
+            value={totalReviewsCount.toLocaleString()}
+            label="Reviews"
+            divider
+          />
+          <TrustStat
+            value={points.toLocaleString()}
+            label="Trust pts"
+          />
+        </div>
+
+        {/* Member since + response time meta */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+          <StatItem>Member since {memberSince}</StatItem>
+          {responseMs != null && (
             <>
-              <Button variant={following ? "outline" : "default"} onClick={toggleFollow}>
-                {following ? "Following" : "Follow"}
-              </Button>
-              <Button variant="outline" onClick={startMessage}><MessageSquare className="mr-1.5 h-4 w-4" /> Message</Button>
+              <Dot />
+              <StatItem>
+                <Clock className="h-3 w-3" /> Responds within {formatResponseTime(responseMs)}
+              </StatItem>
             </>
           )}
-          <Button variant="outline" onClick={copyProfileLink}>
-            <Share2 className="mr-1.5 h-4 w-4" /> Share
-          </Button>
+        </div>
+
+        {/* Social links row — centered */}
+        <div className="mt-4 flex justify-center">
+          <SocialLinksRow profile={profile} />
+        </div>
+
+        {/* Action buttons row */}
+        <div className="mt-5 flex items-center gap-2">
+          {!isMe ? (
+            <>
+              <Button
+                variant={following ? "outline" : "default"}
+                onClick={toggleFollow}
+                className="flex-1"
+              >
+                {following ? "Following" : "Follow"}
+              </Button>
+              <Button variant="outline" onClick={startMessage}>
+                <MessageSquare className="mr-1.5 h-4 w-4" /> Message
+              </Button>
+            </>
+          ) : (
+            <Button asChild variant="default" className="flex-1">
+              <Link to="/settings/profile">Edit Profile</Link>
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" aria-label="More options">
@@ -518,11 +544,19 @@ export default function Profile() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Bio */}
+        {profile.bio && (
+          <p className="mt-5 whitespace-pre-line text-left text-[15px] leading-relaxed text-foreground/90">
+            {profile.bio}
+          </p>
+        )}
       </div>
 
       {profile && !isMe && (
         <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
       )}
+
 
       {/* Bio */}
       {profile.bio && (
@@ -842,6 +876,34 @@ function Empty({ msg }: { msg: string }) {
 
 function StatItem({ children }: { children: React.ReactNode }) {
   return <span className="inline-flex items-center gap-1 tracking-wide">{children}</span>;
+}
+
+function TrustStat({
+  value,
+  label,
+  divider,
+  valueClassName,
+}: {
+  value: string;
+  label: string;
+  divider?: boolean;
+  valueClassName?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center px-2 text-center",
+        divider && "border-x border-border/60",
+      )}
+    >
+      <span className={cn("font-display text-2xl font-bold leading-none text-foreground", valueClassName)}>
+        {value}
+      </span>
+      <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
 }
 function Dot() {
   return <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />;
