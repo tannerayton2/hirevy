@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown } from "lucide-react";
+import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
