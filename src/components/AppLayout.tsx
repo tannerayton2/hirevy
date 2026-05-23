@@ -18,12 +18,13 @@ function UnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-label={`${count} unread thread${count === 1 ? "" : "s"}`}
-      className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
+      className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background"
     >
       {count >= 10 ? "9+" : count}
     </span>
   );
 }
+
 
 function SoonPill() {
   return (
