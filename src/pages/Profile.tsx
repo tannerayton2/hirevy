@@ -33,7 +33,7 @@ import {
 import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
-import { ensureHttps } from "@/lib/socialHandles";
+import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 
 type TabKey = "reviews" | "imported";
 
@@ -947,17 +947,16 @@ function SocialLinksRow({ profile }: { profile: ProfileFull }) {
   return (
     <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
       {items.map(({ key, label, Icon }) => (
-        <a
+        <button
           key={key}
-          href={ensureHttps(profile[key] as string)}
-          target="_blank"
-          rel="noopener noreferrer"
+          type="button"
+          onClick={() => openSocialLink(profile[key] as string, key === "instagram_url" ? "instagram" : undefined)}
           aria-label={label}
           title={label}
           className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/40 text-primary/80 transition-colors hover:border-primary hover:text-primary"
         >
           <Icon className="h-3.5 w-3.5" />
-        </a>
+        </button>
       ))}
     </div>
   );
