@@ -37,7 +37,8 @@ export default function Landing() {
             <span className="hv-l-dot" />
           </div>
           <div className="hv-l-nav-actions hv-l-fade hv-l-fade-1">
-            <Link to="/auth" className="hv-l-nav-signin">Login</Link>
+            <Link to="/auth" className="hv-l-nav-signin">Sign In</Link>
+            <Link to="/signup" className="hv-l-nav-signup">Sign Up</Link>
           </div>
         </div>
       </nav>
@@ -332,9 +333,18 @@ const LANDING_CSS = `
 .hv-l-nav-actions { display: flex; align-items: center; gap: 20px; }
 .hv-l-nav-signin {
   font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--hv-ivory); text-decoration: none; transition: color 0.3s ease;
+  color: rgba(245, 240, 225, 0.55); text-decoration: none; transition: color 0.3s ease;
 }
 .hv-l-nav-signin:hover { color: var(--hv-gold); }
+.hv-l-nav-signup {
+  font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+  color: #1a1208; text-decoration: none;
+  background: linear-gradient(135deg, #f0c870, var(--hv-gold) 55%, #b8862e);
+  padding: 11px 22px; border-radius: 999px;
+  box-shadow: 0 6px 18px -6px rgba(212, 162, 76, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.hv-l-nav-signup:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px -8px rgba(212, 162, 76, 0.7); }
 .hv-l-nav-cta {
   font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--hv-gold); text-decoration: none;

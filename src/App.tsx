@@ -9,6 +9,9 @@ import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth.tsx";
+import SignUp from "./pages/SignUp.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import Profile from "./pages/Profile.tsx";
 import OfferDetail from "./pages/OfferDetail.tsx";
@@ -39,6 +42,9 @@ const App = () => (
             <Route path="/marketplace" element={<AppLayout><Marketplace /></AppLayout>} />
             <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />

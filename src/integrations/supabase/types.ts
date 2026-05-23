@@ -493,6 +493,7 @@ export type Database = {
           display_name: string | null
           follower_count: number
           id: string
+          incomplete_banner_dismissed: boolean
           instagram_url: string | null
           is_claimed: boolean
           linkedin_url: string | null
@@ -500,12 +501,15 @@ export type Database = {
           notified_first_review_submitted: boolean
           notified_points_tier: string
           notified_tier: string
+          onboarding_completed: boolean
           paid_offer_limit: number
           pinned_review_id: string | null
           plan: string
           points: number
+          preferred_categories: string[]
           rating_sum: number
           review_count: number
+          role: string | null
           score_sum: number
           service_category: string | null
           tiktok_url: string | null
@@ -525,6 +529,7 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id: string
+          incomplete_banner_dismissed?: boolean
           instagram_url?: string | null
           is_claimed?: boolean
           linkedin_url?: string | null
@@ -532,12 +537,15 @@ export type Database = {
           notified_first_review_submitted?: boolean
           notified_points_tier?: string
           notified_tier?: string
+          onboarding_completed?: boolean
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           points?: number
+          preferred_categories?: string[]
           rating_sum?: number
           review_count?: number
+          role?: string | null
           score_sum?: number
           service_category?: string | null
           tiktok_url?: string | null
@@ -557,6 +565,7 @@ export type Database = {
           display_name?: string | null
           follower_count?: number
           id?: string
+          incomplete_banner_dismissed?: boolean
           instagram_url?: string | null
           is_claimed?: boolean
           linkedin_url?: string | null
@@ -564,12 +573,15 @@ export type Database = {
           notified_first_review_submitted?: boolean
           notified_points_tier?: string
           notified_tier?: string
+          onboarding_completed?: boolean
           paid_offer_limit?: number
           pinned_review_id?: string | null
           plan?: string
           points?: number
+          preferred_categories?: string[]
           rating_sum?: number
           review_count?: number
+          role?: string | null
           score_sum?: number
           service_category?: string | null
           tiktok_url?: string | null
