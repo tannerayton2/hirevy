@@ -666,6 +666,17 @@ export default function Profile() {
       )}
 
       <TierInfoModal open={tierModalOpen} onOpenChange={setTierModalOpen} currentTier={tier} />
+
+      <CongratsModal
+        open={!!congrats}
+        variant={congrats}
+        onClose={() => setCongrats(null)}
+        onPrimary={() => {
+          if (congrats?.kind === "first-received" && profile) {
+            navigate(`/@${profile.username}`);
+          }
+        }}
+      />
     </div>
     </TooltipProvider>
   );
