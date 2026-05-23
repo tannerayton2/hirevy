@@ -565,12 +565,6 @@ export default function Profile() {
       )}
 
 
-      {/* Bio */}
-      {profile.bio && (
-        <section className="mt-5 max-w-[600px]">
-          <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/90">{profile.bio}</p>
-        </section>
-      )}
 
       {/* Empty state for visitors on a brand-new profile */}
       {!hasAnyContent && !isMe && (
