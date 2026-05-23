@@ -221,11 +221,11 @@ function CreateCoachProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><Label htmlFor="cc-web">Website URL</Label><Input id="cc-web" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-ig">Instagram URL</Label><Input id="cc-ig" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-tw">Twitter/X URL</Label><Input id="cc-tw" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-yt">YouTube URL</Label><Input id="cc-yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-li">LinkedIn URL</Label><Input id="cc-li" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} /></div>
-          <div><Label htmlFor="cc-tt">TikTok URL</Label><Input id="cc-tt" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} /></div>
+          <div><Label htmlFor="cc-ig">Instagram</Label><Input id="cc-ig" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@yourhandle" /></div>
+          <div><Label htmlFor="cc-tw">Twitter/X</Label><Input id="cc-tw" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} placeholder="@yourhandle" /></div>
+          <div><Label htmlFor="cc-yt">YouTube URL</Label><Input id="cc-yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/@yourchannel" /></div>
+          <div><Label htmlFor="cc-li">LinkedIn URL</Label><Input id="cc-li" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" /></div>
+          <div><Label htmlFor="cc-tt">TikTok</Label><Input id="cc-tt" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} placeholder="@yourhandle" /></div>
         </div>
 
         <div>
