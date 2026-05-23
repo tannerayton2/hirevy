@@ -60,6 +60,7 @@ export default function Messages() {
   const { user, loading } = useAuth();
   const [params, setParams] = useSearchParams();
   const activeId = params.get("t");
+  const teamMode = params.get("team") === "1";
   const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null })[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
