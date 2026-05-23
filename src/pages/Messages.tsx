@@ -627,18 +627,35 @@ export default function Messages() {
           <>
             <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">
-                  {activeThread?.other?.avatar_url
-                    ? <img src={activeThread.other.avatar_url} alt="" className="h-full w-full object-cover" />
-                    : (activeThread?.other?.display_name ?? activeThread?.other?.username ?? "?").slice(0, 1).toUpperCase()}
-                </div>
+                {activeThread?.other?.username ? (
+                  <NavLink
+                    to={`/${activeThread.other.username}`}
+                    aria-label={`Open ${activeThread.other.display_name || activeThread.other.username}'s profile`}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold hover:opacity-90"
+                  >
+                    {activeThread.other.avatar_url
+                      ? <img src={activeThread.other.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : (activeThread.other.display_name ?? activeThread.other.username).slice(0, 1).toUpperCase()}
+                  </NavLink>
+                ) : (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">?</div>
+                )}
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{activeThread?.other?.display_name || `@${activeThread?.other?.username}`}</p>
-                  <p className="truncate text-xs text-muted-foreground">@{activeThread?.other?.username}</p>
+                  {activeThread?.other?.username ? (
+                    <NavLink to={`/${activeThread.other.username}`} className="block min-w-0">
+                      <p className="truncate text-sm font-semibold hover:underline">{activeThread.other.display_name || `@${activeThread.other.username}`}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{activeThread.other.username}</p>
+                    </NavLink>
+                  ) : (
+                    <>
+                      <p className="truncate text-sm font-semibold">Conversation</p>
+                    </>
+                  )}
                 </div>
               </div>
               <button onClick={() => setParams({}, { replace: true })} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground md:hidden">Back</button>
             </header>
+
 
 
             <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4" onClick={() => setPickerForMsg(null)}>
