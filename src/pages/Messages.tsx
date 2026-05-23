@@ -82,6 +82,31 @@ export default function Messages() {
   const longPressRef = useRef<number | null>(null);
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+  const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
+
+  const recomputeUnreadThreads = useCallback(async (threadsList: (ThreadRow & { other: OtherProfile | null })[]) => {
+    if (!user) return;
+    const { data: readsRows } = await supabase
+      .from("message_reads")
+      .select("thread_id, last_read_at")
+      .eq("user_id", user.id);
+    const readMap = new Map<string, string>();
+    for (const r of (readsRows ?? []) as { thread_id: string; last_read_at: string }[]) {
+      readMap.set(r.thread_id, r.last_read_at);
+    }
+    const ids = new Set<string>();
+    await Promise.all(threadsList.map(async (t) => {
+      const lastRead = readMap.get(t.id) ?? "1970-01-01T00:00:00Z";
+      if (t.last_message_at && new Date(t.last_message_at) <= new Date(lastRead)) return;
+      const { data: m } = await supabase
+        .from("messages").select("id")
+        .eq("thread_id", t.id).neq("sender_id", user.id)
+        .gt("created_at", lastRead).limit(1);
+      if (m && m.length > 0) ids.add(t.id);
+    }));
+    setUnreadThreadIds(ids);
+  }, [user]);
+
   // Inbox load
   useEffect(() => {
     if (!user) return;
@@ -96,9 +121,27 @@ export default function Messages() {
         ? await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", otherIds)
         : { data: [] as OtherProfile[] };
       const profMap = new Map(((profs as OtherProfile[]) ?? []).map((p) => [p.id, p]));
-      setThreads(list.map((t) => ({ ...t, other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null })));
+      const decorated = list.map((t) => ({ ...t, other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null }));
+      setThreads(decorated);
+      void recomputeUnreadThreads(decorated);
     })();
-  }, [user]);
+  }, [user, recomputeUnreadThreads]);
+
+  // Realtime: recompute unread when a new message arrives in any thread
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`messages-inbox-${user.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
+        void recomputeUnreadThreads(threads);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reads", filter: `user_id=eq.${user.id}` }, () => {
+        void recomputeUnreadThreads(threads);
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [user, threads, recomputeUnreadThreads]);
+
 
   // Active thread: load messages, reactions, reads + subscribe
   useEffect(() => {
