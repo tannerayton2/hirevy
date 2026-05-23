@@ -9,24 +9,19 @@ interface TierBadgeProps {
   className?: string;
 }
 
-/**
- * Raised 3D metallic plate badge.
- * Renders nothing for "unranked".
- */
 type TierStyle = {
-  top: string;
-  mid: string;
-  bot: string;
-  shadow: string;
-  border: string;
+  light: string;  // top-left highlight
+  mid: string;    // middle true color
+  dark: string;   // bottom-right depth
+  facet: string;  // inner facet border
 };
 
 const TIER_STYLES: Record<Exclude<Tier, "unranked">, TierStyle> = {
-  bronze:   { top: "#E8A96A", mid: "#CD7F32", bot: "#8B5A1E", shadow: "#4A2F0A", border: "#F2BC85" },
-  silver:   { top: "#F0F0F0", mid: "#C0C0C0", bot: "#808080", shadow: "#404040", border: "#FFFFFF" },
-  gold:     { top: "#FFE87C", mid: "#FFD700", bot: "#B8860B", shadow: "#5A4000", border: "#FFF2A8" },
-  platinum: { top: "#FFFFFF", mid: "#E5E4E2", bot: "#A8A8A8", shadow: "#505050", border: "#FFFFFF" },
-  diamond:  { top: "#7FFFFF", mid: "#00CED1", bot: "#006B6E", shadow: "#003333", border: "#B8FFFF" },
+  bronze:   { light: "#F0C080", mid: "#CD7F32", dark: "#6B3A10", facet: "#E8A855" },
+  silver:   { light: "#FFFFFF", mid: "#C0C0C0", dark: "#606060", facet: "#E8E8E8" },
+  gold:     { light: "#FFF4A0", mid: "#FFD700", dark: "#8B6500", facet: "#FFE94D" },
+  platinum: { light: "#FFFFFF", mid: "#D8D8D4", dark: "#909090", facet: "#F0F0EE" },
+  diamond:  { light: "#AFFFFF", mid: "#00CED1", dark: "#004D4F", facet: "#7FFFFF" },
 };
 
 function IconFor({ tier, size }: { tier: Tier; size: number }) {
@@ -46,11 +41,12 @@ function IconFor({ tier, size }: { tier: Tier; size: number }) {
   }
 }
 
+// Scale base 110x36 across sizes
 const sizeMap = {
-  xs: { h: 22, w: 80,  px: 8,  font: 9,  icon: 10, gap: 4, radius: 6 },
-  sm: { h: 26, w: 90,  px: 10, font: 10, icon: 12, gap: 5, radius: 7 },
-  md: { h: 32, w: 100, px: 12, font: 11, icon: 13, gap: 6, radius: 8 },
-  lg: { h: 40, w: 124, px: 14, font: 13, icon: 16, gap: 7, radius: 10 },
+  xs: { h: 24, w: 78,  px: 8,  font: 9,  icon: 10, gap: 4 },
+  sm: { h: 30, w: 94,  px: 10, font: 10, icon: 12, gap: 5 },
+  md: { h: 36, w: 110, px: 12, font: 11, icon: 13, gap: 6 },
+  lg: { h: 44, w: 134, px: 14, font: 13, icon: 16, gap: 7 },
 };
 
 export function TierBadge({ tier, size = "md", showLabel = true, className }: TierBadgeProps) {
@@ -58,23 +54,20 @@ export function TierBadge({ tier, size = "md", showLabel = true, className }: Ti
   const s = sizeMap[size];
   const t = TIER_STYLES[tier];
 
-  const background = `linear-gradient(to bottom, ${t.top} 0%, ${t.top} 15%, ${t.mid} 50%, ${t.mid} 70%, ${t.bot} 95%, ${t.bot} 100%)`;
+  const background = `linear-gradient(135deg, ${t.light} 0%, ${t.mid} 50%, ${t.dark} 100%)`;
 
-  // Layered shadows: outer elevation + inner top highlight + inner bottom shade
+  // Inner facet border ~3px inside via inset box-shadow + drop shadow
   const boxShadow = [
-    `0 2px 3px ${t.shadow}`,                     // ambient/below
-    `0 3px 6px -1px ${t.shadow}`,                // soft elevation
-    `inset 0 1px 0 ${t.top}`,                    // top highlight rim
-    `inset 0 -1px 0 ${t.shadow}`,                // bottom shade rim
-    `inset 0 2px 3px rgba(255,255,255,0.35)`,    // specular top glow
-    `inset 0 -2px 3px rgba(0,0,0,0.25)`,         // inner bottom depth
+    `inset 0 0 0 3px transparent`,
+    `inset 0 0 0 4px ${t.facet}`, // creates the inner rectangle outline ~3px from edge
+    `2px 2px 6px ${hexA(t.dark, 0.4)}`,
   ].join(", ");
 
   return (
     <span
       title={`${TIER_LABEL[tier]} tier`}
       className={cn(
-        "tier-plate relative inline-flex select-none items-center justify-center overflow-hidden font-bold uppercase tracking-[0.12em]",
+        "gem-plate relative inline-flex select-none items-center justify-center overflow-hidden font-bold uppercase tracking-[0.12em]",
         className,
       )}
       style={{
@@ -86,14 +79,22 @@ export function TierBadge({ tier, size = "md", showLabel = true, className }: Ti
         background,
         color: "#fff",
         fontSize: s.font,
-        borderRadius: s.radius,
-        border: `1px solid ${t.border}`,
+        borderRadius: 6,
+        border: `1px solid ${t.light}`,
         boxShadow,
-        textShadow: `0 1px 1px ${t.shadow}, 0 1px 2px rgba(0,0,0,0.45)`,
+        textShadow: `0 1px 2px rgba(0,0,0,0.55)`,
       }}
     >
       <IconFor tier={tier} size={s.icon} />
       {showLabel && <span className="relative z-10">{TIER_LABEL[tier]}</span>}
     </span>
   );
+}
+
+function hexA(hex: string, a: number) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
