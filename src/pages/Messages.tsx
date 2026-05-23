@@ -4,7 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Reply, Send, X } from "lucide-react";
+import { ImagePlus, Reply, Send, X, PenSquare, MessageSquare, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -49,6 +51,16 @@ function formatRelative(iso: string): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + time;
 }
 
+function shortTimestamp(iso: string): string {
+  const d = new Date(iso); const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  if (now.getTime() - d.getTime() < 7 * 24 * 60 * 60 * 1000) return d.toLocaleDateString(undefined, { weekday: "short" });
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 function snippet(m: Msg | undefined): string {
   if (!m) return "Original message";
   if (m.voice_duration_ms != null) return "🎤 Voice note";
@@ -61,7 +73,11 @@ export default function Messages() {
   const [params, setParams] = useSearchParams();
   const activeId = params.get("t");
   const teamMode = params.get("team") === "1";
-  const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null })[]>([]);
+  const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null; lastMsg: Msg | null })[]>([]);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeQuery, setComposeQuery] = useState("");
+  const [composeResults, setComposeResults] = useState<OtherProfile[]>([]);
+  const navigate = useNavigate();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [reads, setReads] = useState<ReadMarker[]>([]);
@@ -84,7 +100,7 @@ export default function Messages() {
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
 
-  const recomputeUnreadThreads = useCallback(async (threadsList: (ThreadRow & { other: OtherProfile | null })[]) => {
+  const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
     if (!user) return;
     const { data: readsRows } = await supabase
       .from("message_reads")
@@ -121,7 +137,26 @@ export default function Messages() {
         ? await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", otherIds)
         : { data: [] as OtherProfile[] };
       const profMap = new Map(((profs as OtherProfile[]) ?? []).map((p) => [p.id, p]));
-      const decorated = list.map((t) => ({ ...t, other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null }));
+
+      // Fetch last message per thread
+      const lastMsgMap = new Map<string, Msg>();
+      if (list.length) {
+        const { data: msgsData } = await supabase
+          .from("messages")
+          .select("id, thread_id, sender_id, body, attachment_url, attachment_type, reply_to_id, voice_duration_ms, created_at")
+          .in("thread_id", list.map((t) => t.id))
+          .order("created_at", { ascending: false })
+          .limit(500);
+        for (const m of ((msgsData as unknown as Msg[]) ?? [])) {
+          if (!lastMsgMap.has(m.thread_id)) lastMsgMap.set(m.thread_id, m);
+        }
+      }
+
+      const decorated = list.map((t) => ({
+        ...t,
+        other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null,
+        lastMsg: lastMsgMap.get(t.id) ?? null,
+      }));
       setThreads(decorated);
       void recomputeUnreadThreads(decorated);
     })();
@@ -407,14 +442,51 @@ export default function Messages() {
     return id;
   }, [otherRead, msgs, user]);
 
+  // Compose: debounced profile search
+  useEffect(() => {
+    if (!composeOpen) return;
+    const q = composeQuery.trim();
+    if (!q) { setComposeResults([]); return; }
+    let cancelled = false;
+    const handle = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+        .neq("id", user?.id ?? "")
+        .limit(20);
+      if (!cancelled) setComposeResults(((data as OtherProfile[]) ?? []));
+    }, 200);
+    return () => { cancelled = true; window.clearTimeout(handle); };
+  }, [composeQuery, composeOpen, user]);
+
+  const startThreadWith = async (otherId: string) => {
+    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: otherId });
+    if (error) { toast({ title: "Could not open thread", description: error.message, variant: "destructive" }); return; }
+    setComposeOpen(false);
+    setComposeQuery("");
+    setComposeResults([]);
+    setParams({ t: data as unknown as string }, { replace: true });
+  };
+
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[280px_1fr]">
+    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[320px_1fr]">
       {/* Inbox */}
       <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
-        <div className="border-b border-border px-4 py-3">
-          <h1 className="font-display text-lg font-semibold">Messages</h1>
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => setComposeOpen(true)}
+            aria-label="New message"
+            className="text-primary hover:text-primary"
+          >
+            <PenSquare className="h-5 w-5" />
+          </Button>
         </div>
         {/* Pinned HireVy Team thread */}
         <button
@@ -424,46 +496,105 @@ export default function Messages() {
             teamMode && "bg-primary/15",
           )}
         >
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
+          <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
             HV
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+            <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">HireVy Team</p>
+            <p className="truncate text-sm font-semibold text-foreground">HireVy Team</p>
             <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
           </div>
         </button>
         {threads.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No conversations yet. Message a provider from their profile.</p>
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h2 className="font-display text-lg font-semibold text-foreground">No messages yet</h2>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">Message a coach or provider to get started.</p>
+            <Button className="mt-5" onClick={() => navigate("/explore")}>Browse Coaches</Button>
+          </div>
         ) : (
-          <ul>
+          <ul className="divide-y divide-border">
             {threads.map((t) => {
               const isUnread = unreadThreadIds.has(t.id) && activeId !== t.id;
+              const name = t.other?.display_name || `@${t.other?.username ?? "user"}`;
+              const preview = t.lastMsg ? snippet(t.lastMsg) : `@${t.other?.username ?? ""}`;
+              const ts = t.lastMsg?.created_at ?? t.last_message_at;
               return (
               <li key={t.id}>
                 <button
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   className={cn(
-                    "flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary",
+                    "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
-                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-sm font-semibold">
+                  <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">
                     {t.other?.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other?.display_name ?? t.other?.username ?? "?").slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold")}>{t.other?.display_name || `@${t.other?.username}`}</p>
-                    <p className={cn("truncate text-xs", isUnread ? "font-semibold text-foreground" : "text-muted-foreground")}>@{t.other?.username}</p>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
+                    </div>
+                    <div className="mt-0.5 flex items-center justify-between gap-2">
+                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/80" : "text-muted-foreground")}>{preview}</p>
+                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+                    </div>
                   </div>
-                  {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
                 </button>
               </li>
               );
             })}
-
           </ul>
         )}
       </aside>
+
+      {/* Compose new message dialog */}
+      <Dialog open={composeOpen} onOpenChange={(o) => { setComposeOpen(o); if (!o) { setComposeQuery(""); setComposeResults([]); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New message</DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={composeQuery}
+              onChange={(e) => setComposeQuery(e.target.value)}
+              placeholder="Search by name or @handle"
+              className="pl-9"
+            />
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {composeQuery.trim() && composeResults.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">No users found</p>
+            )}
+            <ul className="divide-y divide-border">
+              {composeResults.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => startThreadWith(p.id)}
+                    className="flex w-full items-center gap-3 px-1 py-2 text-left transition-colors hover:bg-secondary"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">
+                      {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.display_name ?? p.username ?? "?").slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{p.display_name || `@${p.username}`}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{p.username}</p>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
 
 
       {/* Conversation */}
@@ -472,13 +603,21 @@ export default function Messages() {
           <TeamChatPane />
         ) : activeId ? (
           <>
-            <header className="flex items-center justify-between border-b border-border px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">{activeThread?.other?.display_name || `@${activeThread?.other?.username}`}</p>
-                <p className="text-xs text-muted-foreground">@{activeThread?.other?.username}</p>
+            <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">
+                  {activeThread?.other?.avatar_url
+                    ? <img src={activeThread.other.avatar_url} alt="" className="h-full w-full object-cover" />
+                    : (activeThread?.other?.display_name ?? activeThread?.other?.username ?? "?").slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{activeThread?.other?.display_name || `@${activeThread?.other?.username}`}</p>
+                  <p className="truncate text-xs text-muted-foreground">@{activeThread?.other?.username}</p>
+                </div>
               </div>
               <button onClick={() => setParams({}, { replace: true })} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground md:hidden">Back</button>
             </header>
+
 
             <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4" onClick={() => setPickerForMsg(null)}>
               {grouped.map(({ msg: m, showTimestamp }) => {
