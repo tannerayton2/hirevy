@@ -472,27 +472,54 @@ export default function Admin() {
             </Tabs>
           </Section>
 
-          {/* 3. Claim Requests */}
+          {/* 3. Profile Requests */}
+          <Section icon={FileWarning} title="Profile Requests">
+            <ProfileRequestsPanel
+              reloadKey={profileRequestsReloadKey}
+              onCreateProfile={(row) => {
+                setCoachPrefill({ fullName: row.coach_name, websiteUrl: row.unmatched_link ?? "" });
+                setPrefillKey((k) => k + 1);
+                setPendingReviewId(row.id);
+                setTimeout(() => createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              }}
+            />
+          </Section>
+
+          {/* 4. Claim Requests */}
           <Section icon={UserPlus} title="Claim Requests">
             <ClaimRequestsPanel />
           </Section>
 
-          {/* 4. Team Messages */}
+          {/* 5. Team Messages */}
           <Section icon={MessageSquare} title="Team Messages">
             <TeamMessagesPanel />
           </Section>
 
-          {/* 5. User Management */}
+          {/* 6. User Management */}
           <Section icon={Users} title="User Management">
             <UserManagementPanel users={users} onReload={() => void fetchAll()} />
           </Section>
 
-          {/* 6. Create Coach Profile */}
-          <Section icon={UserPlus} title="Create Coach Profile">
-            <CreateCoachProfileForm onCreated={() => void fetchAll()} />
-          </Section>
+          {/* 7. Create Coach Profile */}
+          <div ref={createFormRef}>
+            <Section icon={UserPlus} title="Create Coach Profile">
+              <CreateCoachProfileForm
+                key={prefillKey}
+                initial={coachPrefill}
+                onCreated={async () => {
+                  if (pendingReviewId) {
+                    await supabase.from("unclaimed_reviews").update({ needs_profile: false } as never).eq("id", pendingReviewId);
+                    setPendingReviewId(null);
+                    setCoachPrefill(undefined);
+                    setProfileRequestsReloadKey((k) => k + 1);
+                  }
+                  void fetchAll();
+                }}
+              />
+            </Section>
+          </div>
 
-          {/* 7. Manage Profiles */}
+          {/* 8. Manage Profiles */}
           <Section icon={Trash2} title="Manage Profiles">
             <ManageUnclaimedProfiles />
           </Section>
