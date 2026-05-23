@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/StarRating";
 import { TierBadge } from "@/components/TierBadge";
-import { tierForReviewCount } from "@/lib/tiers";
+import { tierFor } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 
 const BROWSE_CATEGORIES = [
@@ -22,10 +22,11 @@ interface CoachRow {
   service_category: string | null;
   review_count: number;
   rating_sum: number;
+  score_sum: number;
 }
 
-function avgRating(r: { review_count: number; rating_sum: number }) {
-  return r.review_count > 0 ? Number(r.rating_sum) / r.review_count : 0;
+function avgScoreOf(r: { review_count: number; score_sum: number }) {
+  return r.review_count > 0 ? Number(r.score_sum) / r.review_count : 0;
 }
 
 function initialsOf(name: string) {
