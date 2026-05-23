@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
@@ -228,17 +228,28 @@ export default function Profile() {
     }
   }, [profile, isMe]);
 
-  // Congratulatory popup logic — only own profile, only once per event
+  // Congratulatory popup logic — only own profile, only once per event (ever).
+  // We persist a flag in the DB the moment a popup appears and never show it again.
+  const congratsFiredRef = useRef(false);
   useEffect(() => {
     if (!profile || !isMe) return;
-    if (profile.review_count >= 1 && !profile.notified_first_review_received) {
+    if (congratsFiredRef.current) return;
+
+    const fireFirstReceived = profile.review_count >= 1 && !profile.notified_first_review_received;
+    const lastNotified = (profile.notified_points_tier as Tier) ?? "unranked";
+    const fireTierUp = tier !== "unranked" && TIER_RANK[tier] > TIER_RANK[lastNotified];
+
+    if (fireFirstReceived) {
+      congratsFiredRef.current = true;
       setCongrats({ kind: "first-received" });
+      setProfile({ ...profile, notified_first_review_received: true } as ProfileFull);
       void supabase.from("profiles").update({ notified_first_review_received: true }).eq("id", profile.id);
       return;
     }
-    const lastNotified = (profile.notified_points_tier as Tier) ?? "unranked";
-    if (tier !== "unranked" && TIER_RANK[tier] > TIER_RANK[lastNotified]) {
+    if (fireTierUp) {
+      congratsFiredRef.current = true;
       setCongrats({ kind: "tier-up", tier, points, pointsToNext });
+      setProfile({ ...profile, notified_points_tier: tier } as ProfileFull);
       void supabase.from("profiles").update({ notified_points_tier: tier }).eq("id", profile.id);
     }
   }, [profile, isMe, tier, points, pointsToNext]);
