@@ -27,6 +27,8 @@ import ProfileOffers from "./pages/ProfileOffers.tsx";
 import Marketplace from "./pages/Marketplace.tsx";
 import SubmitReview from "./pages/SubmitReview.tsx";
 import Following from "./pages/Following.tsx";
+import Terms from "./pages/Terms.tsx";
+import Privacy from "./pages/Privacy.tsx";
 
 const queryClient = new QueryClient();
 
