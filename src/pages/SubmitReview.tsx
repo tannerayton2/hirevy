@@ -286,16 +286,111 @@ export default function SubmitReview() {
         </div>
 
       <form onSubmit={onClickSubmit} className="space-y-8">
-        {/* SECTION 1 */}
+        {/* SECTION 1 — hidden when coach is pre-filled via URL */}
+        {!hideSection1 && (
         <section className="space-y-5">
           <header>
             <h2 className="font-display text-lg font-semibold">Who are you reviewing?</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Help us build their profile. Add as much as you know.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Search for an existing HireVy profile or add a new one.</p>
           </header>
 
           <Field label="Coach or provider name" required>
-            <Input value={coachName} onChange={(e) => setCoachName(e.target.value)} required maxLength={120} />
+            <div ref={searchBoxRef} className="relative">
+              {nameLocked ? (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {linkedProfileId ? (
+                      <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+                    ) : (
+                      <Plus className="h-4 w-4 shrink-0 text-primary" />
+                    )}
+                    <span className="truncate text-sm font-medium">{coachName}</span>
+                    {linkedProfileId && (
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-primary">Linked</span>
+                    )}
+                  </div>
+                  {!hideSection1 && (
+                    <button type="button" onClick={clearName} aria-label="Clear" className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={coachQuery}
+                      onChange={(e) => { setCoachQuery(e.target.value); setSearchOpen(true); }}
+                      onFocus={() => setSearchOpen(true)}
+                      placeholder="Start typing a name…"
+                      maxLength={120}
+                      className="pl-9"
+                    />
+                  </div>
+                  {searchOpen && coachQuery.trim().length >= 2 && (
+                    <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-popover shadow-lg">
+                      {searching && searchResults.length === 0 ? (
+                        <div className="px-3 py-2.5 text-xs text-muted-foreground">Searching…</div>
+                      ) : (
+                        <>
+                          {searchResults.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => selectExisting(p)}
+                              className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent"
+                            >
+                              <Avatar className="h-8 w-8">
+                                {p.avatar_url && <AvatarImage src={p.avatar_url} alt={p.display_name ?? p.username} />}
+                                <AvatarFallback className="text-xs">
+                                  {(p.display_name ?? p.username).slice(0, 1).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{p.display_name ?? p.username}</p>
+                                <p className="truncate text-xs text-muted-foreground">@{p.username}</p>
+                              </div>
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={selectUnmatched}
+                            className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-left text-sm font-medium text-primary hover:bg-accent"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Review "{coachQuery.trim()}"
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </Field>
+
+          {isUnmatched && nameLocked && (
+            <>
+              <Field label="Their website or social link (optional)">
+                <Input
+                  type="url"
+                  value={unmatchedLink}
+                  onChange={(e) => setUnmatchedLink(e.target.value)}
+                  placeholder="https://instagram.com/theirhandle"
+                />
+              </Field>
+              <Field label="Anything to help us find them? (optional)">
+                <Textarea
+                  value={unmatchedDescription}
+                  onChange={(e) => setUnmatchedDescription(e.target.value)}
+                  placeholder="e.g. Business coach on YouTube, runs a program called X."
+                  rows={3}
+                  maxLength={500}
+                />
+              </Field>
+            </>
+          )}
 
           <Field label="Their primary category">
             <Select value={category} onValueChange={setCategory}>
@@ -337,8 +432,9 @@ export default function SubmitReview() {
             </div>
           )}
         </section>
+        )}
 
-        <div className="h-px w-full bg-border" />
+        {!hideSection1 && <div className="h-px w-full bg-border" />}
 
         {/* SECTION 2 */}
         <section className="space-y-5">
