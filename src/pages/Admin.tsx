@@ -61,14 +61,22 @@ function slugifyName(name: string): string {
     .slice(0, 60);
 }
 
-function CreateCoachProfileForm({ onCreated }: { onCreated?: () => void }) {
-  const [fullName, setFullName] = useState("");
-  const [slug, setSlug] = useState("");
+export type CoachPrefill = { fullName?: string; websiteUrl?: string };
+
+function CreateCoachProfileForm({
+  onCreated,
+  initial,
+}: {
+  onCreated?: (info: { username: string }) => void;
+  initial?: CoachPrefill;
+}) {
+  const [fullName, setFullName] = useState(initial?.fullName ?? "");
+  const [slug, setSlug] = useState(initial?.fullName ? slugifyName(initial.fullName) : "");
   const [slugTouched, setSlugTouched] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
