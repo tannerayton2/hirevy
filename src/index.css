@@ -105,3 +105,19 @@
   .ring-gold { box-shadow: var(--shadow-gold); }
   .elev { box-shadow: var(--shadow-elev); }
 }
+
+@layer utilities {
+  .tier-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%);
+    transform: translateX(-100%);
+    animation: tier-shimmer-move 3.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes tier-shimmer-move {
+    0% { transform: translateX(-100%); }
+    60%, 100% { transform: translateX(100%); }
+  }
+}
