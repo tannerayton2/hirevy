@@ -50,9 +50,9 @@ const TIER_STYLES: Record<Exclude<Tier, "unranked">, TierStyle> = {
 };
 
 const OUTER_CLIP =
-  "polygon(14px 0%, calc(100% - 14px) 0%, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0% calc(100% - 14px), 0% 14px)";
+  "polygon(7px 0%, calc(100% - 7px) 0%, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0% calc(100% - 7px), 0% 7px)";
 const INNER_CLIP =
-  "polygon(12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0% calc(100% - 12px), 0% 12px)";
+  "polygon(5px 0%, calc(100% - 5px) 0%, 100% 5px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0% calc(100% - 5px), 0% 5px)";
 
 function IconFor({ tier, size }: { tier: Tier; size: number }) {
   const props = { width: size, height: size, strokeWidth: 2.4 } as const;
