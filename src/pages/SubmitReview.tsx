@@ -239,7 +239,10 @@ export default function SubmitReview() {
         evidence_paths: paths,
         strength_tier: tier,
         reviewer_email: email.trim(),
-      });
+        unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
+        unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
+        needs_profile: isUnmatched && !linkedProfileId,
+      } as never);
       if (error) throw error;
 
       toast({ title: "Review submitted", description: "Thanks — your review is live." });
