@@ -107,17 +107,19 @@
 }
 
 @layer utilities {
-  .tier-shimmer::after {
+  .tier-plate::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%);
-    transform: translateX(-100%);
-    animation: tier-shimmer-move 3.2s ease-in-out infinite;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+    transform: translateX(-120%);
+    animation: tier-shimmer-move 3s linear infinite;
     pointer-events: none;
+    border-radius: inherit;
   }
   @keyframes tier-shimmer-move {
-    0% { transform: translateX(-100%); }
-    60%, 100% { transform: translateX(100%); }
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(120%); }
   }
 }
+
