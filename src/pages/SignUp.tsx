@@ -101,7 +101,7 @@ export default function SignUp() {
         nav("/auth", { replace: true });
         return;
       }
-      nav("/onboarding", { replace: true });
+      nav("/explore", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Couldn't create account";
       toast({ title: "Sign-up failed", description: message, variant: "destructive" });
