@@ -460,6 +460,13 @@ export default function Profile() {
           />
         </div>
 
+        {/* Points progress line */}
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          {tierNext
+            ? `${points.toLocaleString()} ${points === 1 ? "point" : "points"} · ${pointsToNext} to ${TIER_LABEL_MAP[tierNext]}.`
+            : "Maximum tier reached."}
+        </p>
+
         {/* Member since + response time meta */}
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
           <StatItem>Member since {memberSince}</StatItem>
