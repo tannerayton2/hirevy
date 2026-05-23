@@ -33,7 +33,7 @@ import {
 import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
-import { ensureHttps } from "@/lib/socialHandles";
+import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 
 type TabKey = "reviews" | "imported";
 
