@@ -392,6 +392,8 @@ export default function SubmitReview() {
             </>
           )}
 
+          {!linkedProfileId && (
+            <>
           <Field label="Their primary category">
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="h-10"><SelectValue placeholder="Select a category (optional)" /></SelectTrigger>
@@ -430,6 +432,8 @@ export default function SubmitReview() {
                 <Input type="url" value={offerUrl} onChange={(e) => setOfferUrl(e.target.value)} placeholder="https://theirwebsite.com/offer — the exact program you bought" />
               </Field>
             </div>
+          )}
+            </>
           )}
         </section>
         )}
