@@ -279,6 +279,11 @@ export default function Landing() {
         <div className="hv-l-container">
           <div className="hv-l-tagline">Bringing trust back to the info industry.</div>
           <div>HireVy © 2026 — hirevy.lovable.app</div>
+          <div style={{ marginTop: 12, display: "flex", gap: 16, justifyContent: "center" }}>
+            <Link to="/terms" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Terms of Service</Link>
+            <span style={{ color: "var(--hv-line)" }}>•</span>
+            <Link to="/privacy" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Privacy Policy</Link>
+          </div>
         </div>
       </footer>
     </div>
