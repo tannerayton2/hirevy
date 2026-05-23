@@ -1116,3 +1116,126 @@ function ProfileRequestsPanel({
   );
 }
 
+// ---------------- Admin Broadcast ----------------
+
+type BroadcastRow = {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  sent_count: number;
+  created_at: string;
+};
+
+const BROADCAST_TYPES = ["App Update", "New Feature", "Announcement", "Promotion"] as const;
+
+function BroadcastPanel() {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [type, setType] = useState<string>("Announcement");
+  const [sending, setSending] = useState(false);
+  const [history, setHistory] = useState<BroadcastRow[]>([]);
+
+  const loadHistory = useCallback(async () => {
+    const { data } = await supabase
+      .from("admin_broadcasts")
+      .select("id, title, body, type, sent_count, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setHistory((data as BroadcastRow[]) ?? []);
+  }, []);
+
+  useEffect(() => { void loadHistory(); }, [loadHistory]);
+
+  const send = async () => {
+    if (!title.trim() || !body.trim()) {
+      toast({ title: "Title and message are required", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    const { data, error } = await supabase.rpc(
+      "admin_broadcast_notification" as never,
+      { p_title: title.trim(), p_body: body.trim(), p_type: type } as never,
+    );
+    setSending(false);
+    if (error) {
+      toast({ title: "Send failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    const count = (data as unknown as number) ?? 0;
+    toast({ title: `Notification sent to ${count} users.` });
+    setTitle(""); setBody("");
+    void loadHistory();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="border-border/60 bg-card/60 p-5">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="b-title">Notification title</Label>
+            <Input id="b-title" value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} placeholder="Short title (max 60 chars)" />
+          </div>
+          <div>
+            <Label htmlFor="b-body">Message</Label>
+            <Textarea id="b-body" value={body} maxLength={200} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="Message (max 200 chars)" />
+            <p className="mt-1 text-xs text-muted-foreground">{body.length}/200</p>
+          </div>
+          <div>
+            <Label>Type</Label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {BROADCAST_TYPES.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={send}
+            disabled={sending}
+            className="w-full font-semibold"
+            style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}
+          >
+            <Send className="h-4 w-4" />
+            {sending ? "Sending…" : "Send to All Users"}
+          </Button>
+        </div>
+      </Card>
+
+      <div>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Past broadcasts</p>
+        {history.length === 0 ? (
+          <EmptyState icon={Send} message="No broadcasts yet." />
+        ) : (
+          <Card className="border-border/60 bg-card/60">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Message</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Sent</TableHead>
+                  <TableHead className="text-right">Users</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {history.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell>
+                      <p className="font-medium">{b.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{b.body}</p>
+                    </TableCell>
+                    <TableCell className="text-xs">{b.type}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{fmt(b.created_at)}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{b.sent_count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
