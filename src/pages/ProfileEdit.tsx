@@ -107,11 +107,11 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
-    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" }[] = [
+    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" | "youtube" | "linkedin" }[] = [
       { label: "Instagram", raw: instagram, handlePlatform: "instagram" },
       { label: "X (Twitter)", raw: twitter, handlePlatform: "twitter" },
-      { label: "YouTube", raw: youtube },
-      { label: "LinkedIn", raw: linkedin },
+      { label: "YouTube", raw: youtube, handlePlatform: "youtube" },
+      { label: "LinkedIn", raw: linkedin, handlePlatform: "linkedin" },
       { label: "TikTok", raw: tiktok, handlePlatform: "tiktok" },
     ];
     const normalizedSocials: (string | null)[] = [];
@@ -256,10 +256,10 @@ export default function ProfileEdit() {
           <Input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <Field label="YouTube (optional)">
-          <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://youtube.com/@yourchannel" />
+          <Input type="text" value={youtube} onChange={(e) => setYoutube(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourchannel" />
         </Field>
         <Field label="LinkedIn (optional)">
-          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/yourprofile" />
+          <Input type="text" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="yourname or full URL" />
         </Field>
         <Field label="TikTok (optional)">
           <Input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
