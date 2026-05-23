@@ -51,6 +51,16 @@ function formatRelative(iso: string): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + time;
 }
 
+function shortTimestamp(iso: string): string {
+  const d = new Date(iso); const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  if (now.getTime() - d.getTime() < 7 * 24 * 60 * 60 * 1000) return d.toLocaleDateString(undefined, { weekday: "short" });
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 function snippet(m: Msg | undefined): string {
   if (!m) return "Original message";
   if (m.voice_duration_ms != null) return "🎤 Voice note";
