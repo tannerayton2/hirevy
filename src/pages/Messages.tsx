@@ -100,7 +100,7 @@ export default function Messages() {
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
 
-  const recomputeUnreadThreads = useCallback(async (threadsList: (ThreadRow & { other: OtherProfile | null })[]) => {
+  const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
     if (!user) return;
     const { data: readsRows } = await supabase
       .from("message_reads")
@@ -137,7 +137,26 @@ export default function Messages() {
         ? await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", otherIds)
         : { data: [] as OtherProfile[] };
       const profMap = new Map(((profs as OtherProfile[]) ?? []).map((p) => [p.id, p]));
-      const decorated = list.map((t) => ({ ...t, other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null }));
+
+      // Fetch last message per thread
+      const lastMsgMap = new Map<string, Msg>();
+      if (list.length) {
+        const { data: msgsData } = await supabase
+          .from("messages")
+          .select("id, thread_id, sender_id, body, attachment_url, attachment_type, reply_to_id, voice_duration_ms, created_at")
+          .in("thread_id", list.map((t) => t.id))
+          .order("created_at", { ascending: false })
+          .limit(500);
+        for (const m of ((msgsData as unknown as Msg[]) ?? [])) {
+          if (!lastMsgMap.has(m.thread_id)) lastMsgMap.set(m.thread_id, m);
+        }
+      }
+
+      const decorated = list.map((t) => ({
+        ...t,
+        other: profMap.get(t.user_a === user.id ? t.user_b : t.user_a) ?? null,
+        lastMsg: lastMsgMap.get(t.id) ?? null,
+      }));
       setThreads(decorated);
       void recomputeUnreadThreads(decorated);
     })();
