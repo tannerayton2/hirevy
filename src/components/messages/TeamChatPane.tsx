@@ -87,8 +87,8 @@ export function TeamChatPane() {
   return (
     <section className="flex h-full flex-col">
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary">
-          <Logo iconOnly />
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
+          HV
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
         </div>
         <div>
