@@ -627,6 +627,14 @@ export default function Messages() {
           <>
             <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setParams({}, { replace: true })}
+                  aria-label="Back"
+                  className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground md:hidden"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
                 {activeThread?.other?.username ? (
                   <NavLink
                     to={`/${activeThread.other.username}`}
@@ -653,7 +661,8 @@ export default function Messages() {
                   )}
                 </div>
               </div>
-              <button onClick={() => setParams({}, { replace: true })} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground md:hidden">Back</button>
+            </header>
+
             </header>
 
 
