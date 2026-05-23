@@ -374,6 +374,31 @@ export default function Profile() {
               )}
             </div>
             <p className="mt-1 text-sm text-muted-foreground">@{profile.username}</p>
+
+            {/* Points + progress (owner view only) */}
+            {isMe && (
+              <div className="mt-2.5 max-w-[260px]">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-display text-sm font-bold text-foreground">
+                    {points.toLocaleString()} {points === 1 ? "point" : "points"}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
+                  <div
+                    className="h-full rounded-full transition-[width] duration-500"
+                    style={{
+                      width: `${progressPct}%`,
+                      background: "linear-gradient(90deg,#FFE98A,#FFD700,#B8860B)",
+                    }}
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {tierNext
+                    ? `${pointsToNext} ${pointsToNext === 1 ? "point" : "points"} to ${TIER_LABEL_MAP[tierNext]}.`
+                    : "Maximum tier reached."}
+                </p>
+              </div>
+            )}
             {!profile.is_claimed && (
               <div className="mt-2">
                 <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
