@@ -15,6 +15,15 @@ interface Profile {
   created_at: string;
   pinned_review_id: string | null;
   website_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  linkedin_url: string | null;
+  tiktok_url: string | null;
+  role: string | null;
+  preferred_categories: string[] | null;
+  onboarding_completed: boolean;
+  incomplete_banner_dismissed: boolean;
 }
 
 interface AuthContextValue {
@@ -38,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setProfile(null); return; }
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, role, preferred_categories, onboarding_completed, incomplete_banner_dismissed")
       .eq("id", uid)
       .maybeSingle();
     setProfile((data as Profile | null) ?? null);
