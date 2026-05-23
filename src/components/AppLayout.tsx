@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut } from "lucide-react";
+import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -137,6 +137,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                     >
                       <SettingsIcon className="h-4 w-4" /> Settings
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
+                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Send us a message
                     </button>
                     <button
                       type="button"

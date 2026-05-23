@@ -6,7 +6,7 @@ import { StarRating } from "@/components/StarRating";
 import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
+import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, MoreHorizontal, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TIER_LABEL, type Tier } from "@/lib/tiers";
 import { CongratsModal } from "@/components/CongratsModal";
@@ -496,47 +496,72 @@ export default function Profile() {
           <SocialLinksRow profile={profile} />
         </div>
 
-        {/* Action buttons row — hidden on own profile (actions live in nav sidebar) */}
-        {!isMe && (
-          <div className="mt-5 flex items-center gap-2">
-            <Button
-              variant={following ? "outline" : "default"}
-              onClick={toggleFollow}
-              className="basis-1/2"
-            >
-              {following ? "Following" : "Follow"}
-            </Button>
-            <Button variant="outline" onClick={startMessage} className="basis-[35%]">
-              <MessageSquare className="mr-1.5 h-4 w-4" /> Message
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="More options" className="shrink-0">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem onSelect={copyProfileLink}>
-                  <Share2 className="mr-2 h-4 w-4" /> Share Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    if (!user) { navigate("/auth"); return; }
-                    setReportOpen(true);
-                  }}
-                >
-                  <Flag className="mr-2 h-4 w-4" /> Report Profile
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-
-        {/* Bio */}
+        {/* Bio — rendered above action row */}
         {profile.bio && (
           <p className="mt-5 whitespace-pre-line text-left text-[15px] leading-relaxed text-foreground/90">
             {profile.bio}
           </p>
+        )}
+
+        {/* Action buttons row — hidden on own profile (actions live in nav sidebar) */}
+        {!isMe && (
+          <>
+            <div className="mt-5 flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={toggleFollow}
+                className={cn(
+                  "flex-1 border-primary text-primary hover:bg-primary/10",
+                  following && "bg-primary/10",
+                )}
+              >
+                {following ? "Following" : "Follow"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={startMessage}
+                className="flex-1 border-primary text-primary hover:bg-primary/10"
+              >
+                <MessageSquare className="mr-1.5 h-4 w-4" /> Message
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="More options"
+                    className="shrink-0 border-primary text-primary hover:bg-primary/10"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onSelect={copyProfileLink}>
+                    <Share2 className="mr-2 h-4 w-4" /> Share Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onSelect={() => {
+                      if (!user) { navigate("/auth"); return; }
+                      setReportOpen(true);
+                    }}
+                  >
+                    <Flag className="mr-2 h-4 w-4" /> Report Profile
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Leave a Review CTA */}
+            <Button
+              asChild
+              className="mt-3 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link to={`/submit-review?coach=${encodeURIComponent(profile.username)}`}>
+                ✎ Leave a Review
+              </Link>
+            </Button>
+          </>
         )}
       </div>
 
