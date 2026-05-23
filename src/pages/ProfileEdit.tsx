@@ -250,19 +250,19 @@ export default function ProfileEdit() {
 
         {/* Social links */}
         <Field label="Instagram (optional)">
-          <Input type="url" value={instagram} onChange={(e) => setInstagram(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://instagram.com/yourhandle" />
+          <Input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <Field label="X / Twitter (optional)">
-          <Input type="url" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://x.com/yourhandle" />
+          <Input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <Field label="YouTube (optional)">
           <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://youtube.com/@yourchannel" />
         </Field>
         <Field label="LinkedIn (optional)">
-          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/you" />
+          <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://linkedin.com/in/yourprofile" />
         </Field>
         <Field label="TikTok (optional)">
-          <Input type="url" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="https://tiktok.com/@yourhandle" />
+          <Input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
