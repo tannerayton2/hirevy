@@ -419,8 +419,10 @@ export default function Messages() {
 
 
       {/* Conversation */}
-      <section className={cn("flex flex-col", !activeId && "hidden md:flex")}>
-        {activeId ? (
+      <section className={cn("flex flex-col", !activeId && !teamMode && "hidden md:flex")}>
+        {teamMode ? (
+          <TeamChatPane />
+        ) : activeId ? (
           <>
             <header className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
