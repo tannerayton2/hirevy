@@ -525,6 +525,7 @@ export type Database = {
           id: string
           incomplete_banner_dismissed: boolean
           instagram_url: string | null
+          is_banned: boolean
           is_claimed: boolean
           linkedin_url: string | null
           notified_first_review_received: boolean
@@ -561,6 +562,7 @@ export type Database = {
           id: string
           incomplete_banner_dismissed?: boolean
           instagram_url?: string | null
+          is_banned?: boolean
           is_claimed?: boolean
           linkedin_url?: string | null
           notified_first_review_received?: boolean
@@ -597,6 +599,7 @@ export type Database = {
           id?: string
           incomplete_banner_dismissed?: boolean
           instagram_url?: string | null
+          is_banned?: boolean
           is_claimed?: boolean
           linkedin_url?: string | null
           notified_first_review_received?: boolean
@@ -817,6 +820,33 @@ export type Database = {
           },
         ]
       }
+      team_messages: {
+        Row: {
+          body: string
+          created_at: string
+          from_admin: boolean
+          id: string
+          sender_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          from_admin?: boolean
+          id?: string
+          sender_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          from_admin?: boolean
+          id?: string
+          sender_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       unclaimed_reviews: {
         Row: {
           amount_paid_bracket: string | null
@@ -953,6 +983,10 @@ export type Database = {
           review_count: number
           username: string
         }[]
+      }
+      admin_set_banned: {
+        Args: { p_banned: boolean; p_user: string }
+        Returns: undefined
       }
       admin_stats: { Args: never; Returns: Json }
       compute_review_score: {
