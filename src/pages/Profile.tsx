@@ -492,11 +492,11 @@ export default function Profile() {
               <Button
                 variant={following ? "outline" : "default"}
                 onClick={toggleFollow}
-                className="flex-1"
+                className="basis-1/2"
               >
                 {following ? "Following" : "Follow"}
               </Button>
-              <Button variant="outline" onClick={startMessage}>
+              <Button variant="outline" onClick={startMessage} className="basis-[35%]">
                 <MessageSquare className="mr-1.5 h-4 w-4" /> Message
               </Button>
             </>
@@ -507,7 +507,7 @@ export default function Profile() {
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="More options">
+              <Button variant="outline" size="icon" aria-label="More options" className="shrink-0">
                 <Menu className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
