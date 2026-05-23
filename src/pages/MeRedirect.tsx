@@ -9,6 +9,6 @@ export default function MeRedirect() {
   const { user, profile, loading } = useAuth();
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (!profile?.username) return <Navigate to="/onboarding" replace />;
+  if (!profile?.username) return <Navigate to="/explore" replace />;
   return <Navigate to={`/@${profile.username}`} replace />;
 }

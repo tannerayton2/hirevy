@@ -53,7 +53,7 @@ export default function SignUp() {
     return () => clearTimeout(t);
   }, [username]);
 
-  if (!loading && user) return <Navigate to={safeRedirect ?? "/onboarding"} replace />;
+  if (!loading && user) return <Navigate to={safeRedirect ?? "/explore"} replace />;
 
   const usernameMsg = useMemo(() => {
     switch (usernameStatus) {
@@ -83,7 +83,7 @@ export default function SignUp() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}/explore`,
           data: {
             username: cleanUsername,
             display_name: fullName.trim(),
@@ -101,7 +101,7 @@ export default function SignUp() {
         nav("/auth", { replace: true });
         return;
       }
-      nav("/onboarding", { replace: true });
+      nav("/explore", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Couldn't create account";
       toast({ title: "Sign-up failed", description: message, variant: "destructive" });
@@ -114,7 +114,7 @@ export default function SignUp() {
     setBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/onboarding`,
+        redirect_uri: `${window.location.origin}/explore`,
       });
       if (result.error) {
         toast({
@@ -126,7 +126,7 @@ export default function SignUp() {
         return;
       }
       if (result.redirected) return;
-      nav("/onboarding", { replace: true });
+      nav("/explore", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Google sign-up failed";
       toast({ title: "Sign-up failed", description: message, variant: "destructive" });
