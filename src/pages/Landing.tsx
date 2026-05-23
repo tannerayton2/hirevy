@@ -37,8 +37,7 @@ export default function Landing() {
             <span className="hv-l-dot" />
           </div>
           <div className="hv-l-nav-actions hv-l-fade hv-l-fade-1">
-            <Link to="/auth" className="hv-l-nav-signin">Sign in</Link>
-            <Link to="/explore" className="hv-l-nav-cta">Visit app</Link>
+            <Link to="/auth" className="hv-l-nav-signin">Login</Link>
           </div>
         </div>
       </nav>
