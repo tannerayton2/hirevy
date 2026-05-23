@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus } from "lucide-react";
+import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
