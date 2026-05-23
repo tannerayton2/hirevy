@@ -89,7 +89,7 @@ export default function Landing() {
           }}
         >
           <Link
-            to="/sign-up"
+            to="/auth"
             style={{
               display: "inline-flex",
               alignItems: "center",
