@@ -877,6 +877,34 @@ function Empty({ msg }: { msg: string }) {
 function StatItem({ children }: { children: React.ReactNode }) {
   return <span className="inline-flex items-center gap-1 tracking-wide">{children}</span>;
 }
+
+function TrustStat({
+  value,
+  label,
+  divider,
+  valueClassName,
+}: {
+  value: string;
+  label: string;
+  divider?: boolean;
+  valueClassName?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center px-2 text-center",
+        divider && "border-x border-border/60",
+      )}
+    >
+      <span className={cn("font-display text-2xl font-bold leading-none text-foreground", valueClassName)}>
+        {value}
+      </span>
+      <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
+}
 function Dot() {
   return <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />;
 }
