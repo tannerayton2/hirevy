@@ -370,7 +370,7 @@ export default function Profile() {
               Your profile is incomplete — finish setting up to get discovered.
             </span>
             <div className="flex items-center gap-3">
-              <Link to="/onboarding?step=2&role=provider" className="font-semibold text-primary hover:underline">
+              <Link to="/settings/profile" className="font-semibold text-primary hover:underline">
                 Complete profile →
               </Link>
               <button
