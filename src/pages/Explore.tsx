@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/StarRating";
 import { TierBadge } from "@/components/TierBadge";
-import { tierFor } from "@/lib/tiers";
+import { tierForPoints } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 
 const BROWSE_CATEGORIES = [
@@ -23,10 +23,7 @@ interface CoachRow {
   review_count: number;
   rating_sum: number;
   score_sum: number;
-}
-
-function avgScoreOf(r: { review_count: number; score_sum: number }) {
-  return r.review_count > 0 ? Number(r.score_sum) / r.review_count : 0;
+  points: number;
 }
 
 function initialsOf(name: string) {
@@ -73,7 +70,7 @@ export default function Explore() {
       if (orderedIds.length === 0) { if (!cancel) setRecent([]); return; }
       const { data: profs } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum, points")
         .in("id", orderedIds);
       const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
       const ordered = orderedIds.map((id) => byId.get(id)).filter(Boolean) as CoachRow[];
@@ -92,7 +89,7 @@ export default function Explore() {
       const term = `%${q}%`;
       const { data } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum, points")
         .or(`username.ilike.${term},display_name.ilike.${term}`)
         .limit(50);
       if (!cancel) {
@@ -200,7 +197,7 @@ function RecentlyReviewed({ coaches }: { coaches: CoachRow[] }) {
 
 function RecentCoachCard({ coach }: { coach: CoachRow }) {
   const name = coach.display_name || coach.username;
-  const tier = tierFor(coach.review_count, avgScoreOf(coach));
+  const tier = tierForPoints(coach.points ?? 0);
   return (
     <Link
       to={`/@${coach.username}`}
@@ -241,7 +238,7 @@ function BrowseByCategory({ onPick }: { onPick: (c: string) => void }) {
 
 function CoachResultCard({ coach }: { coach: CoachRow }) {
   const name = coach.display_name || coach.username;
-  const tier = tierFor(coach.review_count, avgScoreOf(coach));
+  const tier = tierForPoints(coach.points ?? 0);
   return (
     <Link
       to={`/@${coach.username}`}
