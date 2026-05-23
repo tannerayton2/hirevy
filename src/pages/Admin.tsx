@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUsername } from "@/lib/admin";
+import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { tierForReviewCount, TIER_LABEL } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
