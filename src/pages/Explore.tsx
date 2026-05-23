@@ -73,7 +73,7 @@ export default function Explore() {
       if (orderedIds.length === 0) { if (!cancel) setRecent([]); return; }
       const { data: profs } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum")
         .in("id", orderedIds);
       const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
       const ordered = orderedIds.map((id) => byId.get(id)).filter(Boolean) as CoachRow[];
@@ -92,7 +92,7 @@ export default function Explore() {
       const term = `%${q}%`;
       const { data } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum")
+        .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum")
         .or(`username.ilike.${term},display_name.ilike.${term}`)
         .limit(50);
       if (!cancel) {
@@ -200,20 +200,18 @@ function RecentlyReviewed({ coaches }: { coaches: CoachRow[] }) {
 
 function RecentCoachCard({ coach }: { coach: CoachRow }) {
   const name = coach.display_name || coach.username;
-  const avg = avgRating(coach);
+  const tier = tierFor(coach.review_count, avgScoreOf(coach));
   return (
     <Link
       to={`/@${coach.username}`}
       className="flex w-[180px] shrink-0 flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition-colors hover:border-primary/40"
     >
-      <CoachAvatar name={name} url={coach.avatar_url} size={56} />
-      <p className="line-clamp-1 w-full text-sm font-semibold">{name}</p>
-      {coach.service_category && (
-        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          {coach.service_category}
-        </span>
-      )}
-      <StarRating value={avg} count={coach.review_count} showValue size={12} />
+      <CoachAvatar name={name} url={coach.avatar_url} size={72} />
+      <p className="line-clamp-1 w-full text-sm font-bold">{name}</p>
+      {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
+      <p className="text-[11px] text-muted-foreground">
+        {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
+      </p>
     </Link>
   );
 }
@@ -243,23 +241,21 @@ function BrowseByCategory({ onPick }: { onPick: (c: string) => void }) {
 
 function CoachResultCard({ coach }: { coach: CoachRow }) {
   const name = coach.display_name || coach.username;
-  const tier = tierForReviewCount(coach.review_count);
-  const avg = avgRating(coach);
+  const tier = tierFor(coach.review_count, avgScoreOf(coach));
   return (
     <Link
       to={`/@${coach.username}`}
       className="flex items-center gap-4 rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40"
     >
-      <CoachAvatar name={name} url={coach.avatar_url} size={52} />
+      <CoachAvatar name={name} url={coach.avatar_url} size={64} />
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate font-semibold">{name}</p>
-          <TierBadge tier={tier} size="xs" />
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          {coach.service_category && <span>{coach.service_category}</span>}
-          <StarRating value={avg} count={coach.review_count} showValue size={12} />
-        </div>
+        <p className="truncate font-bold">{name}</p>
+        {tier !== "unranked" && (
+          <div className="mt-1"><TierBadge tier={tier} size="xs" /></div>
+        )}
+        <p className="mt-1 text-xs text-muted-foreground">
+          {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
+        </p>
       </div>
     </Link>
   );
