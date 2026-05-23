@@ -159,7 +159,8 @@ export default function Landing() {
       </section>
 
       {/* VIDEO PLACEHOLDER with How It Works heading */}
-      <section className="hv-l-video-wrap hv-l-container">
+      <section className="hv-l-video-wrap hv-l-container" id="demo-video">
+
         <div className="hv-l-section-head hv-l-video-head">
           <div className="hv-l-section-label">How it works</div>
           <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
