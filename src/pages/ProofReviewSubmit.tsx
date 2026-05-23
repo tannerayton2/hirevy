@@ -19,6 +19,7 @@ import {
   PROOF_BUCKET, PROOF_MAX_BYTES, PROOF_MAX_FILES, PROOF_MIN_FILES,
   type AmountBracket, type EngagementType,
 } from "@/lib/proofReviews";
+import { CongratsModal } from "@/components/CongratsModal";
 
 interface ProviderLite { id: string; display_name: string | null; username: string }
 
@@ -49,6 +50,7 @@ export default function ProofReviewSubmit() {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ id: string } | null>(null);
+  const [showFirstSubmittedPopup, setShowFirstSubmittedPopup] = useState(false);
 
   const years = useMemo(() => {
     const out: number[] = [];
@@ -199,6 +201,19 @@ export default function ProofReviewSubmit() {
 
     setDone({ id: (data as { id: string }).id });
     setBusy(false);
+
+    // Check if this is the user's first submitted review — show popup once
+    if (user) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("notified_first_review_submitted")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (prof && !(prof as { notified_first_review_submitted: boolean }).notified_first_review_submitted) {
+        setShowFirstSubmittedPopup(true);
+        await supabase.from("profiles").update({ notified_first_review_submitted: true }).eq("id", user.id);
+      }
+    }
   };
 
   if (loadingProvider || authLoading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
