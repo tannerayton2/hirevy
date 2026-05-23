@@ -107,11 +107,11 @@ export default function ProfileEdit() {
       if (!normalizedWebsite) return toast({ title: "Invalid website URL", description: "Please enter a valid URL like https://yourwebsite.com", variant: "destructive" });
     }
 
-    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" }[] = [
+    const socialInputs: { label: string; raw: string; handlePlatform?: "instagram" | "twitter" | "tiktok" | "youtube" | "linkedin" }[] = [
       { label: "Instagram", raw: instagram, handlePlatform: "instagram" },
       { label: "X (Twitter)", raw: twitter, handlePlatform: "twitter" },
-      { label: "YouTube", raw: youtube },
-      { label: "LinkedIn", raw: linkedin },
+      { label: "YouTube", raw: youtube, handlePlatform: "youtube" },
+      { label: "LinkedIn", raw: linkedin, handlePlatform: "linkedin" },
       { label: "TikTok", raw: tiktok, handlePlatform: "tiktok" },
     ];
     const normalizedSocials: (string | null)[] = [];
