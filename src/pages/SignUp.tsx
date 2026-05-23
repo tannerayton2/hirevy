@@ -83,7 +83,7 @@ export default function SignUp() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}/explore`,
           data: {
             username: cleanUsername,
             display_name: fullName.trim(),
