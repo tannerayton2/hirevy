@@ -3,12 +3,14 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
-import { tierForReviewCount } from "@/lib/tiers";
+import { tierFor, TIER_RANK, TIER_REQUIREMENT } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, MessageSquare, Pin, PinOff, Plus, Share2, Star, Twitter, Users, Youtube } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TIER_LABEL, type Tier } from "@/lib/tiers";
+import { CongratsModal } from "@/components/CongratsModal";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { shareProfileUrl, shareReviewUrl } from "@/lib/shareLinks";
 import { ProofReviewCard, type ProofReview } from "@/components/reviews/ProofReviewCard";
@@ -42,6 +44,7 @@ interface ProfileFull {
   service_category: string | null;
   review_count: number;
   rating_sum: number;
+  score_sum: number;
   follower_count: number;
   created_at: string;
   pinned_review_id: string | null;
@@ -52,6 +55,8 @@ interface ProfileFull {
   linkedin_url: string | null;
   tiktok_url: string | null;
   is_claimed: boolean;
+  notified_first_review_received: boolean;
+  notified_tier: string;
 }
 
 interface Review {
@@ -113,6 +118,8 @@ export default function Profile() {
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
   const [claimOpen, setClaimOpen] = useState(false);
   const [tierModalOpen, setTierModalOpen] = useState(false);
+  const [congrats, setCongrats] = useState<null | { kind: "first-received" } | { kind: "tier-up"; tier: Tier }>(null);
+  const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -128,7 +135,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_tier")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -179,8 +186,26 @@ export default function Profile() {
   }, [handle, user]);
 
   const isMe = me?.id === profile?.id;
-  const tier = profile ? tierForReviewCount(profile.review_count) : "unranked";
+  const avgScore = profile && profile.review_count > 0 ? Number(profile.score_sum) / profile.review_count : 0;
+  const tier: Tier = profile ? tierFor(profile.review_count, avgScore) : "unranked";
   const avg = profile && profile.review_count > 0 ? Number(profile.rating_sum) / profile.review_count : 0;
+
+  // Congratulatory popup logic — only own profile, only once per event
+  useEffect(() => {
+    if (!profile || !isMe) return;
+    // First review received
+    if (profile.review_count >= 1 && !profile.notified_first_review_received) {
+      setCongrats({ kind: "first-received" });
+      void supabase.from("profiles").update({ notified_first_review_received: true }).eq("id", profile.id);
+      return;
+    }
+    // New tier reached
+    const lastNotified = (profile.notified_tier as Tier) ?? "unranked";
+    if (tier !== "unranked" && TIER_RANK[tier] > TIER_RANK[lastNotified]) {
+      setCongrats({ kind: "tier-up", tier });
+      void supabase.from("profiles").update({ notified_tier: tier }).eq("id", profile.id);
+    }
+  }, [profile, isMe, tier]);
 
   
 
