@@ -76,7 +76,60 @@ export default function Landing() {
         <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
           First 100 coaches to claim their profile get Premium free — forever. 67 spots remaining.
         </div>
+
+        <div
+          className="hv-l-fade hv-l-fade-4"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "1.25rem",
+            flexWrap: "wrap",
+            marginTop: "1.75rem",
+          }}
+        >
+          <Link
+            to="/sign-up"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1rem 2.5rem",
+              fontSize: "1.0625rem",
+              fontWeight: 600,
+              borderRadius: "9999px",
+              background: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+              textDecoration: "none",
+              boxShadow: "var(--shadow-gold)",
+            }}
+          >
+            Get Started
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("demo-video")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1rem 2.5rem",
+              fontSize: "1.0625rem",
+              fontWeight: 600,
+              borderRadius: "9999px",
+              background: "hsl(var(--card))",
+              color: "hsl(var(--foreground))",
+              border: "1px solid hsl(var(--border))",
+              cursor: "pointer",
+            }}
+          >
+            ▶ Watch Demo
+          </button>
+        </div>
       </section>
+
 
       {/* HOW IT WORKS — steps */}
       <section className="hv-l-how hv-l-container" id="how">
@@ -106,7 +159,8 @@ export default function Landing() {
       </section>
 
       {/* VIDEO PLACEHOLDER with How It Works heading */}
-      <section className="hv-l-video-wrap hv-l-container">
+      <section className="hv-l-video-wrap hv-l-container" id="demo-video">
+
         <div className="hv-l-section-head hv-l-video-head">
           <div className="hv-l-section-label">How it works</div>
           <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
