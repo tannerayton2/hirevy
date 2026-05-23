@@ -369,10 +369,27 @@ export default function Messages() {
   return (
     <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[280px_1fr]">
       {/* Inbox */}
-      <aside className={cn("border-r border-border md:block", activeId && "hidden md:block")}>
+      <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
         <div className="border-b border-border px-4 py-3">
           <h1 className="font-display text-lg font-semibold">Messages</h1>
         </div>
+        {/* Pinned HireVy Team thread */}
+        <button
+          onClick={() => setParams({ team: "1" }, { replace: true })}
+          className={cn(
+            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10",
+            teamMode && "bg-primary/15",
+          )}
+        >
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
+            HV
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">HireVy Team</p>
+            <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
+          </div>
+        </button>
         {threads.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">No conversations yet. Message a provider from their profile.</p>
         ) : (
@@ -399,6 +416,7 @@ export default function Messages() {
           </ul>
         )}
       </aside>
+
 
       {/* Conversation */}
       <section className={cn("flex flex-col", !activeId && "hidden md:flex")}>
