@@ -241,6 +241,11 @@ export default function ProofReviewSubmit() {
             <Button asChild variant="outline" className="flex-1"><Link to="/explore">Back to Explore</Link></Button>
           </div>
         </div>
+        <CongratsModal
+          open={showFirstSubmittedPopup}
+          variant={{ kind: "first-submitted" }}
+          onClose={() => setShowFirstSubmittedPopup(false)}
+        />
       </div>
     );
   }
