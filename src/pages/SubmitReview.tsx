@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus } from "lucide-react";
+import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -70,10 +72,13 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
 const MIN_BODY = 150;
 
 export default function SubmitReview() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const prefilledCoach = params.get("coach") ?? "";
   const hideSection1 = !!prefilledCoach;
+  const [submitted, setSubmitted] = useState(false);
+  const [reviewedUsername, setReviewedUsername] = useState<string | null>(null);
 
   const [coachName, setCoachName] = useState(prefilledCoach);
   const [coachQuery, setCoachQuery] = useState(prefilledCoach);
@@ -140,6 +145,7 @@ export default function SubmitReview() {
 
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
+    setReviewedUsername(p.username);
     setIsUnmatched(false);
     setCoachName(p.display_name || p.username);
     setCoachQuery(p.display_name || p.username);
@@ -247,7 +253,8 @@ export default function SubmitReview() {
 
       toast({ title: "Review submitted", description: "Thanks — your review is live." });
       setConfirmOpen(false);
-      navigate("/explore");
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't submit", description: msg, variant: "destructive" });
@@ -260,6 +267,43 @@ export default function SubmitReview() {
 
   const barColor = tierColor(completenessScore);
   const barLabel = tierLabel(completenessScore);
+
+  const resetForm = () => {
+    setSubmitted(false);
+    setReviewedUsername(null);
+    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setIsUnmatched(false); setNameLocked(false);
+    setUnmatchedLink(""); setUnmatchedDescription("");
+    setCategory(""); setWebsite(""); setInstagram(""); setTwitter(""); setYoutube(""); setLinkedin(""); setOfferUrl("");
+    setShowMoreProfile(false);
+    setRating(0); setHoverRating(0); setBody(""); setPurchased(false); setAmount(""); setFiles([]); setEmail("");
+    navigate("/submit-review", { replace: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (submitted) {
+    const profileTarget = reviewedUsername ?? prefilledCoach;
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <CheckCircle2 className="mx-auto h-20 w-20 text-primary" strokeWidth={1.5} />
+        <h1 className="mt-6 font-display text-3xl font-bold md:text-4xl">Your review is live.</h1>
+        <p className="mt-3 text-sm text-muted-foreground">Thank you for helping keep the info industry honest.</p>
+        <div className="mt-8 flex flex-col gap-3">
+          {user ? (
+            <Button asChild className="h-12 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
+              <Link to={profileTarget ? `/@${profileTarget}` : "/explore"}>See your review →</Link>
+            </Button>
+          ) : (
+            <Button asChild className="h-12 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
+              <Link to="/signup">Create an account to track your reviews →</Link>
+            </Button>
+          )}
+          <Button variant="outline" onClick={resetForm} className="h-12 w-full border-primary text-primary hover:bg-primary/10 hover:text-primary">
+            Review another coach
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
