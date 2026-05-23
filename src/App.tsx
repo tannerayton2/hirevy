@@ -27,6 +27,8 @@ import ProfileOffers from "./pages/ProfileOffers.tsx";
 import Marketplace from "./pages/Marketplace.tsx";
 import SubmitReview from "./pages/SubmitReview.tsx";
 import Following from "./pages/Following.tsx";
+import Terms from "./pages/Terms.tsx";
+import Privacy from "./pages/Privacy.tsx";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
