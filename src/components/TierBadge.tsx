@@ -103,9 +103,9 @@ export function TierBadge({ tier, size = "md", showLabel = true, className }: Ti
         aria-hidden
         style={{
           position: "absolute",
-          inset: 4,
+          inset: 10,
           background: t.facet,
-          opacity: 0.4,
+          opacity: 0.55,
           clipPath: INNER_CLIP,
           WebkitClipPath: INNER_CLIP,
           zIndex: 1,
