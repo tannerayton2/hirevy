@@ -523,19 +523,41 @@ export default function Messages() {
               const ts = t.lastMsg?.created_at ?? t.last_message_at;
               return (
               <li key={t.id}>
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); } }}
                   className={cn(
-                    "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
+                    "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
-                  <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">
-                    {t.other?.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other?.display_name ?? t.other?.username ?? "?").slice(0, 1).toUpperCase()}
-                  </div>
+                  {t.other?.username ? (
+                    <NavLink
+                      to={`/${t.other.username}`}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Open ${name}'s profile`}
+                      className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold hover:opacity-90"
+                    >
+                      {t.other.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other.display_name ?? t.other.username).slice(0, 1).toUpperCase()}
+                    </NavLink>
+                  ) : (
+                    <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">?</div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                      {t.other?.username ? (
+                        <NavLink
+                          to={`/${t.other.username}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}
+                        >
+                          {name}
+                        </NavLink>
+                      ) : (
+                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                      )}
                       {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
@@ -543,7 +565,7 @@ export default function Messages() {
                       {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
                     </div>
                   </div>
-                </button>
+                </div>
               </li>
               );
             })}
