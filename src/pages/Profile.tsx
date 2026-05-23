@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
-import { tierFor, TIER_RANK, TIER_REQUIREMENT } from "@/lib/tiers";
+import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, MessageSquare, Pin, PinOff, Plus, Share2, Star, Twitter, Users, Youtube } from "lucide-react";
@@ -45,6 +45,7 @@ interface ProfileFull {
   review_count: number;
   rating_sum: number;
   score_sum: number;
+  points: number;
   follower_count: number;
   created_at: string;
   pinned_review_id: string | null;
@@ -56,7 +57,9 @@ interface ProfileFull {
   tiktok_url: string | null;
   is_claimed: boolean;
   notified_first_review_received: boolean;
-  notified_tier: string;
+  notified_points_tier: string;
+  awarded_claim_bonus: boolean;
+  awarded_profile_complete_bonus: boolean;
 }
 
 interface Review {
@@ -118,7 +121,11 @@ export default function Profile() {
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
   const [claimOpen, setClaimOpen] = useState(false);
   const [tierModalOpen, setTierModalOpen] = useState(false);
-  const [congrats, setCongrats] = useState<null | { kind: "first-received" } | { kind: "tier-up"; tier: Tier }>(null);
+  const [congrats, setCongrats] = useState<
+    | null
+    | { kind: "first-received" }
+    | { kind: "tier-up"; tier: Tier; points: number; pointsToNext: number }
+  >(null);
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -135,7 +142,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_tier")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -186,26 +193,51 @@ export default function Profile() {
   }, [handle, user]);
 
   const isMe = me?.id === profile?.id;
-  const avgScore = profile && profile.review_count > 0 ? Number(profile.score_sum) / profile.review_count : 0;
-  const tier: Tier = profile ? tierFor(profile.review_count, avgScore) : "unranked";
+  const points = profile?.points ?? 0;
+  const tier: Tier = tierForPoints(points);
   const avg = profile && profile.review_count > 0 ? Number(profile.rating_sum) / profile.review_count : 0;
+  const tierNext = nextTier(tier);
+  const pointsToNext = pointsToNextTier(points);
+  const progressPct = Math.round(tierProgress(points) * 100);
+
+  // Award one-time bonuses on own profile
+  useEffect(() => {
+    if (!profile || !isMe) return;
+    const updates: Record<string, unknown> = {};
+    let pointsDelta = 0;
+    // Claim bonus (+10): user owns a claimed profile and hasn't been awarded yet
+    if (profile.is_claimed && !profile.awarded_claim_bonus) {
+      updates.awarded_claim_bonus = true;
+      pointsDelta += 10;
+    }
+    // Profile-complete bonus (+20): avatar + bio + at least one social link
+    const hasSocial = !!(profile.website_url || profile.instagram_url || profile.twitter_url || profile.youtube_url || profile.linkedin_url || profile.tiktok_url);
+    const isComplete = !!profile.avatar_url && !!(profile.bio && profile.bio.trim().length > 0) && hasSocial;
+    if (isComplete && !profile.awarded_profile_complete_bonus) {
+      updates.awarded_profile_complete_bonus = true;
+      pointsDelta += 20;
+    }
+    if (pointsDelta > 0) {
+      const newPoints = profile.points + pointsDelta;
+      void supabase.from("profiles").update({ ...updates, points: newPoints }).eq("id", profile.id);
+      setProfile({ ...profile, ...updates, points: newPoints } as ProfileFull);
+    }
+  }, [profile, isMe]);
 
   // Congratulatory popup logic — only own profile, only once per event
   useEffect(() => {
     if (!profile || !isMe) return;
-    // First review received
     if (profile.review_count >= 1 && !profile.notified_first_review_received) {
       setCongrats({ kind: "first-received" });
       void supabase.from("profiles").update({ notified_first_review_received: true }).eq("id", profile.id);
       return;
     }
-    // New tier reached
-    const lastNotified = (profile.notified_tier as Tier) ?? "unranked";
+    const lastNotified = (profile.notified_points_tier as Tier) ?? "unranked";
     if (tier !== "unranked" && TIER_RANK[tier] > TIER_RANK[lastNotified]) {
-      setCongrats({ kind: "tier-up", tier });
-      void supabase.from("profiles").update({ notified_tier: tier }).eq("id", profile.id);
+      setCongrats({ kind: "tier-up", tier, points, pointsToNext });
+      void supabase.from("profiles").update({ notified_points_tier: tier }).eq("id", profile.id);
     }
-  }, [profile, isMe, tier]);
+  }, [profile, isMe, tier, points, pointsToNext]);
 
   
 
@@ -342,6 +374,31 @@ export default function Profile() {
               )}
             </div>
             <p className="mt-1 text-sm text-muted-foreground">@{profile.username}</p>
+
+            {/* Points + progress (owner view only) */}
+            {isMe && (
+              <div className="mt-2.5 max-w-[260px]">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-display text-sm font-bold text-foreground">
+                    {points.toLocaleString()} {points === 1 ? "point" : "points"}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
+                  <div
+                    className="h-full rounded-full transition-[width] duration-500"
+                    style={{
+                      width: `${progressPct}%`,
+                      background: "linear-gradient(90deg,#FFE98A,#FFD700,#B8860B)",
+                    }}
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {tierNext
+                    ? `${pointsToNext} ${pointsToNext === 1 ? "point" : "points"} to ${TIER_LABEL_MAP[tierNext]}.`
+                    : "Maximum tier reached."}
+                </p>
+              </div>
+            )}
             {!profile.is_claimed && (
               <div className="mt-2">
                 <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
