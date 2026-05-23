@@ -460,6 +460,13 @@ export default function Profile() {
           />
         </div>
 
+        {/* Points progress line */}
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          {tierNext
+            ? `${points.toLocaleString()} ${points === 1 ? "point" : "points"} · ${pointsToNext} to ${TIER_LABEL_MAP[tierNext]}.`
+            : "Maximum tier reached."}
+        </p>
+
         {/* Member since + response time meta */}
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
           <StatItem>Member since {memberSince}</StatItem>
@@ -485,11 +492,11 @@ export default function Profile() {
               <Button
                 variant={following ? "outline" : "default"}
                 onClick={toggleFollow}
-                className="flex-1"
+                className="basis-1/2"
               >
                 {following ? "Following" : "Follow"}
               </Button>
-              <Button variant="outline" onClick={startMessage}>
+              <Button variant="outline" onClick={startMessage} className="basis-[35%]">
                 <MessageSquare className="mr-1.5 h-4 w-4" /> Message
               </Button>
             </>
@@ -500,7 +507,7 @@ export default function Profile() {
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="More options">
+              <Button variant="outline" size="icon" aria-label="More options" className="shrink-0">
                 <Menu className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -558,12 +565,6 @@ export default function Profile() {
       )}
 
 
-      {/* Bio */}
-      {profile.bio && (
-        <section className="mt-5 max-w-[600px]">
-          <p className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/90">{profile.bio}</p>
-        </section>
-      )}
 
       {/* Empty state for visitors on a brand-new profile */}
       {!hasAnyContent && !isMe && (
