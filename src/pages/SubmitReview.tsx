@@ -253,7 +253,8 @@ export default function SubmitReview() {
 
       toast({ title: "Review submitted", description: "Thanks — your review is live." });
       setConfirmOpen(false);
-      navigate("/explore");
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       toast({ title: "Couldn't submit", description: msg, variant: "destructive" });
