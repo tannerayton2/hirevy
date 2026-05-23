@@ -350,6 +350,11 @@ export default function Admin() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [coachPrefill, setCoachPrefill] = useState<CoachPrefill | undefined>(undefined);
+  const [prefillKey, setPrefillKey] = useState(0);
+  const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
+  const [profileRequestsReloadKey, setProfileRequestsReloadKey] = useState(0);
+  const createFormRef = useRef<HTMLDivElement | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
