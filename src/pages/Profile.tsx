@@ -768,11 +768,7 @@ function SocialLinksRow({ profile }: { profile: ProfileFull }) {
   );
 }
 
-const TIER_DETAILS: { tier: Tier; description: string }[] = [
-  { tier: "bronze", description: "Profile claimed and identity verified." },
-  { tier: "silver", description: "10 or more verified reviews." },
-  { tier: "gold", description: "50 or more verified reviews with a strong average review strength." },
-];
+const TIER_ORDER: Tier[] = ["unranked", "bronze", "silver", "gold", "platinum", "diamond"];
 
 function TierInfoModal({
   open,
@@ -790,27 +786,33 @@ function TierInfoModal({
           <DialogTitle className="font-display text-xl">Verification Tiers</DialogTitle>
         </DialogHeader>
         <div className="mt-2 space-y-2">
-          {TIER_DETAILS.map(({ tier, description }) => {
-            const isCurrent = currentTier === tier;
+          {TIER_ORDER.map((t) => {
+            const isCurrent = currentTier === t;
             return (
               <div
-                key={tier}
+                key={t}
                 className={cn(
                   "flex items-start gap-3 rounded-md border border-border/60 p-3 transition-colors",
-                  isCurrent && "border-primary/40 bg-primary/5",
+                  isCurrent && "border-[hsl(46_90%_55%)] bg-primary/5 ring-1 ring-[hsl(46_90%_55%)]/50",
                 )}
               >
-                <TierBadge tier={tier} size="md" showLabel={false} className="mt-0.5" />
-                <div className="min-w-0">
+                <div className="mt-0.5 flex h-7 min-w-[90px] items-center justify-center">
+                  {t === "unranked" ? (
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Unranked</span>
+                  ) : (
+                    <TierBadge tier={t} size="md" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-display text-sm font-semibold">{TIER_LABEL[tier]}</p>
+                    <p className="font-display text-sm font-semibold">{TIER_LABEL[t]}</p>
                     {isCurrent && (
-                      <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">
+                      <span className="rounded-full bg-[hsl(46_90%_55%)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-[#2a1c00]">
                         Current
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{TIER_REQUIREMENT[t]}</p>
                 </div>
               </div>
             );
