@@ -109,7 +109,8 @@ type OfferRow = { id: string; category: string; is_pinned?: boolean };
 export default function Profile() {
   const { username = "" } = useParams();
   const handle = username.startsWith("@") ? username.slice(1) : username;
-  const { user, profile: me } = useAuth();
+  const { user, profile: me, signOut } = useAuth();
+  const [reportOpen, setReportOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
