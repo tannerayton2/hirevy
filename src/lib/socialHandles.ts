@@ -1,4 +1,4 @@
-export type SocialPlatform = "instagram" | "twitter" | "tiktok";
+export type SocialPlatform = "instagram" | "twitter" | "tiktok" | "youtube" | "linkedin";
 
 export function ensureHttps(url: string): string {
   const t = url.trim();
@@ -16,7 +16,7 @@ export function normalizeSocialHandle(platform: SocialPlatform, raw: string): st
   if (!t) return t;
   if (/^https?:\/\//i.test(t)) return t;
   // looks like a domain (contains a dot and a slash, or starts with known host)
-  if (/^(www\.)?(instagram\.com|x\.com|twitter\.com|tiktok\.com)\b/i.test(t)) {
+  if (/^(www\.)?(instagram\.com|x\.com|twitter\.com|tiktok\.com|youtube\.com|youtu\.be|linkedin\.com)\b/i.test(t)) {
     return `https://${t.replace(/^www\./i, "")}`;
   }
   const handle = t.replace(/^@+/, "").trim();
@@ -28,6 +28,10 @@ export function normalizeSocialHandle(platform: SocialPlatform, raw: string): st
       return `https://x.com/${handle}`;
     case "tiktok":
       return `https://tiktok.com/@${handle}`;
+    case "youtube":
+      return `https://youtube.com/@${handle}`;
+    case "linkedin":
+      return `https://linkedin.com/in/${handle}`;
   }
 }
 
