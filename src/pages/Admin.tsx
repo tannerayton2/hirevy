@@ -45,17 +45,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const COACH_CATEGORIES = [
-  "Business Coaching",
-  "Sales",
-  "Copywriting",
-  "Fitness & Health",
-  "Mindset",
-  "Marketing",
-  "Finance",
-  "Life Coaching",
-  "Other",
-] as const;
+import { BASE_COACH_CATEGORIES, useProfileCategories } from "@/lib/useProfileCategories";
+
+const COACH_CATEGORIES = [...BASE_COACH_CATEGORIES, "Other"] as const;
 
 function slugifyName(name: string): string {
   return name
