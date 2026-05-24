@@ -381,6 +381,17 @@ export default function Admin() {
   const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
   const [profileRequestsReloadKey, setProfileRequestsReloadKey] = useState(0);
   const createFormRef = useRef<HTMLDivElement | null>(null);
+  type SectionKey =
+    | "dashboard"
+    | "moderation"
+    | "claims"
+    | "profile-requests"
+    | "team-messages"
+    | "broadcast"
+    | "users"
+    | "create-profile"
+    | "manage-profiles";
+  const [active, setActive] = useState<SectionKey>("dashboard");
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
