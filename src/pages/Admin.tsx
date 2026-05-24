@@ -211,7 +211,7 @@ function CreateCoachProfileForm({
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
             <SelectContent>
-              {COACH_CATEGORIES.map((c) => (
+              {dynamicCategories.map((c) => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
