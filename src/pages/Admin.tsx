@@ -161,7 +161,7 @@ function CreateCoachProfileForm({
     const created = (data as Array<{ id: string; username: string }> | null)?.[0];
     if (created) {
       setSuccess({ slug: created.username });
-      setFullName(""); setSlug(""); setSlugTouched(false); setCategory("");
+      setFullName(""); setSlug(""); setSlugTouched(false); setCategory(""); setCustomCategory("");
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
