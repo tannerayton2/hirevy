@@ -4,9 +4,9 @@ import { Search, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { StarRating } from "@/components/StarRating";
 import { TierBadge } from "@/components/TierBadge";
 import { tierForPoints } from "@/lib/tiers";
+import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
 
 const BROWSE_CATEGORIES = [
@@ -43,81 +43,99 @@ function CoachAvatar({ name, url, size = 56 }: { name: string; url: string | nul
 }
 
 export default function Explore() {
+  usePageMeta(
+    "Browse Verified Coaches & Service Providers | HireVy",
+    "Search coaches and service providers by name. Read verified client reviews and hire with confidence.",
+  );
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const initialQ = params.get("q") ?? "";
+  const initialCat = params.get("cat") ?? "";
   const [query, setQuery] = useState(initialQ);
   const [submitted, setSubmitted] = useState(initialQ);
+  const [activeCategory, setActiveCategory] = useState<string>(initialCat);
   const [recent, setRecent] = useState<CoachRow[]>([]);
+  const [loadingRecent, setLoadingRecent] = useState(true);
   const [results, setResults] = useState<CoachRow[] | null>(null);
   const [loadingResults, setLoadingResults] = useState(false);
 
-  // Load recently reviewed providers
+  // Load recently reviewed providers, optionally filtered by category
   useEffect(() => {
     let cancel = false;
+    setLoadingRecent(true);
     void (async () => {
       const { data: rev } = await supabase
         .from("reviews")
         .select("provider_id, created_at")
         .order("created_at", { ascending: false })
-        .limit(40);
+        .limit(120);
       const seen = new Set<string>();
       const orderedIds: string[] = [];
       for (const r of (rev ?? []) as { provider_id: string }[]) {
         if (!seen.has(r.provider_id)) { seen.add(r.provider_id); orderedIds.push(r.provider_id); }
-        if (orderedIds.length >= 10) break;
       }
-      if (orderedIds.length === 0) { if (!cancel) setRecent([]); return; }
-      const { data: profs } = await supabase
+      if (orderedIds.length === 0) { if (!cancel) { setRecent([]); setLoadingRecent(false); } return; }
+      let q = supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum, points")
-        .in("id", orderedIds);
+        .in("id", orderedIds)
+        .gt("review_count", 0);
+      if (activeCategory) q = q.eq("service_category", activeCategory);
+      const { data: profs } = await q;
       const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
       const ordered = orderedIds.map((id) => byId.get(id)).filter(Boolean) as CoachRow[];
-      if (!cancel) setRecent(ordered);
+      if (!cancel) { setRecent(ordered.slice(0, 12)); setLoadingRecent(false); }
     })();
     return () => { cancel = true; };
-  }, []);
+  }, [activeCategory]);
 
-  // Run search when submitted query changes
+  // Run search when submitted query or active category changes
   useEffect(() => {
     let cancel = false;
     const q = submitted.trim();
-    if (!q) { setResults(null); return; }
+    if (!q && !activeCategory) { setResults(null); return; }
     setLoadingResults(true);
     void (async () => {
-      const term = `%${q}%`;
-      const { data } = await supabase
+      let req = supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum, points")
-        .or(`username.ilike.${term},display_name.ilike.${term}`)
         .limit(50);
+      if (q) {
+        const term = `%${q}%`;
+        req = req.or(`username.ilike.${term},display_name.ilike.${term}`);
+      }
+      if (activeCategory) req = req.eq("service_category", activeCategory);
+      const { data } = await req;
       if (!cancel) {
         setResults((data as CoachRow[] | null) ?? []);
         setLoadingResults(false);
       }
     })();
     return () => { cancel = true; };
-  }, [submitted]);
+  }, [submitted, activeCategory]);
+
+  const writeUrl = (q: string, cat: string) => {
+    const next = new URLSearchParams(params);
+    if (q) next.set("q", q); else next.delete("q");
+    if (cat) next.set("cat", cat); else next.delete("cat");
+    setParams(next, { replace: true });
+  };
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
     setSubmitted(q);
-    const next = new URLSearchParams(params);
-    if (q) next.set("q", q); else next.delete("q");
-    setParams(next, { replace: true });
+    writeUrl(q, activeCategory);
   };
 
-  const filterByCategory = (cat: string) => {
-    setQuery(cat);
-    setSubmitted(cat);
-    const next = new URLSearchParams(params);
-    next.set("q", cat);
-    setParams(next, { replace: true });
+  const toggleCategory = (cat: string) => {
+    const next = activeCategory === cat ? "" : cat;
+    setActiveCategory(next);
+    writeUrl(submitted.trim(), next);
   };
 
-  const showingResults = submitted.trim().length > 0;
+  const showingResults = submitted.trim().length > 0 || !!activeCategory;
+  const reviewLink = activeCategory ? `/submit-review?cat=${encodeURIComponent(activeCategory)}` : "/submit-review";
 
   return (
     <div className="relative px-4 py-6 md:px-8 md:py-8">
@@ -136,12 +154,18 @@ export default function Explore() {
         Search any coach — whether they're on HireVy or not.
       </p>
 
+      {/* Category pills — always visible */}
+      <div className="mt-6">
+        <BrowseByCategory active={activeCategory} onPick={toggleCategory} />
+      </div>
+
       <div className="mt-8">
         {!showingResults && (
-          <>
-            <RecentlyReviewed coaches={recent} />
-            <BrowseByCategory onPick={filterByCategory} />
-          </>
+          <RecentlyReviewed
+            coaches={recent}
+            loading={loadingRecent}
+            onLeaveReview={() => navigate("/submit-review")}
+          />
         )}
 
         {showingResults && (
@@ -152,19 +176,33 @@ export default function Explore() {
               ))}
             </div>
           ) : (results && results.length > 0) ? (
-            <div className="mx-auto max-w-3xl">
-              <p className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                {results.length} {results.length === 1 ? "match" : "matches"} for "{submitted}"
-              </p>
-              <div className="space-y-3">
-                {results.map((c) => <CoachResultCard key={c.id} coach={c} />)}
+            <>
+              {/* Recently Reviewed (filtered) also shows when only a category is active */}
+              {!submitted.trim() && activeCategory && (
+                <RecentlyReviewed
+                  coaches={recent}
+                  loading={loadingRecent}
+                  onLeaveReview={() => navigate(reviewLink)}
+                />
+              )}
+              <div className="mx-auto max-w-3xl">
+                <p className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                  {results.length} {results.length === 1 ? "match" : "matches"}
+                  {submitted.trim() && <> for "{submitted}"</>}
+                  {activeCategory && <> in {activeCategory}</>}
+                </p>
+                <div className="space-y-3">
+                  {results.map((c) => <CoachResultCard key={c.id} coach={c} />)}
+                </div>
               </div>
-            </div>
+            </>
+          ) : activeCategory && !submitted.trim() ? (
+            <EmptyCategoryState />
           ) : (
             <EmptySearchState
               name={submitted}
-              onWriteReview={() => navigate(`/submit-review?coach=${encodeURIComponent(submitted)}`)}
-              onBrowse={() => { setQuery(""); setSubmitted(""); const n = new URLSearchParams(params); n.delete("q"); setParams(n, { replace: true }); }}
+              onWriteReview={() => navigate(`/submit-review?coach=${encodeURIComponent(submitted)}${activeCategory ? `&cat=${encodeURIComponent(activeCategory)}` : ""}`)}
+              onBrowse={() => { setQuery(""); setSubmitted(""); writeUrl("", activeCategory); }}
             />
           )
         )}
@@ -172,7 +210,7 @@ export default function Explore() {
 
       {/* Floating "Review a Coach" FAB */}
       <Link
-        to="/submit-review"
+        to={reviewLink}
         className="fixed bottom-24 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.55)] transition-transform hover:scale-[1.03] md:bottom-8"
         aria-label="Review a Coach"
       >
@@ -183,14 +221,27 @@ export default function Explore() {
   );
 }
 
-function RecentlyReviewed({ coaches }: { coaches: CoachRow[] }) {
-  if (coaches.length === 0) return null;
+function RecentlyReviewed({
+  coaches,
+  loading,
+  onLeaveReview,
+}: { coaches: CoachRow[]; loading: boolean; onLeaveReview: () => void }) {
+  if (loading) return null;
   return (
     <section className="mb-10">
       <h2 className="mb-3 font-display text-lg font-semibold">Recently Reviewed</h2>
-      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
-        {coaches.map((c) => <RecentCoachCard key={c.id} coach={c} />)}
-      </div>
+      {coaches.length === 0 ? (
+        <div className="flex w-full justify-center">
+          <div className="flex w-[260px] flex-col items-center gap-3 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
+            <p className="text-sm text-muted-foreground">No reviews yet — be the first.</p>
+            <Button onClick={onLeaveReview} size="sm">Leave a Review</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+          {coaches.map((c) => <RecentCoachCard key={c.id} coach={c} />)}
+        </div>
+      )}
     </section>
   );
 }
@@ -213,24 +264,30 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
   );
 }
 
-function BrowseByCategory({ onPick }: { onPick: (c: string) => void }) {
+function BrowseByCategory({ active, onPick }: { active: string; onPick: (c: string) => void }) {
   return (
     <section>
       <h2 className="mb-3 font-display text-lg font-semibold">Browse by Category</h2>
       <div className="flex flex-wrap gap-2">
-        {BROWSE_CATEGORIES.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => onPick(c)}
-            className={cn(
-              "rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground/90",
-              "transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
-            )}
-          >
-            {c}
-          </button>
-        ))}
+        {BROWSE_CATEGORIES.map((c) => {
+          const isActive = active === c;
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onPick(c)}
+              aria-pressed={isActive}
+              className={cn(
+                "rounded-full border px-3.5 py-2 text-xs font-medium transition-colors",
+                isActive
+                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border bg-card text-foreground/90 hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+              )}
+            >
+              {c}
+            </button>
+          );
+        })}
       </div>
     </section>
   );
@@ -255,6 +312,15 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
         </p>
       </div>
     </Link>
+  );
+}
+
+function EmptyCategoryState() {
+  return (
+    <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+      <p className="font-display text-lg font-semibold">No coaches in this category yet.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Check back soon or be the first to leave a review.</p>
+    </div>
   );
 }
 

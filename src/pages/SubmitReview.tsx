@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { usePageMeta } from "@/lib/usePageMeta";
 import { Star, Upload, X, ShieldCheck, BadgeCheck, Check, ChevronDown, Search, Plus, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +73,10 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
 const MIN_BODY = 150;
 
 export default function SubmitReview() {
+  usePageMeta(
+    "Leave a Review | HireVy",
+    "Share your honest experience with a coach or service provider. Help others make smarter hiring decisions.",
+  );
   const { user } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -94,7 +99,7 @@ export default function SubmitReview() {
   const [searching, setSearching] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
-  const [category, setCategory] = useState<string>("");
+  const [category, setCategory] = useState<string>(params.get("cat") ?? "");
   const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
   const [twitter, setTwitter] = useState("");
