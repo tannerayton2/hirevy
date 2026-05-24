@@ -1171,8 +1171,8 @@ function EditUnclaimedProfileDialog({
               <Label>Category</Label>
               {(() => {
                 const current = data.service_category ?? "";
-                const isPreset = (COACH_CATEGORIES as readonly string[]).includes(current);
-                const selectValue = isOtherCategory ? "Other" : (isPreset ? current : "");
+                const matched = dynamicCategories.find((c) => c.toLowerCase() === current.toLowerCase());
+                const selectValue = isOtherCategory ? "Other" : (matched ?? "");
                 return (
                   <>
                     <Select
@@ -1180,8 +1180,7 @@ function EditUnclaimedProfileDialog({
                       onValueChange={(v) => {
                         if (v === "Other") {
                           setIsOtherCategory(true);
-                          // keep existing custom value if present, otherwise clear
-                          if ((COACH_CATEGORIES as readonly string[]).includes(current)) {
+                          if (dynamicCategories.some((c) => c.toLowerCase() === current.toLowerCase())) {
                             update("service_category", "");
                           }
                         } else {
@@ -1192,7 +1191,7 @@ function EditUnclaimedProfileDialog({
                     >
                       <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
                       <SelectContent>
-                        {COACH_CATEGORIES.map((c) => (
+                        {dynamicCategories.map((c) => (
                           <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
