@@ -94,7 +94,7 @@ export default function SubmitReview() {
   const [searching, setSearching] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
-  const [category, setCategory] = useState<string>("");
+  const [category, setCategory] = useState<string>(params.get("cat") ?? "");
   const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
   const [twitter, setTwitter] = useState("");
