@@ -899,10 +899,31 @@ type TeamMsg = {
   created_at: string;
 };
 
+type TeamProf = { username: string; display_name: string | null; avatar_url: string | null };
+
+function initialsOf(s: string) {
+  return s.trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
+}
+
+function TeamAvatar({ prof, size = 40 }: { prof: TeamProf | undefined; size?: number }) {
+  const name = prof?.display_name || prof?.username || "?";
+  if (prof?.avatar_url) {
+    return <img src={prof.avatar_url} alt="" style={{ width: size, height: size }} className="shrink-0 rounded-full object-cover" />;
+  }
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="flex shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary ring-1 ring-primary/30"
+    >
+      {initialsOf(name)}
+    </div>
+  );
+}
+
 function TeamMessagesPanel() {
   const { user } = useAuth();
   const [msgs, setMsgs] = useState<TeamMsg[]>([]);
-  const [profs, setProfs] = useState<Map<string, { username: string; display_name: string | null }>>(new Map());
+  const [profs, setProfs] = useState<Map<string, TeamProf>>(new Map());
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
@@ -914,17 +935,17 @@ function TeamMessagesPanel() {
     const { data, error } = await supabase
       .from("team_messages")
       .select("*")
-      .order("created_at", { ascending: false })
-      .limit(200);
+      .order("created_at", { ascending: true })
+      .limit(500);
     if (error) { setErr(error.message); setLoading(false); return; }
     const list = (data ?? []) as TeamMsg[];
     setMsgs(list);
     const ids = Array.from(new Set(list.map((m) => m.user_id)));
     if (ids.length) {
-      const { data: ps } = await supabase.from("profiles").select("id, username, display_name").in("id", ids);
-      const map = new Map<string, { username: string; display_name: string | null }>();
-      for (const p of (ps ?? []) as Array<{ id: string; username: string; display_name: string | null }>) {
-        map.set(p.id, { username: p.username, display_name: p.display_name });
+      const { data: ps } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", ids);
+      const map = new Map<string, TeamProf>();
+      for (const p of (ps ?? []) as Array<{ id: string; username: string; display_name: string | null; avatar_url: string | null }>) {
+        map.set(p.id, { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url });
       }
       setProfs(map);
     }
@@ -933,8 +954,22 @@ function TeamMessagesPanel() {
 
   useEffect(() => { void load(); }, [load]);
 
-  // Show one row per incoming user message (from_admin=false). Reply input sends from_admin=true.
-  const incoming = msgs.filter((m) => !m.from_admin);
+  // Group messages by conversation (user_id). Most recent conversation first.
+  const conversations = useMemo(() => {
+    const byUser = new Map<string, TeamMsg[]>();
+    for (const m of msgs) {
+      const arr = byUser.get(m.user_id) ?? [];
+      arr.push(m);
+      byUser.set(m.user_id, arr);
+    }
+    const out: { userId: string; messages: TeamMsg[]; lastAt: string }[] = [];
+    for (const [userId, messages] of byUser) {
+      const lastAt = messages[messages.length - 1]?.created_at ?? "";
+      out.push({ userId, messages, lastAt });
+    }
+    out.sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
+    return out;
+  }, [msgs]);
 
   const sendReply = async (userId: string) => {
     if (!user) return;
@@ -956,33 +991,88 @@ function TeamMessagesPanel() {
 
   if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (err) return <div className="text-sm text-destructive">{err}</div>;
-  if (incoming.length === 0) return <EmptyState icon={MessageSquare} message="No team messages yet." />;
+  if (conversations.length === 0) return <EmptyState icon={MessageSquare} message="No team messages yet." />;
 
   return (
-    <div className="space-y-2">
-      {incoming.map((m) => {
-        const p = profs.get(m.user_id);
+    <div className="space-y-4">
+      {conversations.map(({ userId, messages }) => {
+        const prof = profs.get(userId);
+        const name = prof?.display_name || (prof?.username ? `@${prof.username}` : userId.slice(0, 8));
         return (
-          <div key={m.id} className="rounded-md border border-border bg-card/60 p-4">
-            <div className="flex items-baseline justify-between gap-2">
-              <p className="text-sm font-medium">@{p?.username ?? m.user_id.slice(0, 8)}</p>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(m.created_at)}</span>
+          <div key={userId} className="overflow-hidden rounded-lg border border-border bg-card/60">
+            {/* Conversation header */}
+            <div className="flex items-center gap-3 border-b border-border bg-background/40 px-4 py-3">
+              <TeamAvatar prof={prof} size={40} />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-foreground">{name}</p>
+                {prof?.username && (
+                  <p className="truncate text-xs text-muted-foreground">@{prof.username}</p>
+                )}
+              </div>
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{m.body}</p>
-            <div className="mt-3 flex items-center gap-2">
-              <Input
-                value={replyDraft[m.user_id] ?? ""}
-                onChange={(e) => setReplyDraft((prev) => ({ ...prev, [m.user_id]: e.target.value }))}
-                placeholder="Reply to user…"
-                maxLength={4000}
-              />
-              <Button
-                size="sm"
-                onClick={() => void sendReply(m.user_id)}
-                disabled={sendingFor === m.user_id || !(replyDraft[m.user_id] || "").trim()}
+
+            {/* Message list */}
+            <div className="space-y-3 px-4 py-4">
+              {messages.map((m) => {
+                const isAdmin = m.from_admin;
+                return (
+                  <div key={m.id} className={cn("flex items-start gap-3", isAdmin && "flex-row-reverse")}>
+                    {isAdmin ? (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-1 ring-primary/40">
+                        HV
+                      </div>
+                    ) : (
+                      <TeamAvatar prof={prof} size={36} />
+                    )}
+                    <div className={cn("min-w-0 flex-1", isAdmin && "flex flex-col items-end")}>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-xs font-bold text-foreground">
+                          {isAdmin ? "HireVy Team" : name}
+                        </p>
+                        <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">
+                          {fmt(m.created_at)}
+                        </span>
+                      </div>
+                      <div
+                        className={cn(
+                          "mt-1 inline-block max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm",
+                          isAdmin
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-foreground",
+                        )}
+                      >
+                        {m.body}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Rounded reply bar */}
+            <div className="border-t border-border bg-background/40 px-3 py-3">
+              <form
+                onSubmit={(e) => { e.preventDefault(); void sendReply(userId); }}
+                className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 focus-within:border-primary/60"
               >
-                <Send className="h-3.5 w-3.5" /> Send
-              </Button>
+                <input
+                  type="text"
+                  value={replyDraft[userId] ?? ""}
+                  onChange={(e) => setReplyDraft((prev) => ({ ...prev, [userId]: e.target.value }))}
+                  placeholder={`Reply to ${prof?.username ? `@${prof.username}` : "user"}…`}
+                  maxLength={4000}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 rounded-full"
+                  disabled={sendingFor === userId || !(replyDraft[userId] || "").trim()}
+                  aria-label="Send reply"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
             </div>
           </div>
         );

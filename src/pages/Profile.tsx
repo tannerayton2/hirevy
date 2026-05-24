@@ -206,29 +206,8 @@ export default function Profile() {
   const pointsToNext = pointsToNextTier(points);
   const progressPct = Math.round(tierProgress(points) * 100);
 
-  // Award one-time bonuses on own profile
-  useEffect(() => {
-    if (!profile || !isMe) return;
-    const updates: Record<string, unknown> = {};
-    let pointsDelta = 0;
-    // Claim bonus (+10): user owns a claimed profile and hasn't been awarded yet
-    if (profile.is_claimed && !profile.awarded_claim_bonus) {
-      updates.awarded_claim_bonus = true;
-      pointsDelta += 10;
-    }
-    // Profile-complete bonus (+20): avatar + bio + at least one social link
-    const hasSocial = !!(profile.website_url || profile.instagram_url || profile.twitter_url || profile.youtube_url || profile.linkedin_url || profile.tiktok_url);
-    const isComplete = !!profile.avatar_url && !!(profile.bio && profile.bio.trim().length > 0) && hasSocial;
-    if (isComplete && !profile.awarded_profile_complete_bonus) {
-      updates.awarded_profile_complete_bonus = true;
-      pointsDelta += 20;
-    }
-    if (pointsDelta > 0) {
-      const newPoints = profile.points + pointsDelta;
-      void supabase.from("profiles").update({ ...updates, points: newPoints }).eq("id", profile.id);
-      setProfile({ ...profile, ...updates, points: newPoints } as ProfileFull);
-    }
-  }, [profile, isMe]);
+  // Bronze tier is earned only via verified reviews — no automatic
+  // claim or profile-complete bonus points are awarded on signup/claim.
 
   // Congratulatory popup logic — only for first-review-received now.
   // Tier-up is delivered exclusively via the notifications panel.

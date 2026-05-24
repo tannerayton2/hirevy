@@ -472,7 +472,7 @@ export default function Messages() {
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[320px_1fr]">
+    <div className="grid h-[calc(100vh-56px-56px)] auto-rows-fr grid-cols-1 md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
       {/* Inbox */}
       <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
@@ -551,18 +551,18 @@ export default function Messages() {
                         <NavLink
                           to={`/${t.other.username}`}
                           onClick={(e) => e.stopPropagation()}
-                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}
+                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}
                         >
                           {name}
                         </NavLink>
                       ) : (
-                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}>{name}</p>
                       )}
-                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
+                      {ts && <span className={cn("shrink-0 text-[11px]", isUnread ? "text-foreground/70" : "text-muted-foreground")}>{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/80" : "text-muted-foreground")}>{preview}</p>
-                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/75" : "text-muted-foreground/70")}>{preview}</p>
+                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
                     </div>
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export default function Messages() {
 
 
       {/* Conversation */}
-      <section className={cn("flex flex-col", !activeId && !teamMode && "hidden md:flex")}>
+      <section className={cn("flex h-full min-h-0 flex-col", !activeId && !teamMode && "hidden md:flex")}>
         {teamMode ? (
           <TeamChatPane />
         ) : activeId ? (

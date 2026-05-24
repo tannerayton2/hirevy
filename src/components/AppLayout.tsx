@@ -221,7 +221,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Main */}
-        <main className="min-h-[calc(100vh-56px)] flex-1 pb-24 md:pb-8">
+        <main className="min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
           {children}
         </main>
       </div>
