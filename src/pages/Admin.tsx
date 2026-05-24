@@ -387,6 +387,8 @@ function isRetryableLoadError(err: unknown) {
   return err instanceof TypeError && /load failed|failed to fetch|networkerror/i.test(err.message);
 }
 
+type AdminRpcResponse<T> = { data: T | null; error: { message: string } | null };
+
 async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -428,8 +430,8 @@ export default function Admin() {
     setLoading(true);
     setError(null);
     const [statsResult, usersResult] = await Promise.allSettled([
-      retryLoad(() => supabase.rpc("admin_stats" as never)),
-      retryLoad(() => supabase.rpc("admin_list_users" as never)),
+      retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
+      retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
     ]);
 
     if (statsResult.status === "fulfilled") {
