@@ -212,6 +212,11 @@ function CreateCoachProfileForm({
             accept="image/*"
             onChange={handleAvatarChange}
           />
+          <AvatarCropperDialog
+            file={pendingFile}
+            onCancel={() => setPendingFile(null)}
+            onCropped={handleCropped}
+          />
         </div>
 
 
