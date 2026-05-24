@@ -142,7 +142,7 @@ function CreateCoachProfileForm({
       {
         p_username: slug,
         p_display_name: fullName.trim(),
-        p_service_category: category,
+        p_service_category: effectiveCategory,
         p_bio: bio.trim(),
         p_website_url: websiteUrl.trim(),
         p_instagram_url: instagramUrl.trim() ? normalizeSocialHandle("instagram", instagramUrl) : "",
