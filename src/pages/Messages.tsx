@@ -495,11 +495,11 @@ export default function Messages() {
         <button
           onClick={() => setParams({ team: "1" }, { replace: true })}
           className={cn(
-            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10",
+            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-2 text-left transition-colors hover:bg-primary/10",
             teamMode && "bg-primary/15",
           )}
         >
-          <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
             HV
             <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
           </div>
