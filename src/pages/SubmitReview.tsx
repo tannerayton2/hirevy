@@ -72,6 +72,10 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
 const MIN_BODY = 150;
 
 export default function SubmitReview() {
+  usePageMeta(
+    "Leave a Review | HireVy",
+    "Share your honest experience with a coach or service provider. Help others make smarter hiring decisions.",
+  );
   const { user } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
