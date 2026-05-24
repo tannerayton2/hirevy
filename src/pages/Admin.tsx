@@ -45,17 +45,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const COACH_CATEGORIES = [
-  "Business Coaching",
-  "Sales",
-  "Copywriting",
-  "Fitness & Health",
-  "Mindset",
-  "Marketing",
-  "Finance",
-  "Life Coaching",
-  "Other",
-] as const;
+import { BASE_COACH_CATEGORIES, useProfileCategories } from "@/lib/useProfileCategories";
+
+const COACH_CATEGORIES: readonly string[] = [...BASE_COACH_CATEGORIES, "Other"];
 
 function slugifyName(name: string): string {
   return name
@@ -83,6 +75,7 @@ function CreateCoachProfileForm({
   const [category, setCategory] = useState<string>("");
   const [customCategory, setCustomCategory] = useState<string>("");
   const effectiveCategory = category === "Other" ? customCategory.trim() : category;
+  const dynamicCategories = useProfileCategories();
   const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
@@ -218,7 +211,7 @@ function CreateCoachProfileForm({
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
             <SelectContent>
-              {COACH_CATEGORIES.map((c) => (
+              {dynamicCategories.map((c) => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
@@ -1055,6 +1048,7 @@ function EditUnclaimedProfileDialog({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isOtherCategory, setIsOtherCategory] = useState(false);
+  const dynamicCategories = useProfileCategories();
 
   useEffect(() => {
     if (!open || !profileId) return;
@@ -1072,7 +1066,7 @@ function EditUnclaimedProfileDialog({
       if (error) { setErr(error.message); return; }
       setData(p as UnclaimedFullProfile);
       const cat = (p as UnclaimedFullProfile)?.service_category ?? "";
-      setIsOtherCategory(cat !== "" && !(COACH_CATEGORIES as readonly string[]).includes(cat));
+      setIsOtherCategory(cat !== "" && !dynamicCategories.some((c) => c.toLowerCase() === cat.toLowerCase()));
     })();
   }, [open, profileId]);
 
@@ -1177,8 +1171,8 @@ function EditUnclaimedProfileDialog({
               <Label>Category</Label>
               {(() => {
                 const current = data.service_category ?? "";
-                const isPreset = (COACH_CATEGORIES as readonly string[]).includes(current);
-                const selectValue = isOtherCategory ? "Other" : (isPreset ? current : "");
+                const matched = dynamicCategories.find((c) => c.toLowerCase() === current.toLowerCase());
+                const selectValue = isOtherCategory ? "Other" : (matched ?? "");
                 return (
                   <>
                     <Select
@@ -1186,8 +1180,7 @@ function EditUnclaimedProfileDialog({
                       onValueChange={(v) => {
                         if (v === "Other") {
                           setIsOtherCategory(true);
-                          // keep existing custom value if present, otherwise clear
-                          if ((COACH_CATEGORIES as readonly string[]).includes(current)) {
+                          if (dynamicCategories.some((c) => c.toLowerCase() === current.toLowerCase())) {
                             update("service_category", "");
                           }
                         } else {
@@ -1198,7 +1191,7 @@ function EditUnclaimedProfileDialog({
                     >
                       <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
                       <SelectContent>
-                        {COACH_CATEGORIES.map((c) => (
+                        {dynamicCategories.map((c) => (
                           <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIES } from "@/lib/categories";
+import { useProfileCategories } from "@/lib/useProfileCategories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
@@ -54,6 +54,7 @@ export default function ProfileEdit() {
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const dynamicCategories = useProfileCategories();
 
   useEffect(() => {
     if (!profile) return;
@@ -220,8 +221,9 @@ export default function ProfileEdit() {
         {/* Service category */}
         <Field label="Service category">
           {(() => {
-            const isPreset = (CATEGORIES as readonly string[]).includes(category);
-            const selectValue = category === "" ? "" : isPreset ? category : "Other";
+            const matched = dynamicCategories.find((c) => c.toLowerCase() === category.toLowerCase());
+            const isPreset = !!matched && matched !== "Other";
+            const selectValue = category === "" ? "" : isPreset ? matched : "Other";
             return (
               <>
                 <Select
@@ -230,7 +232,7 @@ export default function ProfileEdit() {
                 >
                   <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {dynamicCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 {selectValue === "Other" && (
