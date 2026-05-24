@@ -1162,14 +1162,35 @@ function EditUnclaimedProfileDialog({
 
             <div>
               <Label>Category</Label>
-              <Select value={data.service_category ?? ""} onValueChange={(v) => update("service_category", v)}>
-                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-                <SelectContent>
-                  {COACH_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {(() => {
+                const current = data.service_category ?? "";
+                const isPreset = (COACH_CATEGORIES as readonly string[]).includes(current);
+                const selectValue = current === "" ? "" : isPreset ? current : "Other";
+                return (
+                  <>
+                    <Select
+                      value={selectValue}
+                      onValueChange={(v) => update("service_category", v === "Other" ? "" : v)}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                      <SelectContent>
+                        {COACH_CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectValue === "Other" && (
+                      <Input
+                        className="mt-2"
+                        value={current}
+                        onChange={(e) => update("service_category", e.target.value)}
+                        placeholder="Enter a custom category"
+                        maxLength={60}
+                      />
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
