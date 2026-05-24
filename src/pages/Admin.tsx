@@ -1168,12 +1168,23 @@ function EditUnclaimedProfileDialog({
               {(() => {
                 const current = data.service_category ?? "";
                 const isPreset = (COACH_CATEGORIES as readonly string[]).includes(current);
-                const selectValue = current === "" ? "" : isPreset ? current : "Other";
+                const selectValue = isOtherCategory ? "Other" : (isPreset ? current : "");
                 return (
                   <>
                     <Select
                       value={selectValue}
-                      onValueChange={(v) => update("service_category", v === "Other" ? "" : v)}
+                      onValueChange={(v) => {
+                        if (v === "Other") {
+                          setIsOtherCategory(true);
+                          // keep existing custom value if present, otherwise clear
+                          if ((COACH_CATEGORIES as readonly string[]).includes(current)) {
+                            update("service_category", "");
+                          }
+                        } else {
+                          setIsOtherCategory(false);
+                          update("service_category", v);
+                        }
+                      }}
                     >
                       <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
                       <SelectContent>
@@ -1182,7 +1193,7 @@ function EditUnclaimedProfileDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    {selectValue === "Other" && (
+                    {isOtherCategory && (
                       <Input
                         className="mt-2"
                         value={current}
@@ -1195,6 +1206,7 @@ function EditUnclaimedProfileDialog({
                 );
               })()}
             </div>
+
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div><Label htmlFor="eu-web">Website URL</Label><Input id="eu-web" value={data.website_url ?? ""} onChange={(e) => update("website_url", e.target.value)} /></div>
