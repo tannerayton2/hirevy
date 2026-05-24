@@ -381,6 +381,17 @@ export default function Admin() {
   const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
   const [profileRequestsReloadKey, setProfileRequestsReloadKey] = useState(0);
   const createFormRef = useRef<HTMLDivElement | null>(null);
+  type SectionKey =
+    | "dashboard"
+    | "moderation"
+    | "claims"
+    | "profile-requests"
+    | "team-messages"
+    | "broadcast"
+    | "users"
+    | "create-profile"
+    | "manage-profiles";
+  const [active, setActive] = useState<SectionKey>("dashboard");
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -404,17 +415,6 @@ export default function Admin() {
     return <Navigate to="/explore" replace />;
   }
 
-  type SectionKey =
-    | "dashboard"
-    | "moderation"
-    | "claims"
-    | "profile-requests"
-    | "team-messages"
-    | "broadcast"
-    | "users"
-    | "create-profile"
-    | "manage-profiles";
-
   const NAV: { key: SectionKey; label: string; icon: typeof Users }[] = [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "moderation", label: "Moderation", icon: Flag },
@@ -426,8 +426,6 @@ export default function Admin() {
     { key: "create-profile", label: "Create Profile", icon: UserPlus },
     { key: "manage-profiles", label: "Manage Profiles", icon: Trash2 },
   ];
-
-  const [active, setActive] = useState<SectionKey>("dashboard");
 
   const sectionTitle = NAV.find((n) => n.key === active)?.label ?? "";
 
