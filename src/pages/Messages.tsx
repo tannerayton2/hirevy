@@ -407,13 +407,16 @@ export default function Messages() {
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
   const grouped = useMemo(() => {
-    const out: { msg: Msg; showTimestamp: boolean }[] = [];
+    const out: { msg: Msg; showTimestamp: boolean; groupStart: boolean }[] = [];
     for (let i = 0; i < msgs.length; i++) {
       const m = msgs[i];
+      const prev = msgs[i - 1];
       const next = msgs[i + 1];
-      const sameGroup = next && next.sender_id === m.sender_id
+      const sameAsNext = next && next.sender_id === m.sender_id
         && (new Date(next.created_at).getTime() - new Date(m.created_at).getTime()) < 2 * 60 * 1000;
-      out.push({ msg: m, showTimestamp: !sameGroup });
+      const sameAsPrev = prev && prev.sender_id === m.sender_id
+        && (new Date(m.created_at).getTime() - new Date(prev.created_at).getTime()) < 2 * 60 * 1000;
+      out.push({ msg: m, showTimestamp: !sameAsNext, groupStart: !sameAsPrev });
     }
     return out;
   }, [msgs]);
