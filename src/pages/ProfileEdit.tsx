@@ -64,13 +64,14 @@ export default function ProfileEdit() {
     setWebsite(profile.website_url ?? "");
     const p = profile as typeof profile & {
       instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
-      linkedin_url?: string | null; tiktok_url?: string | null;
+      linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
     };
     setInstagram(p.instagram_url ?? "");
     setTwitter(p.twitter_url ?? "");
     setYoutube(p.youtube_url ?? "");
     setLinkedin(p.linkedin_url ?? "");
     setTiktok(p.tiktok_url ?? "");
+    setKeywords(Array.isArray(p.keywords) ? p.keywords : []);
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
