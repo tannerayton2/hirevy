@@ -712,7 +712,7 @@ export default function Messages() {
                         onContextMenu={(e) => { if (pressTriggeredRef.current) e.preventDefault(); }}
                         onClick={(e) => { if (pressTriggeredRef.current) { e.stopPropagation(); pressTriggeredRef.current = false; } }}
                         className={cn(
-                          "relative max-w-[78%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
+                          "relative max-w-[75%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
                           mine ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
                           (m.attachment_url && !isVoice) ? "p-1" : "px-3 py-2",
                         )}
