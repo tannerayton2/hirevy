@@ -437,27 +437,32 @@ export default function Admin() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [statsResult, usersResult] = await Promise.allSettled([
-      retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
-      retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
-    ]);
+    try {
+      const [statsResult, usersResult] = await Promise.allSettled([
+        retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
+        retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
+      ]);
 
-    if (statsResult.status === "fulfilled") {
-      if (statsResult.value.error) setError(statsResult.value.error.message);
-      else setStats(statsResult.value.data as unknown as Stats);
-    } else {
+      if (statsResult.status === "fulfilled") {
+        if (statsResult.value.error) setError(statsResult.value.error.message);
+        else setStats(statsResult.value.data as unknown as Stats);
+      } else {
+        setStats(null);
+        setError(getLoadErrorMessage(statsResult.reason));
+      }
+
+      if (usersResult.status === "fulfilled") {
+        if (!usersResult.value.error) setUsers((usersResult.value.data as unknown as AdminUserRow[]) ?? []);
+        else setError((current) => current ?? usersResult.value.error.message);
+      } else {
+        setError((current) => current ?? getLoadErrorMessage(usersResult.reason));
+      }
+    } catch (err) {
       setStats(null);
-      setError(getLoadErrorMessage(statsResult.reason));
+      setError(getLoadErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
-
-    if (usersResult.status === "fulfilled") {
-      if (!usersResult.value.error) setUsers((usersResult.value.data as unknown as AdminUserRow[]) ?? []);
-      else setError((current) => current ?? usersResult.value.error.message);
-    } else {
-      setError((current) => current ?? getLoadErrorMessage(usersResult.reason));
-    }
-
-    setLoading(false);
   }, []);
 
   useEffect(() => {
