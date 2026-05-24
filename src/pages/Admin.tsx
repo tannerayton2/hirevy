@@ -1120,6 +1120,7 @@ function EditUnclaimedProfileDialog({
       p_youtube_url: (data.youtube_url ?? "").trim() ? normalizeSocialHandle("youtube", data.youtube_url ?? "") : "",
       p_linkedin_url: (data.linkedin_url ?? "").trim() ? normalizeSocialHandle("linkedin", data.linkedin_url ?? "") : "",
       p_tiktok_url: (data.tiktok_url ?? "").trim() ? normalizeSocialHandle("tiktok", data.tiktok_url ?? "") : "",
+      p_keywords: data.keywords ?? [],
     } as never);
     setSaving(false);
     if (error) { setErr(error.message); return; }
