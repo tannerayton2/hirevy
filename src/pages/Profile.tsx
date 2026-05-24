@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { usePageMeta } from "@/lib/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
 import { StarRating } from "@/components/StarRating";
