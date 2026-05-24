@@ -670,7 +670,7 @@ export default function Messages() {
 
 
 
-            <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4" onClick={() => setPickerForMsg(null)}>
+            <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3" onClick={() => setPickerForMsg(null)}>
               {grouped.map(({ msg: m, showTimestamp }) => {
                 const mine = m.sender_id === user!.id;
                 const showSeen = mine && lastSeenMineId === m.id;
