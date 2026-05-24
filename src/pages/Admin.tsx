@@ -168,7 +168,7 @@ function CreateCoachProfileForm({
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
-      setLinkedinUrl(""); setTiktokUrl(""); setBio("");
+      setLinkedinUrl(""); setTiktokUrl(""); setBio(""); setKeywords([]);
       onCreated?.({ username: created.username });
     }
   };
