@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Compass, MessageSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield } from "lucide-react";
+import { Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean;
 const baseItems: NavItem[] = [
   { to: "/explore", icon: Compass, label: "Explore", end: true },
   { to: "/marketplace", icon: Store, label: "Marketplace", soon: true },
-  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
+  { to: "/messages", icon: MessagesSquare, label: "Messages", authOnly: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
