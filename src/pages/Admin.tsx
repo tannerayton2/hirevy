@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus, Trash2, Search, Ban, Check, X as XIcon, Send, AlertTriangle, FileWarning, LayoutDashboard, Radio } from "lucide-react";
+import { RefreshCw, ShieldAlert, Users, Star, Package, MessageSquare, Flag, UserPlus, Trash2, Search, Ban, Check, X as XIcon, Send, AlertTriangle, FileWarning, LayoutDashboard, Radio, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1000,11 +1001,207 @@ type UnclaimedRow = {
   created_at: string;
 };
 
+type UnclaimedFullProfile = {
+  id: string;
+  username: string;
+  display_name: string | null;
+  service_category: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  website_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  linkedin_url: string | null;
+  tiktok_url: string | null;
+};
+
+function EditUnclaimedProfileDialog({
+  profileId,
+  open,
+  onOpenChange,
+  onSaved,
+}: {
+  profileId: string | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSaved: (next: { id: string; username: string; display_name: string | null; service_category: string | null }) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [data, setData] = useState<UnclaimedFullProfile | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || !profileId) return;
+    setErr(null);
+    setAvatarFile(null);
+    setAvatarPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
+    setLoading(true);
+    (async () => {
+      const { data: p, error } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, service_category, bio, avatar_url, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url")
+        .eq("id", profileId)
+        .maybeSingle();
+      setLoading(false);
+      if (error) { setErr(error.message); return; }
+      setData(p as UnclaimedFullProfile);
+    })();
+  }, [open, profileId]);
+
+  const update = <K extends keyof UnclaimedFullProfile>(k: K, v: UnclaimedFullProfile[K]) => {
+    setData((prev) => (prev ? { ...prev, [k]: v } : prev));
+  };
+
+  const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0] ?? null;
+    setAvatarFile(f);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(f ? URL.createObjectURL(f) : null);
+  };
+
+  const handleSave = async () => {
+    if (!data) return;
+    setErr(null);
+    setSaving(true);
+    let nextAvatarUrl = data.avatar_url ?? "";
+    if (avatarFile) {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) { setSaving(false); setErr("Not authenticated."); return; }
+      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${uid}/unclaimed/${Date.now()}-${data.username}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type || "image/jpeg" });
+      if (upErr) { setSaving(false); setErr(`Image upload failed: ${upErr.message}`); return; }
+      nextAvatarUrl = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+    }
+
+    const { error } = await supabase.rpc("admin_update_unclaimed_profile" as never, {
+      p_profile_id: data.id,
+      p_username: data.username,
+      p_display_name: (data.display_name ?? "").trim(),
+      p_service_category: data.service_category ?? "",
+      p_bio: (data.bio ?? "").trim(),
+      p_avatar_url: nextAvatarUrl,
+      p_website_url: (data.website_url ?? "").trim(),
+      p_instagram_url: (data.instagram_url ?? "").trim() ? normalizeSocialHandle("instagram", data.instagram_url ?? "") : "",
+      p_twitter_url: (data.twitter_url ?? "").trim() ? normalizeSocialHandle("twitter", data.twitter_url ?? "") : "",
+      p_youtube_url: (data.youtube_url ?? "").trim() ? normalizeSocialHandle("youtube", data.youtube_url ?? "") : "",
+      p_linkedin_url: (data.linkedin_url ?? "").trim() ? normalizeSocialHandle("linkedin", data.linkedin_url ?? "") : "",
+      p_tiktok_url: (data.tiktok_url ?? "").trim() ? normalizeSocialHandle("tiktok", data.tiktok_url ?? "") : "",
+    } as never);
+    setSaving(false);
+    if (error) { setErr(error.message); return; }
+    const cleanUsername = data.username.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    onSaved({
+      id: data.id,
+      username: cleanUsername,
+      display_name: (data.display_name ?? "").trim() || null,
+      service_category: data.service_category || null,
+    });
+    toast({ title: "Profile updated" });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit profile</DialogTitle>
+        </DialogHeader>
+        {loading || !data ? (
+          <div className="py-8 text-sm text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="eu-name">Full name</Label>
+                <Input id="eu-name" value={data.display_name ?? ""} onChange={(e) => update("display_name", e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="eu-slug">Profile slug</Label>
+                <Input
+                  id="eu-slug"
+                  value={data.username}
+                  onChange={(e) => update("username", slugifyName(e.target.value))}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">URL: /coach/{data.username || "your-slug"}</p>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="eu-avatar">Profile photo</Label>
+              {(avatarPreview || data.avatar_url) && (
+                <div className="mt-2 mb-2">
+                  <img
+                    src={avatarPreview || (data.avatar_url as string)}
+                    alt="Profile preview"
+                    className="h-16 w-16 rounded-full object-cover border border-border"
+                  />
+                </div>
+              )}
+              <Input id="eu-avatar" type="file" accept="image/*" onChange={handleAvatar} />
+            </div>
+
+            <div>
+              <Label>Category</Label>
+              <Select value={data.service_category ?? ""} onValueChange={(v) => update("service_category", v)}>
+                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <SelectContent>
+                  {COACH_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div><Label htmlFor="eu-web">Website URL</Label><Input id="eu-web" value={data.website_url ?? ""} onChange={(e) => update("website_url", e.target.value)} /></div>
+              <div><Label htmlFor="eu-ig">Instagram</Label><Input id="eu-ig" value={data.instagram_url ?? ""} onChange={(e) => update("instagram_url", e.target.value)} placeholder="@yourhandle" /></div>
+              <div><Label htmlFor="eu-tw">Twitter/X</Label><Input id="eu-tw" value={data.twitter_url ?? ""} onChange={(e) => update("twitter_url", e.target.value)} placeholder="@yourhandle" /></div>
+              <div><Label htmlFor="eu-yt">YouTube URL</Label><Input id="eu-yt" value={data.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="@yourchannel" /></div>
+              <div><Label htmlFor="eu-li">LinkedIn URL</Label><Input id="eu-li" value={data.linkedin_url ?? ""} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="yourname or full URL" /></div>
+              <div><Label htmlFor="eu-tt">TikTok</Label><Input id="eu-tt" value={data.tiktok_url ?? ""} onChange={(e) => update("tiktok_url", e.target.value)} placeholder="@yourhandle" /></div>
+            </div>
+
+            <div>
+              <Label htmlFor="eu-bio">Short bio</Label>
+              <Textarea id="eu-bio" value={data.bio ?? ""} onChange={(e) => update("bio", e.target.value)} rows={4} />
+            </div>
+
+            {err && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{err}</div>
+            )}
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+              <Button
+                type="button"
+                onClick={() => void handleSave()}
+                disabled={saving}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {saving ? "Saving…" : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ManageUnclaimedProfiles() {
   const [rows, setRows] = useState<UnclaimedRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1041,7 +1238,7 @@ function ManageUnclaimedProfiles() {
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -1055,41 +1252,57 @@ function ManageUnclaimedProfiles() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">{r.service_category ?? "—"}</TableCell>
                 <TableCell className="text-right">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={deletingId === r.id}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        {deletingId === r.id ? "Deleting…" : "Delete"}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete profile?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this profile? This cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => void handleDelete(r.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setEditingId(r.id)}>
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={deletingId === r.id}
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {deletingId === r.id ? "Deleting…" : "Delete"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete profile?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this profile? This cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => void handleDelete(r.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
+      <EditUnclaimedProfileDialog
+        profileId={editingId}
+        open={editingId !== null}
+        onOpenChange={(v) => { if (!v) setEditingId(null); }}
+        onSaved={(next) => {
+          setRows((prev) => prev.map((r) => r.id === next.id
+            ? { ...r, username: next.username, display_name: next.display_name, service_category: next.service_category }
+            : r));
+        }}
+      />
     </Card>
   );
 }
