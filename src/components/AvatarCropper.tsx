@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Props {
   src: string;
@@ -92,8 +93,6 @@ export function AvatarCropper({ src, onCancel, onCropped }: Props) {
   );
 }
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
 interface DialogProps {
   file: File | null;
   onCancel: () => void;
@@ -103,14 +102,15 @@ interface DialogProps {
 export function AvatarCropperDialog({ file, onCancel, onCropped }: DialogProps) {
   const [src, setSrc] = useState<string | null>(null);
 
-  useState(() => null); // satisfy linter — replaced by effect below
-  // Build object URL when file changes
-  const open = !!file;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffectShim(file, setSrc);
+  useEffect(() => {
+    if (!file) { setSrc(null); return; }
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onCancel(); }}>
+    <Dialog open={!!file} onOpenChange={(v) => { if (!v) onCancel(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Adjust your photo</DialogTitle>
@@ -121,14 +121,4 @@ export function AvatarCropperDialog({ file, onCancel, onCropped }: DialogProps) 
       </DialogContent>
     </Dialog>
   );
-}
-
-import { useEffect as _useEffect } from "react";
-function useEffectShim(file: File | null, setSrc: (s: string | null) => void) {
-  _useEffect(() => {
-    if (!file) { setSrc(null); return; }
-    const url = URL.createObjectURL(file);
-    setSrc(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file, setSrc]);
 }
