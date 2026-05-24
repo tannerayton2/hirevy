@@ -13,6 +13,7 @@ import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
 
 import { normalizeSocialHandle } from "@/lib/socialHandles";
+import { KeywordsInput } from "@/components/KeywordsInput";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
@@ -48,6 +49,7 @@ export default function ProfileEdit() {
   const [youtube, setYoutube] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [tiktok, setTiktok] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
@@ -62,13 +64,14 @@ export default function ProfileEdit() {
     setWebsite(profile.website_url ?? "");
     const p = profile as typeof profile & {
       instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
-      linkedin_url?: string | null; tiktok_url?: string | null;
+      linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
     };
     setInstagram(p.instagram_url ?? "");
     setTwitter(p.twitter_url ?? "");
     setYoutube(p.youtube_url ?? "");
     setLinkedin(p.linkedin_url ?? "");
     setTiktok(p.tiktok_url ?? "");
+    setKeywords(Array.isArray(p.keywords) ? p.keywords : []);
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
@@ -152,6 +155,7 @@ export default function ProfileEdit() {
           youtube_url: youtubeN,
           linkedin_url: linkedinN,
           tiktok_url: tiktokN,
+          keywords,
         })
         .eq("id", profile.id);
       if (error) throw error;
@@ -283,6 +287,11 @@ export default function ProfileEdit() {
         </Field>
         <Field label="TikTok (optional)">
           <Input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
+        </Field>
+
+        <Field label="Keywords">
+          <p className="-mt-1 mb-1 text-[11px] text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+          <KeywordsInput value={keywords} onChange={setKeywords} />
         </Field>
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>

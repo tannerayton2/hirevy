@@ -102,7 +102,8 @@ export default function Explore() {
         .limit(50);
       if (q) {
         const term = `%${q}%`;
-        req = req.or(`username.ilike.${term},display_name.ilike.${term}`);
+        const safe = q.replace(/[\\{}"]/g, "");
+        req = req.or(`username.ilike.${term},display_name.ilike.${term},keywords.cs.{"${safe}"}`);
       }
       if (activeCategory) req = req.eq("service_category", activeCategory);
       const { data } = await req;

@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { isAdminUsername } from "@/lib/admin";
 import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { tierForReviewCount, TIER_LABEL } from "@/lib/tiers";
+import { KeywordsInput } from "@/components/KeywordsInput";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -89,6 +90,7 @@ function CreateCoachProfileForm({
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [tiktokUrl, setTiktokUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ slug: string } | null>(null);
@@ -151,6 +153,7 @@ function CreateCoachProfileForm({
         p_linkedin_url: linkedinUrl.trim() ? normalizeSocialHandle("linkedin", linkedinUrl) : "",
         p_tiktok_url: tiktokUrl.trim() ? normalizeSocialHandle("tiktok", tiktokUrl) : "",
         p_avatar_url: uploadedAvatarUrl,
+        p_keywords: keywords,
       } as never,
     );
     setSubmitting(false);
@@ -165,7 +168,7 @@ function CreateCoachProfileForm({
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
-      setLinkedinUrl(""); setTiktokUrl(""); setBio("");
+      setLinkedinUrl(""); setTiktokUrl(""); setBio(""); setKeywords([]);
       onCreated?.({ username: created.username });
     }
   };
@@ -245,6 +248,13 @@ function CreateCoachProfileForm({
           <Label htmlFor="cc-bio">Short bio</Label>
           <Textarea id="cc-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
         </div>
+
+        <div>
+          <Label>Keywords</Label>
+          <p className="mb-2 text-xs text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+          <KeywordsInput value={keywords} onChange={setKeywords} />
+        </div>
+
 
         {error && (
           <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
@@ -1026,6 +1036,7 @@ type UnclaimedFullProfile = {
   youtube_url: string | null;
   linkedin_url: string | null;
   tiktok_url: string | null;
+  keywords: string[] | null;
 };
 
 function EditUnclaimedProfileDialog({
@@ -1056,7 +1067,7 @@ function EditUnclaimedProfileDialog({
     (async () => {
       const { data: p, error } = await supabase
         .from("profiles")
-        .select("id, username, display_name, service_category, bio, avatar_url, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url")
+        .select("id, username, display_name, service_category, bio, avatar_url, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, keywords")
         .eq("id", profileId)
         .maybeSingle();
       setLoading(false);
@@ -1109,6 +1120,7 @@ function EditUnclaimedProfileDialog({
       p_youtube_url: (data.youtube_url ?? "").trim() ? normalizeSocialHandle("youtube", data.youtube_url ?? "") : "",
       p_linkedin_url: (data.linkedin_url ?? "").trim() ? normalizeSocialHandle("linkedin", data.linkedin_url ?? "") : "",
       p_tiktok_url: (data.tiktok_url ?? "").trim() ? normalizeSocialHandle("tiktok", data.tiktok_url ?? "") : "",
+      p_keywords: data.keywords ?? [],
     } as never);
     setSaving(false);
     if (error) { setErr(error.message); return; }
@@ -1221,6 +1233,13 @@ function EditUnclaimedProfileDialog({
               <Label htmlFor="eu-bio">Short bio</Label>
               <Textarea id="eu-bio" value={data.bio ?? ""} onChange={(e) => update("bio", e.target.value)} rows={4} />
             </div>
+
+            <div>
+              <Label>Keywords</Label>
+              <p className="mb-2 text-xs text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+              <KeywordsInput value={data.keywords ?? []} onChange={(next) => update("keywords", next)} />
+            </div>
+
 
             {err && (
               <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{err}</div>
