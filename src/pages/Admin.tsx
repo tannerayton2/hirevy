@@ -80,6 +80,8 @@ function CreateCoachProfileForm({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("");
+  const [customCategory, setCustomCategory] = useState<string>("");
+  const effectiveCategory = category === "Other" ? customCategory.trim() : category;
   const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
