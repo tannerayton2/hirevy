@@ -80,6 +80,8 @@ function CreateCoachProfileForm({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("");
+  const [customCategory, setCustomCategory] = useState<string>("");
+  const effectiveCategory = category === "Other" ? customCategory.trim() : category;
   const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
@@ -107,7 +109,7 @@ function CreateCoachProfileForm({
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    if (!fullName.trim() || !slug.trim() || !category) {
+    if (!fullName.trim() || !slug.trim() || !effectiveCategory) {
       setError("Full name, slug, and category are required.");
       return;
     }
@@ -140,7 +142,7 @@ function CreateCoachProfileForm({
       {
         p_username: slug,
         p_display_name: fullName.trim(),
-        p_service_category: category,
+        p_service_category: effectiveCategory,
         p_bio: bio.trim(),
         p_website_url: websiteUrl.trim(),
         p_instagram_url: instagramUrl.trim() ? normalizeSocialHandle("instagram", instagramUrl) : "",
@@ -159,7 +161,7 @@ function CreateCoachProfileForm({
     const created = (data as Array<{ id: string; username: string }> | null)?.[0];
     if (created) {
       setSuccess({ slug: created.username });
-      setFullName(""); setSlug(""); setSlugTouched(false); setCategory("");
+      setFullName(""); setSlug(""); setSlugTouched(false); setCategory(""); setCustomCategory("");
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarFile(null); setAvatarPreview(null);
       setWebsiteUrl(""); setInstagramUrl(""); setTwitterUrl(""); setYoutubeUrl("");
@@ -218,7 +220,17 @@ function CreateCoachProfileForm({
               ))}
             </SelectContent>
           </Select>
+          {category === "Other" && (
+            <Input
+              className="mt-2"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Enter a custom category"
+              maxLength={60}
+            />
+          )}
         </div>
+
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><Label htmlFor="cc-web">Website URL</Label><Input id="cc-web" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} /></div>
@@ -1150,14 +1162,35 @@ function EditUnclaimedProfileDialog({
 
             <div>
               <Label>Category</Label>
-              <Select value={data.service_category ?? ""} onValueChange={(v) => update("service_category", v)}>
-                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-                <SelectContent>
-                  {COACH_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {(() => {
+                const current = data.service_category ?? "";
+                const isPreset = (COACH_CATEGORIES as readonly string[]).includes(current);
+                const selectValue = current === "" ? "" : isPreset ? current : "Other";
+                return (
+                  <>
+                    <Select
+                      value={selectValue}
+                      onValueChange={(v) => update("service_category", v === "Other" ? "" : v)}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                      <SelectContent>
+                        {COACH_CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectValue === "Other" && (
+                      <Input
+                        className="mt-2"
+                        value={current}
+                        onChange={(e) => update("service_category", e.target.value)}
+                        placeholder="Enter a custom category"
+                        maxLength={60}
+                      />
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
