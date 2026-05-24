@@ -1089,11 +1089,20 @@ function EditUnclaimedProfileDialog({
     setData((prev) => (prev ? { ...prev, [k]: v } : prev));
   };
 
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
-    setAvatarFile(f);
+    e.target.value = "";
+    if (f) setPendingFile(f);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    const cropped = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(f ? URL.createObjectURL(f) : null);
+    setAvatarFile(cropped);
+    setAvatarPreview(URL.createObjectURL(cropped));
+    setPendingFile(null);
   };
 
   const handleSave = async () => {
