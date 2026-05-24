@@ -153,6 +153,7 @@ function CreateCoachProfileForm({
         p_linkedin_url: linkedinUrl.trim() ? normalizeSocialHandle("linkedin", linkedinUrl) : "",
         p_tiktok_url: tiktokUrl.trim() ? normalizeSocialHandle("tiktok", tiktokUrl) : "",
         p_avatar_url: uploadedAvatarUrl,
+        p_keywords: keywords,
       } as never,
     );
     setSubmitting(false);
