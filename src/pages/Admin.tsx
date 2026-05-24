@@ -1066,7 +1066,7 @@ function EditUnclaimedProfileDialog({
       if (error) { setErr(error.message); return; }
       setData(p as UnclaimedFullProfile);
       const cat = (p as UnclaimedFullProfile)?.service_category ?? "";
-      setIsOtherCategory(cat !== "" && !(COACH_CATEGORIES as readonly string[]).includes(cat));
+      setIsOtherCategory(cat !== "" && !dynamicCategories.some((c) => c.toLowerCase() === cat.toLowerCase()));
     })();
   }, [open, profileId]);
 
