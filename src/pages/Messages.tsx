@@ -532,7 +532,7 @@ export default function Messages() {
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); } }}
                   className={cn(
-                    "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
+                    "flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
@@ -541,12 +541,12 @@ export default function Messages() {
                       to={`/${t.other.username}`}
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`Open ${name}'s profile`}
-                      className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold hover:opacity-90"
+                      className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold hover:opacity-90"
                     >
                       {t.other.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other.display_name ?? t.other.username).slice(0, 1).toUpperCase()}
                     </NavLink>
                   ) : (
-                    <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">?</div>
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">?</div>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
@@ -554,18 +554,18 @@ export default function Messages() {
                         <NavLink
                           to={`/${t.other.username}`}
                           onClick={(e) => e.stopPropagation()}
-                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}
+                          className="truncate text-sm font-normal text-foreground hover:underline"
                         >
                           {name}
                         </NavLink>
                       ) : (
-                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}>{name}</p>
+                        <p className="truncate text-sm font-normal text-foreground">{name}</p>
                       )}
-                      {ts && <span className={cn("shrink-0 text-[11px]", isUnread ? "text-foreground/70" : "text-muted-foreground")}>{shortTimestamp(ts)}</span>}
+                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/75" : "text-muted-foreground/70")}>{preview}</p>
-                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
+                      <p className={cn("truncate text-xs", isUnread ? "font-bold text-white" : "font-normal text-muted-foreground")}>{preview}</p>
+                      {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
                     </div>
                   </div>
                 </div>
