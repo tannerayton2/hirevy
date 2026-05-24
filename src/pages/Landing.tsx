@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageMeta } from "@/lib/usePageMeta";
 
 /**
  * Public marketing landing page. Logged-in users auto-redirect to /explore.
@@ -12,9 +13,10 @@ export default function Landing() {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.title = "HireVy — Hire Verified Coaches & Service Providers";
-  }, []);
+  usePageMeta(
+    "HireVy — Hire Verified Coaches & Service Providers You Can Trust",
+    "The only place where reviews come from real clients not marketing budgets. Search any coach and read verified reviews before you hire.",
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
