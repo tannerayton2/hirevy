@@ -75,6 +75,7 @@ function CreateCoachProfileForm({
   const [category, setCategory] = useState<string>("");
   const [customCategory, setCustomCategory] = useState<string>("");
   const effectiveCategory = category === "Other" ? customCategory.trim() : category;
+  const dynamicCategories = useProfileCategories();
   const [websiteUrl, setWebsiteUrl] = useState(initial?.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [twitterUrl, setTwitterUrl] = useState("");
