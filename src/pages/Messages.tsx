@@ -686,7 +686,7 @@ export default function Messages() {
                 const isVoice = m.voice_duration_ms != null && m.attachment_url;
 
                 return (
-                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start")}>
+                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start", groupStart ? "mt-2.5" : "mt-[2px]")}>
                     <div className={cn("flex w-full items-end gap-1.5", mine ? "flex-row-reverse" : "flex-row")}>
                       {/* Hover-reply button (desktop) */}
                       <button
