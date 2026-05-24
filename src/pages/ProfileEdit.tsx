@@ -54,6 +54,7 @@ export default function ProfileEdit() {
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const dynamicCategories = useProfileCategories();
 
   useEffect(() => {
     if (!profile) return;
