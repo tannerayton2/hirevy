@@ -352,12 +352,6 @@ export default function Profile() {
   }
 
   const providerDisplayName = profile.display_name || profile.username;
-  usePageMeta(
-    `${providerDisplayName} Reviews — Verified Client Ratings | HireVy.`,
-    profile.review_count > 0
-      ? `See verified reviews for ${providerDisplayName} on HireVy. Real ratings from real clients who actually worked with them. Read reviews before you hire.`
-      : `See reviews for ${providerDisplayName} on HireVy. Be the first to leave a verified review.`,
-  );
   const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
   const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0;
 
