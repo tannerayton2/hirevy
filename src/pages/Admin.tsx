@@ -220,7 +220,17 @@ function CreateCoachProfileForm({
               ))}
             </SelectContent>
           </Select>
+          {category === "Other" && (
+            <Input
+              className="mt-2"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Enter a custom category"
+              maxLength={60}
+            />
+          )}
         </div>
+
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><Label htmlFor="cc-web">Website URL</Label><Input id="cc-web" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} /></div>
