@@ -249,6 +249,13 @@ function CreateCoachProfileForm({
           <Textarea id="cc-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
         </div>
 
+        <div>
+          <Label>Keywords</Label>
+          <p className="mb-2 text-xs text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+          <KeywordsInput value={keywords} onChange={setKeywords} />
+        </div>
+
+
         {error && (
           <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
