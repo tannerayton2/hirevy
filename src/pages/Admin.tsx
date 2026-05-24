@@ -1067,7 +1067,7 @@ function EditUnclaimedProfileDialog({
     (async () => {
       const { data: p, error } = await supabase
         .from("profiles")
-        .select("id, username, display_name, service_category, bio, avatar_url, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url")
+        .select("id, username, display_name, service_category, bio, avatar_url, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, keywords")
         .eq("id", profileId)
         .maybeSingle();
       setLoading(false);
