@@ -47,7 +47,7 @@ import {
 
 import { BASE_COACH_CATEGORIES, useProfileCategories } from "@/lib/useProfileCategories";
 
-const COACH_CATEGORIES = [...BASE_COACH_CATEGORIES, "Other"] as const;
+const COACH_CATEGORIES: readonly string[] = [...BASE_COACH_CATEGORIES, "Other"];
 
 function slugifyName(name: string): string {
   return name
