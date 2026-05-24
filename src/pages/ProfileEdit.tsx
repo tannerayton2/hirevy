@@ -155,6 +155,7 @@ export default function ProfileEdit() {
           youtube_url: youtubeN,
           linkedin_url: linkedinN,
           tiktok_url: tiktokN,
+          keywords,
         })
         .eq("id", profile.id);
       if (error) throw error;
