@@ -623,7 +623,7 @@ export default function Messages() {
 
 
       {/* Conversation */}
-      <section className={cn("fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0", !activeId && !teamMode && "hidden md:flex")}>
+      <section className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0", !activeId && !teamMode && "hidden md:flex")}>
         {teamMode ? (
           <TeamChatPane />
         ) : activeId ? (
