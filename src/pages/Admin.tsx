@@ -378,6 +378,39 @@ function fmt(d: string) {
   return new Date(d).toLocaleString();
 }
 
+function getLoadErrorMessage(err: unknown) {
+  if (err instanceof Error && err.message) return err.message;
+  return "Unable to load admin dashboard.";
+}
+
+function isRetryableLoadError(err: unknown) {
+  const message = err instanceof Error
+    ? err.message
+    : typeof err === "object" && err && "message" in err
+      ? String((err as { message?: unknown }).message ?? "")
+      : "";
+  return /load failed|failed to fetch|networkerror/i.test(message);
+}
+
+type AdminRpcResponse<T> = { data: T | null; error: { message: string } | null };
+
+async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const result = await operation();
+      const responseError = (result as AdminRpcResponse<unknown>)?.error;
+      if (responseError && isRetryableLoadError(responseError)) throw new Error(responseError.message);
+      return result;
+    } catch (err) {
+      lastError = err;
+      if (attempt === attempts || !isRetryableLoadError(err)) break;
+      await new Promise((resolve) => window.setTimeout(resolve, attempt * 350));
+    }
+  }
+  throw lastError;
+}
+
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -404,14 +437,32 @@ export default function Admin() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [statsRes, usersRes] = await Promise.all([
-      supabase.rpc("admin_stats" as never),
-      supabase.rpc("admin_list_users" as never),
-    ]);
-    if (statsRes.error) setError(statsRes.error.message);
-    else setStats(statsRes.data as unknown as Stats);
-    if (!usersRes.error) setUsers((usersRes.data as unknown as AdminUserRow[]) ?? []);
-    setLoading(false);
+    try {
+      const [statsResult, usersResult] = await Promise.allSettled([
+        retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
+        retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
+      ]);
+
+      if (statsResult.status === "fulfilled") {
+        if (statsResult.value.error) setError(statsResult.value.error.message);
+        else setStats(statsResult.value.data as unknown as Stats);
+      } else {
+        setStats(null);
+        setError(getLoadErrorMessage(statsResult.reason));
+      }
+
+      if (usersResult.status === "fulfilled") {
+        if (!usersResult.value.error) setUsers((usersResult.value.data as unknown as AdminUserRow[]) ?? []);
+        else setError((current) => current ?? usersResult.value.error.message);
+      } else {
+        setError((current) => current ?? getLoadErrorMessage(usersResult.reason));
+      }
+    } catch (err) {
+      setStats(null);
+      setError(getLoadErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -501,8 +552,10 @@ export default function Admin() {
             </div>
           ) : null}
 
-          {!stats ? (
+          {loading && !stats ? (
             <div className="text-sm text-muted-foreground">Loading…</div>
+          ) : !stats ? (
+            <div className="text-sm text-muted-foreground">Unable to load dashboard stats. Try Refresh.</div>
           ) : (
             <div className="min-w-0">
               {active === "dashboard" && (
