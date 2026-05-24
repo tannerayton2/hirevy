@@ -378,6 +378,29 @@ function fmt(d: string) {
   return new Date(d).toLocaleString();
 }
 
+function getLoadErrorMessage(err: unknown) {
+  if (err instanceof Error && err.message) return err.message;
+  return "Unable to load admin dashboard.";
+}
+
+function isRetryableLoadError(err: unknown) {
+  return err instanceof TypeError && /load failed|failed to fetch|networkerror/i.test(err.message);
+}
+
+async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (err) {
+      lastError = err;
+      if (attempt === attempts || !isRetryableLoadError(err)) break;
+      await new Promise((resolve) => window.setTimeout(resolve, attempt * 350));
+    }
+  }
+  throw lastError;
+}
+
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -404,13 +427,26 @@ export default function Admin() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [statsRes, usersRes] = await Promise.all([
-      supabase.rpc("admin_stats" as never),
-      supabase.rpc("admin_list_users" as never),
+    const [statsResult, usersResult] = await Promise.allSettled([
+      retryLoad(() => supabase.rpc("admin_stats" as never)),
+      retryLoad(() => supabase.rpc("admin_list_users" as never)),
     ]);
-    if (statsRes.error) setError(statsRes.error.message);
-    else setStats(statsRes.data as unknown as Stats);
-    if (!usersRes.error) setUsers((usersRes.data as unknown as AdminUserRow[]) ?? []);
+
+    if (statsResult.status === "fulfilled") {
+      if (statsResult.value.error) setError(statsResult.value.error.message);
+      else setStats(statsResult.value.data as unknown as Stats);
+    } else {
+      setStats(null);
+      setError(getLoadErrorMessage(statsResult.reason));
+    }
+
+    if (usersResult.status === "fulfilled") {
+      if (!usersResult.value.error) setUsers((usersResult.value.data as unknown as AdminUserRow[]) ?? []);
+      else setError((current) => current ?? usersResult.value.error.message);
+    } else {
+      setError((current) => current ?? getLoadErrorMessage(usersResult.reason));
+    }
+
     setLoading(false);
   }, []);
 
