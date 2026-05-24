@@ -288,6 +288,11 @@ export default function ProfileEdit() {
         <Field label="TikTok (optional)">
           <Input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value.slice(0, WEBSITE_MAX))} maxLength={WEBSITE_MAX} placeholder="@yourhandle" />
         </Field>
+
+        <Field label="Keywords">
+          <p className="-mt-1 mb-1 text-[11px] text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+          <KeywordsInput value={keywords} onChange={setKeywords} />
+        </Field>
         <div className="flex gap-2">
           <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
           <Button type="button" variant="outline" onClick={() => nav(`/@${profile.username}`)}>Cancel</Button>
