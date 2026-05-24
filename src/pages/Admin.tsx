@@ -1048,6 +1048,7 @@ function EditUnclaimedProfileDialog({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isOtherCategory, setIsOtherCategory] = useState(false);
+  const dynamicCategories = useProfileCategories();
 
   useEffect(() => {
     if (!open || !profileId) return;
