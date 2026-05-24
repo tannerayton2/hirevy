@@ -215,12 +215,32 @@ export default function ProfileEdit() {
 
         {/* Service category */}
         <Field label="Service category">
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          {(() => {
+            const isPreset = (CATEGORIES as readonly string[]).includes(category);
+            const selectValue = category === "" ? "" : isPreset ? category : "Other";
+            return (
+              <>
+                <Select
+                  value={selectValue}
+                  onValueChange={(v) => setCategory(v === "Other" ? "" : v)}
+                >
+                  <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {selectValue === "Other" && (
+                  <Input
+                    className="mt-2"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value.slice(0, 60))}
+                    placeholder="Enter a custom category"
+                    maxLength={60}
+                  />
+                )}
+              </>
+            );
+          })()}
         </Field>
 
         {/* Bio */}
