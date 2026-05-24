@@ -472,7 +472,7 @@ export default function Messages() {
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="grid h-[calc(100vh-56px-56px)] grid-cols-1 md:h-[calc(100vh-56px)] md:grid-cols-[320px_1fr]">
+    <div className="grid h-[calc(100vh-56px-56px)] auto-rows-fr grid-cols-1 md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
       {/* Inbox */}
       <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
