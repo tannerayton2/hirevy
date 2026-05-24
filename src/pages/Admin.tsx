@@ -384,7 +384,12 @@ function getLoadErrorMessage(err: unknown) {
 }
 
 function isRetryableLoadError(err: unknown) {
-  return err instanceof TypeError && /load failed|failed to fetch|networkerror/i.test(err.message);
+  const message = err instanceof Error
+    ? err.message
+    : typeof err === "object" && err && "message" in err
+      ? String((err as { message?: unknown }).message ?? "")
+      : "";
+  return /load failed|failed to fetch|networkerror/i.test(message);
 }
 
 type AdminRpcResponse<T> = { data: T | null; error: { message: string } | null };
@@ -393,7 +398,10 @@ async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      return await operation();
+      const result = await operation();
+      const responseError = (result as AdminRpcResponse<unknown>)?.error;
+      if (responseError && isRetryableLoadError(responseError)) throw new Error(responseError.message);
+      return result;
     } catch (err) {
       lastError = err;
       if (attempt === attempts || !isRetryableLoadError(err)) break;
