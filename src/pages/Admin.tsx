@@ -90,6 +90,7 @@ function CreateCoachProfileForm({
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [tiktokUrl, setTiktokUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ slug: string } | null>(null);
