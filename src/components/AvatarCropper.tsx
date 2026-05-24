@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Props {
   src: string;
@@ -68,6 +69,9 @@ export function AvatarCropper({ src, onCancel, onCropped }: Props) {
           onCropComplete={onComplete}
         />
       </div>
+      <p className="text-center text-xs text-muted-foreground">
+        Drag to reposition, pinch or scroll to zoom
+      </p>
       <div className="flex items-center gap-3">
         <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Zoom</span>
         <Slider
@@ -82,9 +86,39 @@ export function AvatarCropper({ src, onCancel, onCropped }: Props) {
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
         <Button type="button" size="sm" onClick={save} disabled={busy || !areaPx}>
-          {busy ? "Cropping…" : "Apply crop"}
+          {busy ? "Saving…" : "Save Photo"}
         </Button>
       </div>
     </div>
+  );
+}
+
+interface DialogProps {
+  file: File | null;
+  onCancel: () => void;
+  onCropped: (blob: Blob) => void;
+}
+
+export function AvatarCropperDialog({ file, onCancel, onCropped }: DialogProps) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) { setSrc(null); return; }
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <Dialog open={!!file} onOpenChange={(v) => { if (!v) onCancel(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Adjust your photo</DialogTitle>
+        </DialogHeader>
+        {src ? (
+          <AvatarCropper src={src} onCancel={onCancel} onCropped={onCropped} />
+        ) : null}
+      </DialogContent>
+    </Dialog>
   );
 }

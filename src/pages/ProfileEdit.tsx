@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useProfileCategories } from "@/lib/useProfileCategories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
-import { AvatarCropper } from "@/components/AvatarCropper";
+import { AvatarCropperDialog } from "@/components/AvatarCropper";
 
 import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { KeywordsInput } from "@/components/KeywordsInput";
@@ -52,7 +52,7 @@ export default function ProfileEdit() {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
-  const [rawSrc, setRawSrc] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const dynamicCategories = useProfileCategories();
 
@@ -80,6 +80,7 @@ export default function ProfileEdit() {
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = "";
     if (!f) return;
     if (!f.type.startsWith("image/")) {
       toast({ title: "Invalid file", description: "Please choose an image.", variant: "destructive" });
@@ -89,14 +90,14 @@ export default function ProfileEdit() {
       toast({ title: "Too large", description: "Max 4MB.", variant: "destructive" });
       return;
     }
-    const url = URL.createObjectURL(f);
-    setRawSrc(url);
+    setPendingFile(f);
   };
 
   const onCropped = (blob: Blob) => {
     setCroppedBlob(blob);
+    if (croppedPreview) URL.revokeObjectURL(croppedPreview);
     setCroppedPreview(URL.createObjectURL(blob));
-    setRawSrc(null);
+    setPendingFile(null);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -185,32 +186,27 @@ export default function ProfileEdit() {
         {/* Avatar */}
         <div>
           <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Avatar</Label>
-          {rawSrc ? (
-            <div className="mt-2 rounded-md border border-border bg-card p-3">
-              <AvatarCropper
-                src={rawSrc}
-                onCancel={() => { setRawSrc(null); if (fileRef.current) fileRef.current.value = ""; }}
-                onCropped={onCropped}
-              />
+          <div className="mt-2 flex items-center gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground">
+              {previewSrc ? (
+                <img src={previewSrc} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (displayName || profile.username).slice(0, 1).toUpperCase()
+              )}
             </div>
-          ) : (
-            <div className="mt-2 flex items-center gap-4">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground">
-                {previewSrc ? (
-                  <img src={previewSrc} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  (displayName || profile.username).slice(0, 1).toUpperCase()
-                )}
-              </div>
-              <div className="space-y-1">
-                <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                  <Upload className="mr-1.5 h-3.5 w-3.5" /> {croppedPreview ? "Replace image" : "Upload image"}
-                </Button>
-                <p className="text-xs text-muted-foreground">Drag to pan, slide to zoom. Max 4MB.</p>
-              </div>
+            <div className="space-y-1">
+              <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> {croppedPreview ? "Replace image" : "Upload image"}
+              </Button>
+              <p className="text-xs text-muted-foreground">Drag to pan, slide to zoom. Max 4MB.</p>
             </div>
-          )}
+          </div>
+          <AvatarCropperDialog
+            file={pendingFile}
+            onCancel={() => setPendingFile(null)}
+            onCropped={onCropped}
+          />
         </div>
 
         {/* Display name */}

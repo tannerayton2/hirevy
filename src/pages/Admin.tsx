@@ -24,6 +24,7 @@ import { isAdminUsername } from "@/lib/admin";
 import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { tierForReviewCount, TIER_LABEL } from "@/lib/tiers";
 import { KeywordsInput } from "@/components/KeywordsInput";
+import { AvatarCropperDialog } from "@/components/AvatarCropper";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -93,11 +94,20 @@ function CreateCoachProfileForm({
     if (!slugTouched) setSlug(slugifyName(v));
   };
 
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
-    setAvatarFile(f);
+    e.target.value = "";
+    if (f) setPendingFile(f);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    const cropped = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(f ? URL.createObjectURL(f) : null);
+    setAvatarFile(cropped);
+    setAvatarPreview(URL.createObjectURL(cropped));
+    setPendingFile(null);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -202,6 +212,11 @@ function CreateCoachProfileForm({
             type="file"
             accept="image/*"
             onChange={handleAvatarChange}
+          />
+          <AvatarCropperDialog
+            file={pendingFile}
+            onCancel={() => setPendingFile(null)}
+            onCropped={handleCropped}
           />
         </div>
 
@@ -1074,11 +1089,20 @@ function EditUnclaimedProfileDialog({
     setData((prev) => (prev ? { ...prev, [k]: v } : prev));
   };
 
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
-    setAvatarFile(f);
+    e.target.value = "";
+    if (f) setPendingFile(f);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    const cropped = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(f ? URL.createObjectURL(f) : null);
+    setAvatarFile(cropped);
+    setAvatarPreview(URL.createObjectURL(cropped));
+    setPendingFile(null);
   };
 
   const handleSave = async () => {
@@ -1165,6 +1189,11 @@ function EditUnclaimedProfileDialog({
                 </div>
               )}
               <Input id="eu-avatar" type="file" accept="image/*" onChange={handleAvatar} />
+              <AvatarCropperDialog
+                file={pendingFile}
+                onCancel={() => setPendingFile(null)}
+                onCropped={handleCropped}
+              />
             </div>
 
             <div>
