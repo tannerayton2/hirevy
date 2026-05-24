@@ -1189,6 +1189,11 @@ function EditUnclaimedProfileDialog({
                 </div>
               )}
               <Input id="eu-avatar" type="file" accept="image/*" onChange={handleAvatar} />
+              <AvatarCropperDialog
+                file={pendingFile}
+                onCancel={() => setPendingFile(null)}
+                onCropped={handleCropped}
+              />
             </div>
 
             <div>
