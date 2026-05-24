@@ -42,7 +42,7 @@ type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean;
 const baseItems: NavItem[] = [
   { to: "/explore", icon: Compass, label: "Explore", end: true },
   { to: "/marketplace", icon: Store, label: "Marketplace", soon: true },
-  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
+  { to: "/messages", icon: MessagesSquare, label: "Messages", authOnly: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
