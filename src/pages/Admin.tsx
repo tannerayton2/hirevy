@@ -539,8 +539,10 @@ export default function Admin() {
             </div>
           ) : null}
 
-          {!stats ? (
+          {loading && !stats ? (
             <div className="text-sm text-muted-foreground">Loading…</div>
+          ) : !stats ? (
+            <div className="text-sm text-muted-foreground">Unable to load dashboard stats. Try Refresh.</div>
           ) : (
             <div className="min-w-0">
               {active === "dashboard" && (
