@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useProfileCategories } from "@/lib/useProfileCategories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
-import { AvatarCropper } from "@/components/AvatarCropper";
+import { AvatarCropperDialog } from "@/components/AvatarCropper";
 
 import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { KeywordsInput } from "@/components/KeywordsInput";
