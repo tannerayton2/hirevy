@@ -13,6 +13,7 @@ import { Upload } from "lucide-react";
 import { AvatarCropper } from "@/components/AvatarCropper";
 
 import { normalizeSocialHandle } from "@/lib/socialHandles";
+import { KeywordsInput } from "@/components/KeywordsInput";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const BIO_MAX = 500;
