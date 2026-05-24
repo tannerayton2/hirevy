@@ -109,7 +109,7 @@ function CreateCoachProfileForm({
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    if (!fullName.trim() || !slug.trim() || !category) {
+    if (!fullName.trim() || !slug.trim() || !effectiveCategory) {
       setError("Full name, slug, and category are required.");
       return;
     }
