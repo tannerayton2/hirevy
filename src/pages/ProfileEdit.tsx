@@ -49,6 +49,7 @@ export default function ProfileEdit() {
   const [youtube, setYoutube] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [tiktok, setTiktok] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [rawSrc, setRawSrc] = useState<string | null>(null);
