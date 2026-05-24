@@ -221,8 +221,9 @@ export default function ProfileEdit() {
         {/* Service category */}
         <Field label="Service category">
           {(() => {
-            const isPreset = (CATEGORIES as readonly string[]).includes(category);
-            const selectValue = category === "" ? "" : isPreset ? category : "Other";
+            const matched = dynamicCategories.find((c) => c.toLowerCase() === category.toLowerCase());
+            const isPreset = !!matched && matched !== "Other";
+            const selectValue = category === "" ? "" : isPreset ? matched : "Other";
             return (
               <>
                 <Select
@@ -231,7 +232,7 @@ export default function ProfileEdit() {
                 >
                   <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {dynamicCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 {selectValue === "Other" && (
