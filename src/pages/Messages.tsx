@@ -407,13 +407,16 @@ export default function Messages() {
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
   const grouped = useMemo(() => {
-    const out: { msg: Msg; showTimestamp: boolean }[] = [];
+    const out: { msg: Msg; showTimestamp: boolean; groupStart: boolean }[] = [];
     for (let i = 0; i < msgs.length; i++) {
       const m = msgs[i];
+      const prev = msgs[i - 1];
       const next = msgs[i + 1];
-      const sameGroup = next && next.sender_id === m.sender_id
+      const sameAsNext = next && next.sender_id === m.sender_id
         && (new Date(next.created_at).getTime() - new Date(m.created_at).getTime()) < 2 * 60 * 1000;
-      out.push({ msg: m, showTimestamp: !sameGroup });
+      const sameAsPrev = prev && prev.sender_id === m.sender_id
+        && (new Date(m.created_at).getTime() - new Date(prev.created_at).getTime()) < 2 * 60 * 1000;
+      out.push({ msg: m, showTimestamp: !sameAsNext, groupStart: !sameAsPrev });
     }
     return out;
   }, [msgs]);
@@ -472,7 +475,7 @@ export default function Messages() {
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="grid h-[calc(100vh-56px-56px)] auto-rows-fr grid-cols-1 md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
+    <div className="md:grid md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
       {/* Inbox */}
       <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
@@ -492,11 +495,11 @@ export default function Messages() {
         <button
           onClick={() => setParams({ team: "1" }, { replace: true })}
           className={cn(
-            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10",
+            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-2 text-left transition-colors hover:bg-primary/10",
             teamMode && "bg-primary/15",
           )}
         >
-          <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
             HV
             <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
           </div>
@@ -529,7 +532,7 @@ export default function Messages() {
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); } }}
                   className={cn(
-                    "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary",
+                    "flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-secondary",
                     activeId === t.id && "bg-secondary",
                   )}
                 >
@@ -538,12 +541,12 @@ export default function Messages() {
                       to={`/${t.other.username}`}
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`Open ${name}'s profile`}
-                      className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold hover:opacity-90"
+                      className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold hover:opacity-90"
                     >
                       {t.other.avatar_url ? <img src={t.other.avatar_url} alt="" className="h-full w-full object-cover" /> : (t.other.display_name ?? t.other.username).slice(0, 1).toUpperCase()}
                     </NavLink>
                   ) : (
-                    <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-semibold">?</div>
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">?</div>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
@@ -551,18 +554,18 @@ export default function Messages() {
                         <NavLink
                           to={`/${t.other.username}`}
                           onClick={(e) => e.stopPropagation()}
-                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}
+                          className="truncate text-sm font-normal text-foreground hover:underline"
                         >
                           {name}
                         </NavLink>
                       ) : (
-                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}>{name}</p>
+                        <p className="truncate text-sm font-normal text-foreground">{name}</p>
                       )}
-                      {ts && <span className={cn("shrink-0 text-[11px]", isUnread ? "text-foreground/70" : "text-muted-foreground")}>{shortTimestamp(ts)}</span>}
+                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/75" : "text-muted-foreground/70")}>{preview}</p>
-                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
+                      <p className={cn("truncate text-xs", isUnread ? "font-bold text-white" : "font-normal text-muted-foreground")}>{preview}</p>
+                      {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
                     </div>
                   </div>
                 </div>
@@ -620,7 +623,7 @@ export default function Messages() {
 
 
       {/* Conversation */}
-      <section className={cn("flex h-full min-h-0 flex-col", !activeId && !teamMode && "hidden md:flex")}>
+      <section className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0", !activeId && !teamMode && "hidden md:flex")}>
         {teamMode ? (
           <TeamChatPane />
         ) : activeId ? (
@@ -667,8 +670,8 @@ export default function Messages() {
 
 
 
-            <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4" onClick={() => setPickerForMsg(null)}>
-              {grouped.map(({ msg: m, showTimestamp }) => {
+            <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3" onClick={() => setPickerForMsg(null)}>
+              {grouped.map(({ msg: m, showTimestamp, groupStart }) => {
                 const mine = m.sender_id === user!.id;
                 const showSeen = mine && lastSeenMineId === m.id;
                 const rx = reactionsByMsg.get(m.id) ?? [];
@@ -683,7 +686,7 @@ export default function Messages() {
                 const isVoice = m.voice_duration_ms != null && m.attachment_url;
 
                 return (
-                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start")}>
+                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start", groupStart ? "mt-2.5" : "mt-[2px]")}>
                     <div className={cn("flex w-full items-end gap-1.5", mine ? "flex-row-reverse" : "flex-row")}>
                       {/* Hover-reply button (desktop) */}
                       <button
@@ -709,7 +712,7 @@ export default function Messages() {
                         onContextMenu={(e) => { if (pressTriggeredRef.current) e.preventDefault(); }}
                         onClick={(e) => { if (pressTriggeredRef.current) { e.stopPropagation(); pressTriggeredRef.current = false; } }}
                         className={cn(
-                          "relative max-w-[78%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
+                          "relative max-w-[75%] cursor-pointer select-none rounded-2xl text-sm transition-shadow",
                           mine ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
                           (m.attachment_url && !isVoice) ? "p-1" : "px-3 py-2",
                         )}
