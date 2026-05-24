@@ -340,6 +340,14 @@ export default function Profile() {
     toast({ title: next ? "Review pinned" : "Review unpinned" });
   };
 
+  const metaName = profile?.display_name || profile?.username || handle;
+  usePageMeta(
+    `${metaName} Reviews — Verified Client Ratings | HireVy.`,
+    (profile?.review_count ?? 0) > 0
+      ? `See verified reviews for ${metaName} on HireVy. Real ratings from real clients who actually worked with them. Read reviews before you hire.`
+      : `See reviews for ${metaName} on HireVy. Be the first to leave a verified review.`,
+  );
+
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!profile) {
     return (
