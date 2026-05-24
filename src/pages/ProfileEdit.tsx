@@ -52,7 +52,7 @@ export default function ProfileEdit() {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
-  const [rawSrc, setRawSrc] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const dynamicCategories = useProfileCategories();
 
