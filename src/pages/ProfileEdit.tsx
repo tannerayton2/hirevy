@@ -80,6 +80,7 @@ export default function ProfileEdit() {
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = "";
     if (!f) return;
     if (!f.type.startsWith("image/")) {
       toast({ title: "Invalid file", description: "Please choose an image.", variant: "destructive" });
@@ -89,14 +90,14 @@ export default function ProfileEdit() {
       toast({ title: "Too large", description: "Max 4MB.", variant: "destructive" });
       return;
     }
-    const url = URL.createObjectURL(f);
-    setRawSrc(url);
+    setPendingFile(f);
   };
 
   const onCropped = (blob: Blob) => {
     setCroppedBlob(blob);
+    if (croppedPreview) URL.revokeObjectURL(croppedPreview);
     setCroppedPreview(URL.createObjectURL(blob));
-    setRawSrc(null);
+    setPendingFile(null);
   };
 
   const submit = async (e: React.FormEvent) => {
