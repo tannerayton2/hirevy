@@ -1234,6 +1234,13 @@ function EditUnclaimedProfileDialog({
               <Textarea id="eu-bio" value={data.bio ?? ""} onChange={(e) => update("bio", e.target.value)} rows={4} />
             </div>
 
+            <div>
+              <Label>Keywords</Label>
+              <p className="mb-2 text-xs text-muted-foreground">Add terms that describe your niche, specialty, or offers. Helps people find you.</p>
+              <KeywordsInput value={data.keywords ?? []} onChange={(next) => update("keywords", next)} />
+            </div>
+
+
             {err && (
               <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{err}</div>
             )}
