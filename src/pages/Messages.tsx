@@ -551,18 +551,18 @@ export default function Messages() {
                         <NavLink
                           to={`/${t.other.username}`}
                           onClick={(e) => e.stopPropagation()}
-                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}
+                          className={cn("truncate text-sm hover:underline", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}
                         >
                           {name}
                         </NavLink>
                       ) : (
-                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/90")}>{name}</p>
+                        <p className={cn("truncate text-sm", isUnread ? "font-bold text-white" : "font-normal text-foreground/85")}>{name}</p>
                       )}
-                      {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
+                      {ts && <span className={cn("shrink-0 text-[11px]", isUnread ? "text-foreground/70" : "text-muted-foreground")}>{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/80" : "text-muted-foreground")}>{preview}</p>
-                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+                      <p className={cn("truncate text-xs", isUnread ? "text-foreground/75" : "text-muted-foreground/70")}>{preview}</p>
+                      {isUnread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
                     </div>
                   </div>
                 </div>
