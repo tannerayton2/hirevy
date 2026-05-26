@@ -551,7 +551,7 @@ export default function Messages() {
   return (
     <div className="md:grid md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
       {/* Inbox */}
-      <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
+      <aside className={cn("border-r border-border md:block", (activeId || teamMode || draftMode) && "hidden md:block")}>
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
           <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
           <Button
