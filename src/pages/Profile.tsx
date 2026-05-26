@@ -305,9 +305,8 @@ export default function Profile() {
 
   const startMessage = async () => {
     if (!user || !profile) { window.location.href = "/auth"; return; }
-    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: profile.id });
-    if (error) { toast({ title: "Could not open thread", description: error.message, variant: "destructive" }); return; }
-    window.location.href = `/messages?t=${data}`;
+    // Open compose view in draft mode — thread is only created on first send.
+    window.location.href = `/messages?to=${profile.id}`;
   };
 
   const togglePinReview = async (reviewId: string) => {
