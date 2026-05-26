@@ -699,11 +699,11 @@ export default function Messages() {
       {/* Conversation */}
       <section
         style={keyboardOffset > 0 ? { bottom: keyboardOffset } : undefined}
-        className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto", !activeId && !teamMode && "hidden md:flex")}
+        className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto", !activeId && !draftMode && !teamMode && "hidden md:flex")}
       >
         {teamMode ? (
           <TeamChatPane />
-        ) : activeId ? (
+        ) : (activeId || draftMode) ? (
           <>
             <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -715,24 +715,24 @@ export default function Messages() {
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                {activeThread?.other?.username ? (
+                {headerOther?.username ? (
                   <NavLink
-                    to={`/${activeThread.other.username}`}
-                    aria-label={`Open ${activeThread.other.display_name || activeThread.other.username}'s profile`}
+                    to={`/${headerOther.username}`}
+                    aria-label={`Open ${headerOther.display_name || headerOther.username}'s profile`}
                     className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold hover:opacity-90"
                   >
-                    {activeThread.other.avatar_url
-                      ? <img src={activeThread.other.avatar_url} alt="" className="h-full w-full object-cover" />
-                      : (activeThread.other.display_name ?? activeThread.other.username).slice(0, 1).toUpperCase()}
+                    {headerOther.avatar_url
+                      ? <img src={headerOther.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : (headerOther.display_name ?? headerOther.username).slice(0, 1).toUpperCase()}
                   </NavLink>
                 ) : (
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">?</div>
                 )}
                 <div className="min-w-0">
-                  {activeThread?.other?.username ? (
-                    <NavLink to={`/${activeThread.other.username}`} className="block min-w-0">
-                      <p className="truncate text-sm font-semibold hover:underline">{activeThread.other.display_name || `@${activeThread.other.username}`}</p>
-                      <p className="truncate text-xs text-muted-foreground">@{activeThread.other.username}</p>
+                  {headerOther?.username ? (
+                    <NavLink to={`/${headerOther.username}`} className="block min-w-0">
+                      <p className="truncate text-sm font-semibold hover:underline">{headerOther.display_name || `@${headerOther.username}`}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{headerOther.username}</p>
                     </NavLink>
                   ) : (
                     <>
@@ -742,6 +742,7 @@ export default function Messages() {
                 </div>
               </div>
             </header>
+
 
 
 
