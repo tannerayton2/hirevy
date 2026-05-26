@@ -99,6 +99,30 @@ export default function Messages() {
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  // Track mobile keyboard via visualViewport so the input bar stays above it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardOffset(offset);
+      if (offset > 0) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+        });
+      }
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
 
   const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
     if (!user) return;
