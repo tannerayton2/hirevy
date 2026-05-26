@@ -476,6 +476,8 @@ export default function Messages() {
   const onMsgPressMove = () => { pressMovedRef.current = true; onMsgPressEnd(); };
 
   const activeThread = threads.find((t) => t.id === activeId);
+  const draftMode = !activeId && !!draftToId;
+  const headerOther: OtherProfile | null = activeThread?.other ?? (draftMode ? draftOther : null);
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
   const grouped = useMemo(() => {
