@@ -537,14 +537,14 @@ export default function Messages() {
     return () => { cancelled = true; window.clearTimeout(handle); };
   }, [composeQuery, composeOpen, user]);
 
-  const startThreadWith = async (otherId: string) => {
-    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: otherId });
-    if (error) { toast({ title: "Could not open thread", description: error.message, variant: "destructive" }); return; }
+  const startThreadWith = (otherId: string) => {
+    // Open compose view in draft mode — thread is only created on first send.
     setComposeOpen(false);
     setComposeQuery("");
     setComposeResults([]);
-    setParams({ t: data as unknown as string }, { replace: true });
+    setParams({ to: otherId }, { replace: true });
   };
+
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
