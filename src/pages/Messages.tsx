@@ -332,30 +332,45 @@ export default function Messages() {
   };
   const clearPending = () => { setPendingFile(null); if (pendingPreview) URL.revokeObjectURL(pendingPreview); setPendingPreview(null); };
 
-  const uploadAttachment = async (file: Blob, ext: string, contentType: string) => {
-    if (!user || !activeId) throw new Error("not ready");
-    const path = `${user.id}/${activeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const uploadAttachment = async (file: Blob, ext: string, contentType: string, threadId: string) => {
+    if (!user) throw new Error("not ready");
+    const path = `${user.id}/${threadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from("message-attachments").upload(path, file, { contentType, upsert: false });
     if (error) throw error;
     return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
   };
 
+  // Lazily create a thread (only when actually sending the first message in draft mode).
+  const ensureThreadId = async (): Promise<string | null> => {
+    if (activeId) return activeId;
+    if (!draftToId) return null;
+    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: draftToId });
+    if (error) {
+      toast({ title: "Couldn't start conversation", description: error.message, variant: "destructive" });
+      return null;
+    }
+    return data as unknown as string;
+  };
+
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!activeId || !user) return;
+    if (!user) return;
     const text = body.trim();
     if (!text && !pendingFile) return;
+    if (!activeId && !draftToId) return;
     setSending(true);
     try {
+      const threadId = await ensureThreadId();
+      if (!threadId) { setSending(false); return; }
       let attachment_url: string | null = null;
       let attachment_type: string | null = null;
       if (pendingFile) {
         const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        attachment_url = await uploadAttachment(pendingFile, ext, pendingFile.type);
+        attachment_url = await uploadAttachment(pendingFile, ext, pendingFile.type, threadId);
         attachment_type = pendingFile.type;
       }
       const { error } = await supabase.from("messages").insert({
-        thread_id: activeId,
+        thread_id: threadId,
         sender_id: user.id,
         body: text,
         attachment_url,
@@ -364,22 +379,26 @@ export default function Messages() {
       });
       if (error) throw error;
       setBody(""); clearPending(); setReplyTo(null);
+      if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
       toast({ title: "Couldn't send", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
     } finally { setSending(false); }
   };
 
   const sendVoice = async (blob: Blob, durationMs: number, mimeType: string) => {
-    if (!activeId || !user) return;
+    if (!user) return;
+    if (!activeId && !draftToId) return;
     setSending(true);
     try {
+      const threadId = await ensureThreadId();
+      if (!threadId) { setSending(false); return; }
       // Normalize codec-suffixed mime types (e.g. "audio/webm;codecs=opus") to the base type
       // since some storage backends match the exact string against the allow-list.
       const baseMime = mimeType.split(";")[0].trim() || "audio/webm";
       const ext = baseMime.includes("mp4") ? "m4a" : baseMime.includes("ogg") ? "ogg" : baseMime.includes("wav") ? "wav" : "webm";
-      const url = await uploadAttachment(blob, ext, baseMime);
+      const url = await uploadAttachment(blob, ext, baseMime, threadId);
       const { error } = await supabase.from("messages").insert({
-        thread_id: activeId,
+        thread_id: threadId,
         sender_id: user.id,
         body: "",
         attachment_url: url,
@@ -389,6 +408,7 @@ export default function Messages() {
       });
       if (error) throw error;
       setReplyTo(null);
+      if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
       toast({ title: "Couldn't send voice note", description: err instanceof Error ? err.message : "Unknown", variant: "destructive" });
     } finally { setSending(false); }
