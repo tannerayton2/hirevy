@@ -80,9 +80,8 @@ export default function OfferDetail() {
   const startMessage = async () => {
     if (!user) { window.location.href = "/auth"; return; }
     if (!offer) return;
-    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: offer.provider.id });
-    if (error) { toast({ title: "Could not message", description: error.message, variant: "destructive" }); return; }
-    window.location.href = `/messages?t=${data}`;
+    // Open compose view in draft mode — thread is only created on first send.
+    window.location.href = `/messages?to=${offer.provider.id}`;
   };
 
   const copyShareLink = async () => {

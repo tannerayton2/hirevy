@@ -72,11 +72,13 @@ export default function Messages() {
   const { user, loading } = useAuth();
   const [params, setParams] = useSearchParams();
   const activeId = params.get("t");
+  const draftToId = params.get("to");
   const teamMode = params.get("team") === "1";
   const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null; lastMsg: Msg | null })[]>([]);
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeQuery, setComposeQuery] = useState("");
   const [composeResults, setComposeResults] = useState<OtherProfile[]>([]);
+  const [draftOther, setDraftOther] = useState<OtherProfile | null>(null);
   const navigate = useNavigate();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
@@ -201,6 +203,32 @@ export default function Messages() {
     return () => { void supabase.removeChannel(ch); };
   }, [user, threads, recomputeUnreadThreads]);
 
+  // Draft mode: if ?to=<userId> and a thread already exists with this user,
+  // redirect to that thread. Otherwise load the other profile for the compose view.
+  useEffect(() => {
+    if (!draftToId || !user) { setDraftOther(null); return; }
+    if (draftToId === user.id) { setParams({}, { replace: true }); return; }
+    let cancelled = false;
+    void (async () => {
+      const existing = threads.find((t) =>
+        (t.user_a === user.id && t.user_b === draftToId) ||
+        (t.user_b === user.id && t.user_a === draftToId)
+      );
+      if (existing) {
+        if (!cancelled) setParams({ t: existing.id }, { replace: true });
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .eq("id", draftToId)
+        .maybeSingle();
+      if (!cancelled) setDraftOther((data as OtherProfile | null) ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [draftToId, user, threads, setParams]);
+
+
 
   // Active thread: load messages, reactions, reads + subscribe
   useEffect(() => {
@@ -304,30 +332,45 @@ export default function Messages() {
   };
   const clearPending = () => { setPendingFile(null); if (pendingPreview) URL.revokeObjectURL(pendingPreview); setPendingPreview(null); };
 
-  const uploadAttachment = async (file: Blob, ext: string, contentType: string) => {
-    if (!user || !activeId) throw new Error("not ready");
-    const path = `${user.id}/${activeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const uploadAttachment = async (file: Blob, ext: string, contentType: string, threadId: string) => {
+    if (!user) throw new Error("not ready");
+    const path = `${user.id}/${threadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from("message-attachments").upload(path, file, { contentType, upsert: false });
     if (error) throw error;
     return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
   };
 
+  // Lazily create a thread (only when actually sending the first message in draft mode).
+  const ensureThreadId = async (): Promise<string | null> => {
+    if (activeId) return activeId;
+    if (!draftToId) return null;
+    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: draftToId });
+    if (error) {
+      toast({ title: "Couldn't start conversation", description: error.message, variant: "destructive" });
+      return null;
+    }
+    return data as unknown as string;
+  };
+
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!activeId || !user) return;
+    if (!user) return;
     const text = body.trim();
     if (!text && !pendingFile) return;
+    if (!activeId && !draftToId) return;
     setSending(true);
     try {
+      const threadId = await ensureThreadId();
+      if (!threadId) { setSending(false); return; }
       let attachment_url: string | null = null;
       let attachment_type: string | null = null;
       if (pendingFile) {
         const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        attachment_url = await uploadAttachment(pendingFile, ext, pendingFile.type);
+        attachment_url = await uploadAttachment(pendingFile, ext, pendingFile.type, threadId);
         attachment_type = pendingFile.type;
       }
       const { error } = await supabase.from("messages").insert({
-        thread_id: activeId,
+        thread_id: threadId,
         sender_id: user.id,
         body: text,
         attachment_url,
@@ -336,22 +379,26 @@ export default function Messages() {
       });
       if (error) throw error;
       setBody(""); clearPending(); setReplyTo(null);
+      if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
       toast({ title: "Couldn't send", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
     } finally { setSending(false); }
   };
 
   const sendVoice = async (blob: Blob, durationMs: number, mimeType: string) => {
-    if (!activeId || !user) return;
+    if (!user) return;
+    if (!activeId && !draftToId) return;
     setSending(true);
     try {
+      const threadId = await ensureThreadId();
+      if (!threadId) { setSending(false); return; }
       // Normalize codec-suffixed mime types (e.g. "audio/webm;codecs=opus") to the base type
       // since some storage backends match the exact string against the allow-list.
       const baseMime = mimeType.split(";")[0].trim() || "audio/webm";
       const ext = baseMime.includes("mp4") ? "m4a" : baseMime.includes("ogg") ? "ogg" : baseMime.includes("wav") ? "wav" : "webm";
-      const url = await uploadAttachment(blob, ext, baseMime);
+      const url = await uploadAttachment(blob, ext, baseMime, threadId);
       const { error } = await supabase.from("messages").insert({
-        thread_id: activeId,
+        thread_id: threadId,
         sender_id: user.id,
         body: "",
         attachment_url: url,
@@ -361,6 +408,7 @@ export default function Messages() {
       });
       if (error) throw error;
       setReplyTo(null);
+      if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
       toast({ title: "Couldn't send voice note", description: err instanceof Error ? err.message : "Unknown", variant: "destructive" });
     } finally { setSending(false); }
@@ -428,6 +476,8 @@ export default function Messages() {
   const onMsgPressMove = () => { pressMovedRef.current = true; onMsgPressEnd(); };
 
   const activeThread = threads.find((t) => t.id === activeId);
+  const draftMode = !activeId && !!draftToId;
+  const headerOther: OtherProfile | null = activeThread?.other ?? (draftMode ? draftOther : null);
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
   const grouped = useMemo(() => {
@@ -487,21 +537,21 @@ export default function Messages() {
     return () => { cancelled = true; window.clearTimeout(handle); };
   }, [composeQuery, composeOpen, user]);
 
-  const startThreadWith = async (otherId: string) => {
-    const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: otherId });
-    if (error) { toast({ title: "Could not open thread", description: error.message, variant: "destructive" }); return; }
+  const startThreadWith = (otherId: string) => {
+    // Open compose view in draft mode — thread is only created on first send.
     setComposeOpen(false);
     setComposeQuery("");
     setComposeResults([]);
-    setParams({ t: data as unknown as string }, { replace: true });
+    setParams({ to: otherId }, { replace: true });
   };
+
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
     <div className="md:grid md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
       {/* Inbox */}
-      <aside className={cn("border-r border-border md:block", (activeId || teamMode) && "hidden md:block")}>
+      <aside className={cn("border-r border-border md:block", (activeId || teamMode || draftMode) && "hidden md:block")}>
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
           <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
           <Button
@@ -649,11 +699,11 @@ export default function Messages() {
       {/* Conversation */}
       <section
         style={keyboardOffset > 0 ? { bottom: keyboardOffset } : undefined}
-        className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto", !activeId && !teamMode && "hidden md:flex")}
+        className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto", !activeId && !draftMode && !teamMode && "hidden md:flex")}
       >
         {teamMode ? (
           <TeamChatPane />
-        ) : activeId ? (
+        ) : (activeId || draftMode) ? (
           <>
             <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -665,24 +715,24 @@ export default function Messages() {
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                {activeThread?.other?.username ? (
+                {headerOther?.username ? (
                   <NavLink
-                    to={`/${activeThread.other.username}`}
-                    aria-label={`Open ${activeThread.other.display_name || activeThread.other.username}'s profile`}
+                    to={`/${headerOther.username}`}
+                    aria-label={`Open ${headerOther.display_name || headerOther.username}'s profile`}
                     className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold hover:opacity-90"
                   >
-                    {activeThread.other.avatar_url
-                      ? <img src={activeThread.other.avatar_url} alt="" className="h-full w-full object-cover" />
-                      : (activeThread.other.display_name ?? activeThread.other.username).slice(0, 1).toUpperCase()}
+                    {headerOther.avatar_url
+                      ? <img src={headerOther.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : (headerOther.display_name ?? headerOther.username).slice(0, 1).toUpperCase()}
                   </NavLink>
                 ) : (
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">?</div>
                 )}
                 <div className="min-w-0">
-                  {activeThread?.other?.username ? (
-                    <NavLink to={`/${activeThread.other.username}`} className="block min-w-0">
-                      <p className="truncate text-sm font-semibold hover:underline">{activeThread.other.display_name || `@${activeThread.other.username}`}</p>
-                      <p className="truncate text-xs text-muted-foreground">@{activeThread.other.username}</p>
+                  {headerOther?.username ? (
+                    <NavLink to={`/${headerOther.username}`} className="block min-w-0">
+                      <p className="truncate text-sm font-semibold hover:underline">{headerOther.display_name || `@${headerOther.username}`}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{headerOther.username}</p>
                     </NavLink>
                   ) : (
                     <>
@@ -692,6 +742,7 @@ export default function Messages() {
                 </div>
               </div>
             </header>
+
 
 
 
