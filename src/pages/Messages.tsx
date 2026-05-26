@@ -203,6 +203,32 @@ export default function Messages() {
     return () => { void supabase.removeChannel(ch); };
   }, [user, threads, recomputeUnreadThreads]);
 
+  // Draft mode: if ?to=<userId> and a thread already exists with this user,
+  // redirect to that thread. Otherwise load the other profile for the compose view.
+  useEffect(() => {
+    if (!draftToId || !user) { setDraftOther(null); return; }
+    if (draftToId === user.id) { setParams({}, { replace: true }); return; }
+    let cancelled = false;
+    void (async () => {
+      const existing = threads.find((t) =>
+        (t.user_a === user.id && t.user_b === draftToId) ||
+        (t.user_b === user.id && t.user_a === draftToId)
+      );
+      if (existing) {
+        if (!cancelled) setParams({ t: existing.id }, { replace: true });
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .eq("id", draftToId)
+        .maybeSingle();
+      if (!cancelled) setDraftOther((data as OtherProfile | null) ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [draftToId, user, threads, setParams]);
+
+
 
   // Active thread: load messages, reactions, reads + subscribe
   useEffect(() => {
