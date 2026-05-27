@@ -297,21 +297,24 @@ type AdminUserRow = {
   created_at: string;
 };
 
+const STAT_PLACEHOLDER = "—" as const;
+type StatValue = number | typeof STAT_PLACEHOLDER;
+
 type Stats = {
-  users: { total: number; last_24h: number; last_7d: number };
+  users: { total: StatValue; last_24h: StatValue; last_7d: StatValue };
   reviews: {
-    verified_total: number;
-    proof_total: number;
-    last_24h: number;
-    last_7d: number;
-    top_provider: { username: string; display_name: string | null; count: number } | null;
+    verified_total: StatValue;
+    proof_total: StatValue;
+    last_24h: StatValue;
+    last_7d: StatValue;
+    top_provider: { username: string | null; display_name: string | null; count: StatValue } | null;
   };
-  offers: { total: number; paid: number; free_for_testimonial: number; last_7d: number };
+  offers: { total: StatValue; paid: StatValue; free_for_testimonial: StatValue; last_7d: StatValue };
   activity: {
-    messages_total: number;
-    messages_24h: number;
-    active_threads_7d: number;
-    follows_total: number;
+    messages_total: StatValue;
+    messages_24h: StatValue;
+    active_threads_7d: StatValue;
+    follows_total: StatValue;
   };
   moderation: {
     open_disputes_count: number;
@@ -342,6 +345,20 @@ type Stats = {
       provider_display_name: string | null;
     }>;
   };
+};
+
+const EMPTY_STATS: Stats = {
+  users: { total: STAT_PLACEHOLDER, last_24h: STAT_PLACEHOLDER, last_7d: STAT_PLACEHOLDER },
+  reviews: {
+    verified_total: STAT_PLACEHOLDER,
+    proof_total: STAT_PLACEHOLDER,
+    last_24h: STAT_PLACEHOLDER,
+    last_7d: STAT_PLACEHOLDER,
+    top_provider: null,
+  },
+  offers: { total: STAT_PLACEHOLDER, paid: STAT_PLACEHOLDER, free_for_testimonial: STAT_PLACEHOLDER, last_7d: STAT_PLACEHOLDER },
+  activity: { messages_total: STAT_PLACEHOLDER, messages_24h: STAT_PLACEHOLDER, active_threads_7d: STAT_PLACEHOLDER, follows_total: STAT_PLACEHOLDER },
+  moderation: { open_disputes_count: 0, open_disputes: [], pending_proof_requests_count: 0, pending_proof_requests: [], disputed_reviews_count: 0, disputed_reviews: [] },
 };
 
 function StatCard({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
@@ -411,6 +428,131 @@ async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<
   throw lastError;
 }
 
+function logStatError(label: string, err: unknown) {
+  console.warn(`[Admin stats] ${label} failed`, err);
+}
+
+async function safeStat(label: string, operation: () => Promise<number>): Promise<StatValue> {
+  try {
+    return await retryLoad(operation, 2);
+  } catch (err) {
+    logStatError(label, err);
+    return STAT_PLACEHOLDER;
+  }
+}
+
+type CountResult = { count: number | null; error: { message: string } | null };
+type StatQuery = PromiseLike<CountResult> & {
+  gt: (column: string, value: string | number) => StatQuery;
+  eq: (column: string, value: string | number | boolean) => StatQuery;
+};
+type StatTable = { select: (columns: string, options: { count: "exact"; head: true }) => StatQuery };
+
+async function countStat(label: string, table: string, apply?: (query: StatQuery) => StatQuery): Promise<StatValue> {
+  return safeStat(label, async () => {
+    let query = (supabase.from(table as never) as unknown as StatTable).select("id", { count: "exact", head: true });
+    if (apply) query = apply(query);
+    const { count, error } = await query;
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  });
+}
+
+async function sumStats(label: string, stats: Promise<StatValue>[]): Promise<StatValue> {
+  try {
+    const values = await Promise.all(stats);
+    if (values.some((value) => value === STAT_PLACEHOLDER)) return STAT_PLACEHOLDER;
+    return values.reduce<number>((total, value) => total + Number(value), 0);
+  } catch (err) {
+    logStatError(label, err);
+    return STAT_PLACEHOLDER;
+  }
+}
+
+async function topProviderStat(): Promise<Stats["reviews"]["top_provider"]> {
+  try {
+    const { data, error } = await retryLoad(async () => (
+      await supabase
+        .from("profiles")
+        .select("username, display_name, review_count")
+        .gt("review_count", 0)
+        .order("review_count", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ), 2);
+    if (error) throw new Error(error.message);
+    if (!data) return { username: null, display_name: null, count: 0 };
+    return {
+      username: data.username ?? null,
+      display_name: data.display_name ?? null,
+      count: data.review_count ?? 0,
+    };
+  } catch (err) {
+    logStatError("Top provider", err);
+    return null;
+  }
+}
+
+async function loadDashboardStats(): Promise<Stats> {
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const verified24h = countStat("Verified reviews 24h", "reviews", (q) => q.gt("created_at", since24h));
+  const proof24h = countStat("Proof-backed reviews 24h", "proof_backed_reviews", (q) => q.gt("created_at", since24h));
+  const verified7d = countStat("Verified reviews 7d", "reviews", (q) => q.gt("created_at", since7d));
+  const proof7d = countStat("Proof-backed reviews 7d", "proof_backed_reviews", (q) => q.gt("created_at", since7d));
+
+  const [
+    usersTotal,
+    users24h,
+    users7d,
+    verifiedTotal,
+    proofTotal,
+    reviews24h,
+    reviews7d,
+    topProvider,
+    offersTotal,
+    paidOffers,
+    freeForTestimonial,
+    offers7d,
+    messagesTotal,
+    messages24h,
+    activeThreads7d,
+    followsTotal,
+  ] = await Promise.all([
+    countStat("Total users", "profiles"),
+    countStat("Signups 24h", "profiles", (q) => q.gt("created_at", since24h)),
+    countStat("Signups 7d", "profiles", (q) => q.gt("created_at", since7d)),
+    countStat("Verified reviews total", "reviews"),
+    countStat("Proof-backed reviews total", "proof_backed_reviews"),
+    sumStats("Reviews 24h", [verified24h, proof24h]),
+    sumStats("Reviews 7d", [verified7d, proof7d]),
+    topProviderStat(),
+    countStat("Total offers", "offers"),
+    countStat("Paid offers", "offers", (q) => q.gt("price_cents", 0)),
+    countStat("Free-for-testimonial offers", "offers", (q) => q.eq("free_for_testimonial", true)),
+    countStat("Offers created 7d", "offers", (q) => q.gt("created_at", since7d)),
+    countStat("Messages total", "messages"),
+    countStat("Messages 24h", "messages", (q) => q.gt("created_at", since24h)),
+    countStat("Active threads 7d", "message_threads", (q) => q.gt("last_message_at", since7d)),
+    countStat("Total follows", "follows"),
+  ]);
+
+  return {
+    ...EMPTY_STATS,
+    users: { total: usersTotal, last_24h: users24h, last_7d: users7d },
+    reviews: {
+      verified_total: verifiedTotal,
+      proof_total: proofTotal,
+      last_24h: reviews24h,
+      last_7d: reviews7d,
+      top_provider: topProvider,
+    },
+    offers: { total: offersTotal, paid: paidOffers, free_for_testimonial: freeForTestimonial, last_7d: offers7d },
+    activity: { messages_total: messagesTotal, messages_24h: messages24h, active_threads_7d: activeThreads7d, follows_total: followsTotal },
+  };
+}
+
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -439,16 +581,15 @@ export default function Admin() {
     setError(null);
     try {
       const [statsResult, usersResult] = await Promise.allSettled([
-        retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
+        loadDashboardStats(),
         retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
       ]);
 
       if (statsResult.status === "fulfilled") {
-        if (statsResult.value.error) setError(statsResult.value.error.message);
-        else setStats(statsResult.value.data as unknown as Stats);
+        setStats(statsResult.value);
       } else {
-        setStats(null);
-        setError(getLoadErrorMessage(statsResult.reason));
+        setStats(EMPTY_STATS);
+        console.warn("[Admin stats] Dashboard stats failed", statsResult.reason);
       }
 
       if (usersResult.status === "fulfilled") {
