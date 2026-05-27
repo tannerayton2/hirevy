@@ -428,6 +428,124 @@ async function retryLoad<T>(operation: () => Promise<T>, attempts = 3): Promise<
   throw lastError;
 }
 
+function logStatError(label: string, err: unknown) {
+  console.warn(`[Admin stats] ${label} failed`, err);
+}
+
+async function safeStat(label: string, operation: () => Promise<number>): Promise<StatValue> {
+  try {
+    return await retryLoad(operation, 2);
+  } catch (err) {
+    logStatError(label, err);
+    return STAT_PLACEHOLDER;
+  }
+}
+
+async function countStat(label: string, table: string, apply?: (query: any) => any): Promise<StatValue> {
+  return safeStat(label, async () => {
+    let query = (supabase.from(table as never) as any).select("id", { count: "exact", head: true });
+    if (apply) query = apply(query);
+    const { count, error } = await query;
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  });
+}
+
+async function sumStats(label: string, stats: Promise<StatValue>[]): Promise<StatValue> {
+  try {
+    const values = await Promise.all(stats);
+    if (values.some((value) => value === STAT_PLACEHOLDER)) return STAT_PLACEHOLDER;
+    return values.reduce<number>((total, value) => total + Number(value), 0);
+  } catch (err) {
+    logStatError(label, err);
+    return STAT_PLACEHOLDER;
+  }
+}
+
+async function topProviderStat(): Promise<Stats["reviews"]["top_provider"]> {
+  try {
+    const { data, error } = await retryLoad(async () => (
+      await supabase
+        .from("profiles")
+        .select("username, display_name, review_count")
+        .gt("review_count", 0)
+        .order("review_count", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ), 2);
+    if (error) throw new Error(error.message);
+    if (!data) return { username: null, display_name: null, count: 0 };
+    return {
+      username: data.username ?? null,
+      display_name: data.display_name ?? null,
+      count: data.review_count ?? 0,
+    };
+  } catch (err) {
+    logStatError("Top provider", err);
+    return { username: null, display_name: null, count: STAT_PLACEHOLDER };
+  }
+}
+
+async function loadDashboardStats(): Promise<Stats> {
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const verified24h = countStat("Verified reviews 24h", "reviews", (q) => q.gt("created_at", since24h));
+  const proof24h = countStat("Proof-backed reviews 24h", "proof_backed_reviews", (q) => q.gt("created_at", since24h));
+  const verified7d = countStat("Verified reviews 7d", "reviews", (q) => q.gt("created_at", since7d));
+  const proof7d = countStat("Proof-backed reviews 7d", "proof_backed_reviews", (q) => q.gt("created_at", since7d));
+
+  const [
+    usersTotal,
+    users24h,
+    users7d,
+    verifiedTotal,
+    proofTotal,
+    reviews24h,
+    reviews7d,
+    topProvider,
+    offersTotal,
+    paidOffers,
+    freeForTestimonial,
+    offers7d,
+    messagesTotal,
+    messages24h,
+    activeThreads7d,
+    followsTotal,
+  ] = await Promise.all([
+    countStat("Total users", "profiles"),
+    countStat("Signups 24h", "profiles", (q) => q.gt("created_at", since24h)),
+    countStat("Signups 7d", "profiles", (q) => q.gt("created_at", since7d)),
+    countStat("Verified reviews total", "reviews"),
+    countStat("Proof-backed reviews total", "proof_backed_reviews"),
+    sumStats("Reviews 24h", [verified24h, proof24h]),
+    sumStats("Reviews 7d", [verified7d, proof7d]),
+    topProviderStat(),
+    countStat("Total offers", "offers"),
+    countStat("Paid offers", "offers", (q) => q.gt("price_cents", 0)),
+    countStat("Free-for-testimonial offers", "offers", (q) => q.eq("free_for_testimonial", true)),
+    countStat("Offers created 7d", "offers", (q) => q.gt("created_at", since7d)),
+    countStat("Messages total", "messages"),
+    countStat("Messages 24h", "messages", (q) => q.gt("created_at", since24h)),
+    countStat("Active threads 7d", "message_threads", (q) => q.gt("last_message_at", since7d)),
+    countStat("Total follows", "follows"),
+  ]);
+
+  return {
+    ...EMPTY_STATS,
+    users: { total: usersTotal, last_24h: users24h, last_7d: users7d },
+    reviews: {
+      verified_total: verifiedTotal,
+      proof_total: proofTotal,
+      last_24h: reviews24h,
+      last_7d: reviews7d,
+      top_provider: topProvider,
+    },
+    offers: { total: offersTotal, paid: paidOffers, free_for_testimonial: freeForTestimonial, last_7d: offers7d },
+    activity: { messages_total: messagesTotal, messages_24h: messages24h, active_threads_7d: activeThreads7d, follows_total: followsTotal },
+  };
+}
+
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
