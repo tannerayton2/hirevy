@@ -297,21 +297,24 @@ type AdminUserRow = {
   created_at: string;
 };
 
+const STAT_PLACEHOLDER = "—" as const;
+type StatValue = number | typeof STAT_PLACEHOLDER;
+
 type Stats = {
-  users: { total: number; last_24h: number; last_7d: number };
+  users: { total: StatValue; last_24h: StatValue; last_7d: StatValue };
   reviews: {
-    verified_total: number;
-    proof_total: number;
-    last_24h: number;
-    last_7d: number;
-    top_provider: { username: string; display_name: string | null; count: number } | null;
+    verified_total: StatValue;
+    proof_total: StatValue;
+    last_24h: StatValue;
+    last_7d: StatValue;
+    top_provider: { username: string | null; display_name: string | null; count: StatValue } | null;
   };
-  offers: { total: number; paid: number; free_for_testimonial: number; last_7d: number };
+  offers: { total: StatValue; paid: StatValue; free_for_testimonial: StatValue; last_7d: StatValue };
   activity: {
-    messages_total: number;
-    messages_24h: number;
-    active_threads_7d: number;
-    follows_total: number;
+    messages_total: StatValue;
+    messages_24h: StatValue;
+    active_threads_7d: StatValue;
+    follows_total: StatValue;
   };
   moderation: {
     open_disputes_count: number;
@@ -342,6 +345,20 @@ type Stats = {
       provider_display_name: string | null;
     }>;
   };
+};
+
+const EMPTY_STATS: Stats = {
+  users: { total: STAT_PLACEHOLDER, last_24h: STAT_PLACEHOLDER, last_7d: STAT_PLACEHOLDER },
+  reviews: {
+    verified_total: STAT_PLACEHOLDER,
+    proof_total: STAT_PLACEHOLDER,
+    last_24h: STAT_PLACEHOLDER,
+    last_7d: STAT_PLACEHOLDER,
+    top_provider: { username: null, display_name: null, count: STAT_PLACEHOLDER },
+  },
+  offers: { total: STAT_PLACEHOLDER, paid: STAT_PLACEHOLDER, free_for_testimonial: STAT_PLACEHOLDER, last_7d: STAT_PLACEHOLDER },
+  activity: { messages_total: STAT_PLACEHOLDER, messages_24h: STAT_PLACEHOLDER, active_threads_7d: STAT_PLACEHOLDER, follows_total: STAT_PLACEHOLDER },
+  moderation: { open_disputes_count: 0, open_disputes: [], pending_proof_requests_count: 0, pending_proof_requests: [], disputed_reviews_count: 0, disputed_reviews: [] },
 };
 
 function StatCard({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
