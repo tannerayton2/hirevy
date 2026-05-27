@@ -441,9 +441,16 @@ async function safeStat(label: string, operation: () => Promise<number>): Promis
   }
 }
 
-async function countStat(label: string, table: string, apply?: (query: any) => any): Promise<StatValue> {
+type CountResult = { count: number | null; error: { message: string } | null };
+type StatQuery = PromiseLike<CountResult> & {
+  gt: (column: string, value: string | number) => StatQuery;
+  eq: (column: string, value: string | number | boolean) => StatQuery;
+};
+type StatTable = { select: (columns: string, options: { count: "exact"; head: true }) => StatQuery };
+
+async function countStat(label: string, table: string, apply?: (query: StatQuery) => StatQuery): Promise<StatValue> {
   return safeStat(label, async () => {
-    let query = (supabase.from(table as never) as any).select("id", { count: "exact", head: true });
+    let query = (supabase.from(table as never) as unknown as StatTable).select("id", { count: "exact", head: true });
     if (apply) query = apply(query);
     const { count, error } = await query;
     if (error) throw new Error(error.message);
