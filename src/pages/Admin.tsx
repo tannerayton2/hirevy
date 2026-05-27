@@ -574,16 +574,15 @@ export default function Admin() {
     setError(null);
     try {
       const [statsResult, usersResult] = await Promise.allSettled([
-        retryLoad(async () => (await supabase.rpc("admin_stats" as never)) as AdminRpcResponse<Stats>),
+        loadDashboardStats(),
         retryLoad(async () => (await supabase.rpc("admin_list_users" as never)) as AdminRpcResponse<AdminUserRow[]>),
       ]);
 
       if (statsResult.status === "fulfilled") {
-        if (statsResult.value.error) setError(statsResult.value.error.message);
-        else setStats(statsResult.value.data as unknown as Stats);
+        setStats(statsResult.value);
       } else {
-        setStats(null);
-        setError(getLoadErrorMessage(statsResult.reason));
+        setStats(EMPTY_STATS);
+        console.warn("[Admin stats] Dashboard stats failed", statsResult.reason);
       }
 
       if (usersResult.status === "fulfilled") {
