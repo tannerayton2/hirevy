@@ -354,7 +354,7 @@ const EMPTY_STATS: Stats = {
     proof_total: STAT_PLACEHOLDER,
     last_24h: STAT_PLACEHOLDER,
     last_7d: STAT_PLACEHOLDER,
-    top_provider: { username: null, display_name: null, count: STAT_PLACEHOLDER },
+    top_provider: null,
   },
   offers: { total: STAT_PLACEHOLDER, paid: STAT_PLACEHOLDER, free_for_testimonial: STAT_PLACEHOLDER, last_7d: STAT_PLACEHOLDER },
   activity: { messages_total: STAT_PLACEHOLDER, messages_24h: STAT_PLACEHOLDER, active_threads_7d: STAT_PLACEHOLDER, follows_total: STAT_PLACEHOLDER },
@@ -482,7 +482,7 @@ async function topProviderStat(): Promise<Stats["reviews"]["top_provider"]> {
     };
   } catch (err) {
     logStatError("Top provider", err);
-    return { username: null, display_name: null, count: STAT_PLACEHOLDER };
+    return null;
   }
 }
 
