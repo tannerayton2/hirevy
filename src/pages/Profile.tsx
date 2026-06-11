@@ -407,7 +407,14 @@ export default function Profile() {
         <h1 className="mt-4 text-center font-display text-2xl font-bold leading-tight md:text-3xl">{providerDisplayName}</h1>
 
         {/* Handle */}
-        <p className="mt-1 text-center text-sm text-muted-foreground">@{profile.username}</p>
+        <p className="mt-1 text-center text-sm text-muted-foreground">
+          @{profile.username}
+          {(profile.provider_type === "coach" || profile.provider_type === "service_provider") && (
+            <span className="ml-2 inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+              {profile.provider_type === "coach" ? "Coach" : "Service Provider"}
+            </span>
+          )}
+        </p>
 
         {/* Tier badge */}
         <div className="mt-3 flex justify-center">
