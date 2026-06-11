@@ -138,23 +138,23 @@ export default function Landing() {
         <div className="hv-l-steps">
           <div className="hv-l-step">
             <div className="hv-l-step-num">01</div>
-            <h3 className="hv-l-step-title">Search Any Coach</h3>
+            <h3 className="hv-l-step-title">Find Coaches & Providers</h3>
             <p className="hv-l-step-desc">
-              Whether they have a profile or not. Type any name and see what real clients said about working with them.
+              Search the network of coaches and service providers. Filter by category, tier, and offer to find someone who fits what you actually need.
             </p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">02</div>
-            <h3 className="hv-l-step-title">Read Real Reviews</h3>
+            <h3 className="hv-l-step-title">Verify With Real Reviews</h3>
             <p className="hv-l-step-desc">
-              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. You always know the source.
+              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. Reviews are the trust layer, not the marketing.
             </p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">03</div>
-            <h3 className="hv-l-step-title">Leave Your Own</h3>
+            <h3 className="hv-l-step-title">Message & Hire</h3>
             <p className="hv-l-step-desc">
-              Worked with someone? Your honest review helps the next person make a smarter decision. Takes two minutes. No account needed.
+              Message providers directly, compare offers, and hire with confidence. After working together, leave a review to help the next person decide.
             </p>
           </div>
         </div>
