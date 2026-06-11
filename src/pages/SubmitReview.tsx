@@ -253,6 +253,7 @@ export default function SubmitReview() {
         unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
         unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
         needs_profile: isUnmatched && !linkedProfileId,
+        linked_profile_id: linkedProfileId,
       } as never);
       if (error) throw error;
 
