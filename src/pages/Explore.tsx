@@ -383,17 +383,16 @@ function ProviderPill({ active, onClick, label }: { active: boolean; onClick: ()
 function RecentlyReviewed({
   coaches,
   loading,
-  onLeaveReview,
-}: { coaches: CoachRow[]; loading: boolean; onLeaveReview: () => void }) {
+}: { coaches: CoachRow[]; loading: boolean; onLeaveReview?: () => void }) {
   if (loading) return null;
   return (
     <section className="mb-10">
-      <h2 className="mb-3 font-display text-lg font-semibold">Recently Reviewed</h2>
+      <h2 className="mb-3 font-display text-lg font-semibold">Recently Active</h2>
       {coaches.length === 0 ? (
         <div className="flex w-full justify-center">
-          <div className="flex w-[260px] flex-col items-center gap-3 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
-            <p className="text-sm text-muted-foreground">No reviews yet — be the first.</p>
-            <Button onClick={onLeaveReview} size="sm">Leave a Review</Button>
+          <div className="flex w-[320px] flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
+            <p className="text-sm font-semibold text-foreground">No active coaches or providers here yet.</p>
+            <p className="text-xs text-muted-foreground">Browse a category below or switch between Coaches and Service Providers to discover who's available to hire.</p>
           </div>
         </div>
       ) : (
