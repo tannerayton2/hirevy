@@ -723,7 +723,8 @@ export default function Profile() {
             )}
 
             {visibleReviews.length === 0 && !pinnedReview ? (
-              <Empty msg="No reviews yet." />
+              <Empty msg="No reviews yet — message this provider to learn more or hire them directly." />
+
             ) : visibleReviews.length === 0 ? (
               <Empty msg="No reviews match the current filter." />
             ) : (() => {
