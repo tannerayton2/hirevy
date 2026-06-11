@@ -35,6 +35,8 @@ import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
 import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
+import { isAdminUsername } from "@/lib/admin";
+import { ShieldAlert } from "lucide-react";
 
 type TabKey = "reviews" | "imported";
 
@@ -451,6 +453,23 @@ export default function Profile() {
             </div>
           </div>
         )}
+
+        {/* Admin-only entry point (own profile, admin allowlist) */}
+        {isMe && isAdminUsername(profile.username) && (
+          <div className="mx-auto mt-4 max-w-[280px]">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="w-full border-primary/40 text-primary hover:bg-primary/10"
+            >
+              <Link to="/admin">
+                <ShieldAlert className="mr-1.5 h-4 w-4" /> Open Admin
+              </Link>
+            </Button>
+          </div>
+        )}
+
 
         {/* Trust card — 3 stats */}
         <div className="mt-5 grid grid-cols-3 items-center gap-2 rounded-lg border border-primary/30 bg-card/60 px-2 py-4 sm:px-4">
