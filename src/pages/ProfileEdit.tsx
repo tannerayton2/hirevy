@@ -67,10 +67,6 @@ export default function ProfileEdit() {
     const p = profile as typeof profile & {
       instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
       linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
-    };
-    const p = profile as typeof profile & {
-      instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
-      linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
       provider_type?: string | null;
     };
     setInstagram(p.instagram_url ?? "");
