@@ -68,12 +68,18 @@ export default function ProfileEdit() {
       instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
       linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
     };
+    const p = profile as typeof profile & {
+      instagram_url?: string | null; twitter_url?: string | null; youtube_url?: string | null;
+      linkedin_url?: string | null; tiktok_url?: string | null; keywords?: string[] | null;
+      provider_type?: string | null;
+    };
     setInstagram(p.instagram_url ?? "");
     setTwitter(p.twitter_url ?? "");
     setYoutube(p.youtube_url ?? "");
     setLinkedin(p.linkedin_url ?? "");
     setTiktok(p.tiktok_url ?? "");
     setKeywords(Array.isArray(p.keywords) ? p.keywords : []);
+    setProviderType(p.provider_type === "coach" || p.provider_type === "service_provider" ? p.provider_type : "");
   }, [profile]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
