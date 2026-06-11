@@ -114,8 +114,14 @@ export default function SignUp() {
   };
 
   const handleGoogle = async () => {
+    if (!providerType) {
+      toast({ title: "Pick how you work with clients first", variant: "destructive" });
+      return;
+    }
     setBusy(true);
     try {
+      // Persist provider type so we can apply it after OAuth returns
+      try { sessionStorage.setItem("pending_provider_type", providerType); } catch { /* noop */ }
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: `${window.location.origin}/explore`,
       });
@@ -148,10 +154,45 @@ export default function SignUp() {
           </p>
         </div>
 
+        {/* Provider type selector */}
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            How do you work with clients?
+          </Label>
+          <div className="grid grid-cols-1 gap-2.5">
+            {([
+              { value: "coach", title: "Coach", desc: "1:1 coaching — you work directly with clients" },
+              { value: "service_provider", title: "Service Provider", desc: "Done-for-you — you deliver the work for clients" },
+            ] as const).map((opt) => {
+              const active = providerType === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setProviderType(opt.value)}
+                  className={
+                    "rounded-2xl border p-4 text-left transition " +
+                    (active
+                      ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
+                      : "border-border/60 bg-secondary/40 hover:border-primary/40 hover:bg-secondary/70")
+                  }
+                  aria-pressed={active}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-display text-base font-semibold">{opt.title}</span>
+                    {active && <Check className="h-4 w-4 text-primary" />}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{opt.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <Button
           type="button"
           onClick={handleGoogle}
-          disabled={busy}
+          disabled={busy || !providerType}
           variant="outline"
           className="h-11 w-full"
         >
