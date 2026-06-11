@@ -69,6 +69,7 @@ export default function SignUp() {
 
   const canSubmit =
     !busy &&
+    providerType !== null &&
     fullName.trim().length > 0 &&
     /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) &&
     password.length >= 8 &&
