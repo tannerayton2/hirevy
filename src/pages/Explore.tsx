@@ -134,7 +134,7 @@ export default function Explore() {
     if (!q && !activeCategory) { setResults(null); return; }
     setLoadingResults(true);
     void (async () => {
-      let req = supabase.from("profiles").select(PROFILE_COLS).limit(80);
+      let req = supabase.from("profiles").select(PROFILE_COLS).eq("is_claimed", true).limit(80);
       if (q) {
         const term = `%${q}%`;
         const safe = q.replace(/[\\{}"]/g, "");
