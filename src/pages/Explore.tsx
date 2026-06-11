@@ -112,6 +112,7 @@ export default function Explore() {
         .from("profiles")
         .select(PROFILE_COLS)
         .in("id", orderedIds)
+        .eq("is_claimed", true)
         .gt("review_count", 0);
       if (activeCategory) q = q.eq("service_category", activeCategory);
       const { data: profs } = await q;
