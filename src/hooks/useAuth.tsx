@@ -21,6 +21,7 @@ interface Profile {
   linkedin_url: string | null;
   tiktok_url: string | null;
   role: string | null;
+  provider_type: string | null;
   preferred_categories: string[] | null;
   onboarding_completed: boolean;
   incomplete_banner_dismissed: boolean;
@@ -47,10 +48,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setProfile(null); return; }
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, role, preferred_categories, onboarding_completed, incomplete_banner_dismissed")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, role, provider_type, preferred_categories, onboarding_completed, incomplete_banner_dismissed")
       .eq("id", uid)
       .maybeSingle();
-    setProfile((data as Profile | null) ?? null);
+    let prof = (data as Profile | null) ?? null;
+    // Apply pending provider_type from OAuth signup flow
+    if (prof && !prof.provider_type) {
+      try {
+        const pending = sessionStorage.getItem("pending_provider_type");
+        if (pending === "coach" || pending === "service_provider") {
+          const { error } = await supabase.from("profiles").update({ provider_type: pending }).eq("id", uid);
+          if (!error) prof = { ...prof, provider_type: pending };
+          sessionStorage.removeItem("pending_provider_type");
+        }
+      } catch { /* noop */ }
+    }
+    setProfile(prof);
   };
 
   useEffect(() => {

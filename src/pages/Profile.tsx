@@ -66,6 +66,7 @@ interface ProfileFull {
   awarded_claim_bonus: boolean;
   awarded_profile_complete_bonus: boolean;
   role: string | null;
+  provider_type: string | null;
   incomplete_banner_dismissed: boolean;
 }
 
@@ -150,7 +151,7 @@ export default function Profile() {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus, role, incomplete_banner_dismissed")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus, role, provider_type, incomplete_banner_dismissed")
       .eq("username", handle)
       .maybeSingle();
     const prof = p as ProfileFull | null;
@@ -406,7 +407,14 @@ export default function Profile() {
         <h1 className="mt-4 text-center font-display text-2xl font-bold leading-tight md:text-3xl">{providerDisplayName}</h1>
 
         {/* Handle */}
-        <p className="mt-1 text-center text-sm text-muted-foreground">@{profile.username}</p>
+        <p className="mt-1 text-center text-sm text-muted-foreground">
+          @{profile.username}
+          {(profile.provider_type === "coach" || profile.provider_type === "service_provider") && (
+            <span className="ml-2 inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+              {profile.provider_type === "coach" ? "Coach" : "Service Provider"}
+            </span>
+          )}
+        </p>
 
         {/* Tier badge */}
         <div className="mt-3 flex justify-center">
