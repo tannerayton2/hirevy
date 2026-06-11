@@ -21,6 +21,7 @@ interface Profile {
   linkedin_url: string | null;
   tiktok_url: string | null;
   role: string | null;
+  provider_type: string | null;
   preferred_categories: string[] | null;
   onboarding_completed: boolean;
   incomplete_banner_dismissed: boolean;
