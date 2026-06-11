@@ -193,7 +193,7 @@ export default function Landing() {
         <div className="hv-l-container">
           <div className="hv-l-section-head">
             <div className="hv-l-section-label">What Makes Us Different</div>
-            <h2>Every review, <span className="hv-l-italic">verified.</span></h2>
+            <h2>A network <span className="hv-l-italic">built on proof.</span></h2>
           </div>
 
           <div className="hv-l-feature-grid">
