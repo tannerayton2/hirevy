@@ -25,6 +25,7 @@ export default function SignUp() {
       ? redirectParam
       : null;
 
+  const [providerType, setProviderType] = useState<"coach" | "service_provider" | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
