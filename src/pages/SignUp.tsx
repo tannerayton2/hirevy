@@ -90,6 +90,7 @@ export default function SignUp() {
             username: cleanUsername,
             display_name: fullName.trim(),
             full_name: fullName.trim(),
+            provider_type: providerType,
           },
         },
       });
