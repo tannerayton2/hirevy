@@ -42,7 +42,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/explore" element={<Index />} />
-            <Route path="/marketplace" element={<AppLayout><Marketplace /></AppLayout>} />
+            <Route path="/marketplace" element={<Navigate to="/explore?tab=offers" replace />} />
             <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<SignUp />} />
