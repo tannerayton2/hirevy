@@ -920,6 +920,7 @@ export type Database = {
           evidence_paths: string[]
           id: string
           instagram_handle: string | null
+          linked_profile_id: string | null
           needs_profile: boolean
           offer_url: string | null
           purchased: boolean
@@ -938,6 +939,7 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          linked_profile_id?: string | null
           needs_profile?: boolean
           offer_url?: string | null
           purchased?: boolean
@@ -956,6 +958,7 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          linked_profile_id?: string | null
           needs_profile?: boolean
           offer_url?: string | null
           purchased?: boolean
@@ -965,7 +968,15 @@ export type Database = {
           unmatched_description?: string | null
           unmatched_link?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "unclaimed_reviews_linked_profile_id_fkey"
+            columns: ["linked_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_notification_flags: {
         Row: {
