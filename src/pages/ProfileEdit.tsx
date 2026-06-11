@@ -218,6 +218,35 @@ export default function ProfileEdit() {
           <Input value={displayName} onChange={(e) => setDisplayName(e.target.value.slice(0, 60))} maxLength={60} />
         </Field>
 
+        {/* Provider type */}
+        <Field label="How you work with clients">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {([
+              { value: "coach", title: "Coach", desc: "1:1 coaching — you work directly with clients" },
+              { value: "service_provider", title: "Service Provider", desc: "Done-for-you — you deliver the work for clients" },
+            ] as const).map((opt) => {
+              const active = providerType === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setProviderType(active ? "" : opt.value)}
+                  className={
+                    "rounded-2xl border p-3 text-left transition " +
+                    (active
+                      ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
+                      : "border-border/60 bg-secondary/40 hover:border-primary/40 hover:bg-secondary/70")
+                  }
+                  aria-pressed={active}
+                >
+                  <div className="font-display text-sm font-semibold">{opt.title}</div>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{opt.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
         {/* Service category */}
         <Field label="Service category">
           {(() => {
