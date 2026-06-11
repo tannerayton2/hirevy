@@ -49,10 +49,10 @@ export default function Landing() {
       <section className="hv-l-hero hv-l-container">
         <div className="hv-l-eyebrow hv-l-fade hv-l-fade-2">Now Live — Early Access</div>
         <h1 className="hv-l-fade hv-l-fade-2">
-          Hire Verified Coaches <span className="hv-l-italic">&amp; Service Providers</span> You Can Trust.
+          The Network for Hiring Verified Coaches <span className="hv-l-italic">&amp; Service Providers.</span>
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          The only place where reviews come from real clients, not marketing budgets.
+          Every member is a working coach or provider. Every review is tied to real work. Discover who to hire, then verify them with proof — not promises.
         </p>
 
         <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
@@ -60,9 +60,9 @@ export default function Landing() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search any coach or provider..."
+            placeholder="Search coaches, providers, and offers..."
             className="hv-l-search-input"
-            aria-label="Search any coach or provider"
+            aria-label="Search coaches, providers, and offers"
           />
           <button type="submit" className="hv-l-search-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -71,12 +71,12 @@ export default function Landing() {
         </form>
 
         <div className="hv-l-hero-links hv-l-fade hv-l-fade-4">
-          <Link to="/submit-review" className="hv-l-hero-link">Worked with someone? Leave a review →</Link>
-          <Link to="/explore" className="hv-l-hero-link">Browse all coaches →</Link>
+          <Link to="/explore" className="hv-l-hero-link">Browse coaches & providers →</Link>
+          <Link to="/explore?tab=offers" className="hv-l-hero-link">See live offers →</Link>
         </div>
 
         <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
-          First 100 coaches to claim their profile get Premium free — forever. 67 spots remaining.
+          First 100 coaches and providers to join get Premium free — forever. 67 spots remaining.
         </div>
 
         <div
