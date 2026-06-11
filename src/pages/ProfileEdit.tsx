@@ -161,6 +161,7 @@ export default function ProfileEdit() {
           linkedin_url: linkedinN,
           tiktok_url: tiktokN,
           keywords,
+          provider_type: providerType || null,
         })
         .eq("id", profile.id);
       if (error) throw error;
