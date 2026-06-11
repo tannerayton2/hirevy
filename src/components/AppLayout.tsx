@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield } from "lucide-react";
+import { Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -226,33 +226,64 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile bottom nav */}
-      <nav className={cn("fixed inset-x-0 bottom-0 z-40 grid border-t border-border bg-background/95 backdrop-blur md:hidden", mobileCols)}>
-        {items.map((item) => {
-          const to = item.to === "/me" ? profilePath : item.to;
-          return (
+      {/* Mobile floating pill nav */}
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden"
+      >
+        {(() => {
+          const mobileTabs = [
+            { to: "/messages", label: "Messages", icon: MessageSquare, authOnly: true, kind: "icon" as const },
+            { to: "/explore", label: "Search", icon: Search, end: true, kind: "icon" as const },
+            { to: user ? profilePath : "/auth", label: "Profile", kind: "avatar" as const },
+          ].filter((t) => !(t.authOnly && !user));
+
+          return mobileTabs.map((tab) => (
             <NavLink
-              key={item.label}
-              to={to}
-              end={item.end}
+              key={tab.label}
+              to={tab.to}
+              end={tab.kind === "icon" ? (tab as any).end : undefined}
+              aria-label={tab.label}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
-                  isActive && "text-primary",
+                  "relative flex h-12 w-12 items-center justify-center rounded-full transition-colors",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )
               }
             >
-              <span className="relative inline-flex">
-                <item.icon className="h-5 w-5" strokeWidth={1.5} />
-                {item.to === "/messages" && <UnreadBadge count={unread} />}
-                {item.soon && <SoonPill />}
-                {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-              </span>
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && tab.kind === "icon" && (
+                    <span className="absolute inset-1 rounded-full bg-primary/15" aria-hidden />
+                  )}
+                  {tab.kind === "avatar" ? (
+                    <span
+                      className={cn(
+                        "relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-secondary text-[10px] font-semibold uppercase text-muted-foreground",
+                        isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                      )}
+                    >
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span>{(profile?.username ?? "?").slice(0, 1)}</span>
+                      )}
+                    </span>
+                  ) : (
+                    <tab.icon className="relative h-[22px] w-[22px]" strokeWidth={1.75} />
+                  )}
+                  {tab.to === "/messages" && (
+                    <span className="relative">
+                      <UnreadBadge count={unread} />
+                    </span>
+                  )}
+                </>
+              )}
             </NavLink>
-          );
-        })}
+          ));
+        })()}
       </nav>
     </div>
   );
 }
+
