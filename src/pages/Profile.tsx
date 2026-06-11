@@ -428,16 +428,6 @@ export default function Profile() {
           </button>
         </div>
 
-        {!profile.is_claimed && (
-          <div className="mt-3 flex flex-col items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Unclaimed
-            </span>
-            <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
-              Claim this profile
-            </Button>
-          </div>
-        )}
 
         {/* Owner-only points progress */}
         {isMe && (
