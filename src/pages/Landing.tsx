@@ -269,8 +269,8 @@ export default function Landing() {
       {/* FINAL CTA */}
       <section className="hv-l-final hv-l-container">
         <div className="hv-l-section-label">Get Started</div>
-        <h2>Browse HireVy <span className="hv-l-italic">now.</span></h2>
-        <p className="hv-l-final-sub">Open the app. See verified offers. Find someone worth hiring.</p>
+        <h2>Find your next coach <span className="hv-l-italic">or provider.</span></h2>
+        <p className="hv-l-final-sub">Open the network. See live offers. Hire someone whose work is already verified.</p>
 
         <div className="hv-l-cta-row" style={{ marginBottom: 0 }}>
           <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open HireVy →</Link>
