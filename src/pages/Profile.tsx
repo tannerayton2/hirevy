@@ -478,6 +478,16 @@ export default function Profile() {
           </div>
         )}
 
+        {isMe && (
+          <div className="mx-auto mt-3 max-w-[280px]">
+            <Button asChild size="sm" className="w-full">
+              <Link to="/settings/offers/new">
+                <Plus className="mr-1.5 h-4 w-4" /> Add Offer
+              </Link>
+            </Button>
+          </div>
+        )}
+
 
         {/* Trust card — 3 stats */}
         <div className="mt-5 grid grid-cols-3 items-center gap-2 rounded-lg border border-primary/30 bg-card/60 px-2 py-4 sm:px-4">

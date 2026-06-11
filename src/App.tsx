@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,7 +24,7 @@ import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
 import ProfileOffers from "./pages/ProfileOffers.tsx";
-import Marketplace from "./pages/Marketplace.tsx";
+
 import SubmitReview from "./pages/SubmitReview.tsx";
 import Following from "./pages/Following.tsx";
 import Terms from "./pages/Terms.tsx";
@@ -42,7 +42,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/explore" element={<Index />} />
-            <Route path="/marketplace" element={<AppLayout><Marketplace /></AppLayout>} />
+            <Route path="/marketplace" element={<Navigate to="/explore?tab=offers" replace />} />
             <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<SignUp />} />
