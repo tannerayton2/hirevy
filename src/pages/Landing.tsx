@@ -14,8 +14,8 @@ export default function Landing() {
   const navigate = useNavigate();
 
   usePageMeta(
-    "HireVy — Hire Verified Coaches & Service Providers You Can Trust",
-    "The only place where reviews come from real clients not marketing budgets. Search any coach and read verified reviews before you hire.",
+    "HireVy — Hire Verified Coaches & Service Providers",
+    "The network for hiring coaches and service providers — every member verified, every review tied to real work.",
   );
 
   const handleSearch = (e: React.FormEvent) => {
