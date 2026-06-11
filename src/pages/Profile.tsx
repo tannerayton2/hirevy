@@ -891,14 +891,6 @@ export default function Profile() {
         />
       )}
 
-      {profile && !profile.is_claimed && (
-        <ClaimProfileModal
-          open={claimOpen}
-          onOpenChange={setClaimOpen}
-          profileId={profile.id}
-          providerDisplayName={profile.username}
-        />
-      )}
 
       <TierInfoModal open={tierModalOpen} onOpenChange={setTierModalOpen} currentTier={tier} />
 
