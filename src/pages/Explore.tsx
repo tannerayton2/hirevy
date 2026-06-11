@@ -476,20 +476,21 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
 function EmptyCategoryState() {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
-      <p className="font-display text-lg font-semibold">No coaches in this category yet.</p>
-      <p className="mt-2 text-sm text-muted-foreground">Check back soon or be the first to leave a review.</p>
+      <p className="font-display text-lg font-semibold">No one in this category yet.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Try another category, switch between Coaches and Service Providers, or check the Offers tab to see what's available to hire.</p>
     </div>
   );
 }
 
-function EmptySearchState({ name, onWriteReview, onBrowse }: { name: string; onWriteReview: () => void; onBrowse: () => void }) {
+function EmptySearchState({ name, onBrowse }: { name: string; onWriteReview?: () => void; onBrowse: () => void }) {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-2xl font-bold text-primary">{name}</p>
-      <p className="mt-2 text-sm text-muted-foreground">No reviews yet for {name}.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        No coaches or service providers matched that search yet.
+      </p>
       <div className="mt-6 flex flex-col gap-2">
-        <Button onClick={onWriteReview} className="w-full">Write the first review →</Button>
-        <Button variant="outline" onClick={onBrowse} className="w-full">Browse other coaches</Button>
+        <Button onClick={onBrowse} className="w-full">Browse coaches & providers</Button>
       </div>
     </div>
   );
