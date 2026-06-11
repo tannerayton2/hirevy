@@ -1,0 +1,2 @@
+ALTER TABLE public.unclaimed_reviews ADD COLUMN IF NOT EXISTS linked_profile_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS unclaimed_reviews_linked_profile_id_idx ON public.unclaimed_reviews(linked_profile_id);
