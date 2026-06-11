@@ -35,6 +35,8 @@ import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
 import { cn } from "@/lib/utils";
 import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
+import { isAdminUsername } from "@/lib/admin";
+import { ShieldAlert } from "lucide-react";
 
 type TabKey = "reviews" | "imported";
 
