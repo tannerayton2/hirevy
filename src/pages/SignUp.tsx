@@ -150,7 +150,7 @@ export default function SignUp() {
           <Logo className="text-2xl" />
           <h1 className="mt-6 font-display text-3xl font-bold">Create your account.</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Join the platform where reputation is earned.
+            Join the network where coaches and service providers get hired on proof — not promises.
           </p>
         </div>
 

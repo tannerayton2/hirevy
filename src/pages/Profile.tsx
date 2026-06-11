@@ -20,7 +20,7 @@ import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonia
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
-import { ClaimProfileModal } from "@/components/ClaimProfileModal";
+
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -128,7 +128,7 @@ export default function Profile() {
   const [responseMs, setResponseMs] = useState<number | null>(null);
   const [importedModalOpen, setImportedModalOpen] = useState(false);
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
-  const [claimOpen, setClaimOpen] = useState(false);
+  
   const [tierModalOpen, setTierModalOpen] = useState(false);
   const [congrats, setCongrats] = useState<
     | null
@@ -428,16 +428,6 @@ export default function Profile() {
           </button>
         </div>
 
-        {!profile.is_claimed && (
-          <div className="mt-3 flex flex-col items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Unclaimed
-            </span>
-            <Button size="sm" variant="outline" onClick={() => setClaimOpen(true)}>
-              Claim this profile
-            </Button>
-          </div>
-        )}
 
         {/* Owner-only points progress */}
         {isMe && (
@@ -733,7 +723,8 @@ export default function Profile() {
             )}
 
             {visibleReviews.length === 0 && !pinnedReview ? (
-              <Empty msg="No reviews yet." />
+              <Empty msg="No reviews yet — message this provider to learn more or hire them directly." />
+
             ) : visibleReviews.length === 0 ? (
               <Empty msg="No reviews match the current filter." />
             ) : (() => {
@@ -891,14 +882,6 @@ export default function Profile() {
         />
       )}
 
-      {profile && !profile.is_claimed && (
-        <ClaimProfileModal
-          open={claimOpen}
-          onOpenChange={setClaimOpen}
-          profileId={profile.id}
-          providerDisplayName={profile.username}
-        />
-      )}
 
       <TierInfoModal open={tierModalOpen} onOpenChange={setTierModalOpen} currentTier={tier} />
 

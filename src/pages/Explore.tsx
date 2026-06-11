@@ -112,6 +112,7 @@ export default function Explore() {
         .from("profiles")
         .select(PROFILE_COLS)
         .in("id", orderedIds)
+        .eq("is_claimed", true)
         .gt("review_count", 0);
       if (activeCategory) q = q.eq("service_category", activeCategory);
       const { data: profs } = await q;
@@ -133,7 +134,7 @@ export default function Explore() {
     if (!q && !activeCategory) { setResults(null); return; }
     setLoadingResults(true);
     void (async () => {
-      let req = supabase.from("profiles").select(PROFILE_COLS).limit(80);
+      let req = supabase.from("profiles").select(PROFILE_COLS).eq("is_claimed", true).limit(80);
       if (q) {
         const term = `%${q}%`;
         const safe = q.replace(/[\\{}"]/g, "");
@@ -382,17 +383,16 @@ function ProviderPill({ active, onClick, label }: { active: boolean; onClick: ()
 function RecentlyReviewed({
   coaches,
   loading,
-  onLeaveReview,
-}: { coaches: CoachRow[]; loading: boolean; onLeaveReview: () => void }) {
+}: { coaches: CoachRow[]; loading: boolean; onLeaveReview?: () => void }) {
   if (loading) return null;
   return (
     <section className="mb-10">
-      <h2 className="mb-3 font-display text-lg font-semibold">Recently Reviewed</h2>
+      <h2 className="mb-3 font-display text-lg font-semibold">Recently Active</h2>
       {coaches.length === 0 ? (
         <div className="flex w-full justify-center">
-          <div className="flex w-[260px] flex-col items-center gap-3 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
-            <p className="text-sm text-muted-foreground">No reviews yet — be the first.</p>
-            <Button onClick={onLeaveReview} size="sm">Leave a Review</Button>
+          <div className="flex w-[320px] flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
+            <p className="text-sm font-semibold text-foreground">No active coaches or providers here yet.</p>
+            <p className="text-xs text-muted-foreground">Browse a category below or switch between Coaches and Service Providers to discover who's available to hire.</p>
           </div>
         </div>
       ) : (
@@ -476,20 +476,21 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
 function EmptyCategoryState() {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
-      <p className="font-display text-lg font-semibold">No coaches in this category yet.</p>
-      <p className="mt-2 text-sm text-muted-foreground">Check back soon or be the first to leave a review.</p>
+      <p className="font-display text-lg font-semibold">No one in this category yet.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Try another category, switch between Coaches and Service Providers, or check the Offers tab to see what's available to hire.</p>
     </div>
   );
 }
 
-function EmptySearchState({ name, onWriteReview, onBrowse }: { name: string; onWriteReview: () => void; onBrowse: () => void }) {
+function EmptySearchState({ name, onBrowse }: { name: string; onWriteReview?: () => void; onBrowse: () => void }) {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-2xl font-bold text-primary">{name}</p>
-      <p className="mt-2 text-sm text-muted-foreground">No reviews yet for {name}.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        No coaches or service providers matched that search yet.
+      </p>
       <div className="mt-6 flex flex-col gap-2">
-        <Button onClick={onWriteReview} className="w-full">Write the first review →</Button>
-        <Button variant="outline" onClick={onBrowse} className="w-full">Browse other coaches</Button>
+        <Button onClick={onBrowse} className="w-full">Browse coaches & providers</Button>
       </div>
     </div>
   );

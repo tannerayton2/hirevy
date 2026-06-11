@@ -14,8 +14,8 @@ export default function Landing() {
   const navigate = useNavigate();
 
   usePageMeta(
-    "HireVy — Hire Verified Coaches & Service Providers You Can Trust",
-    "The only place where reviews come from real clients not marketing budgets. Search any coach and read verified reviews before you hire.",
+    "HireVy — Hire Verified Coaches & Service Providers",
+    "The network for hiring coaches and service providers — every member verified, every review tied to real work.",
   );
 
   const handleSearch = (e: React.FormEvent) => {
@@ -49,10 +49,10 @@ export default function Landing() {
       <section className="hv-l-hero hv-l-container">
         <div className="hv-l-eyebrow hv-l-fade hv-l-fade-2">Now Live — Early Access</div>
         <h1 className="hv-l-fade hv-l-fade-2">
-          Hire Verified Coaches <span className="hv-l-italic">&amp; Service Providers</span> You Can Trust.
+          The Network for Hiring Verified Coaches <span className="hv-l-italic">&amp; Service Providers.</span>
         </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          The only place where reviews come from real clients, not marketing budgets.
+          Every member is a working coach or provider. Every review is tied to real work. Discover who to hire, then verify them with proof — not promises.
         </p>
 
         <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
@@ -60,9 +60,9 @@ export default function Landing() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search any coach or provider..."
+            placeholder="Search coaches, providers, and offers..."
             className="hv-l-search-input"
-            aria-label="Search any coach or provider"
+            aria-label="Search coaches, providers, and offers"
           />
           <button type="submit" className="hv-l-search-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -71,12 +71,12 @@ export default function Landing() {
         </form>
 
         <div className="hv-l-hero-links hv-l-fade hv-l-fade-4">
-          <Link to="/submit-review" className="hv-l-hero-link">Worked with someone? Leave a review →</Link>
-          <Link to="/explore" className="hv-l-hero-link">Browse all coaches →</Link>
+          <Link to="/explore" className="hv-l-hero-link">Browse coaches & providers →</Link>
+          <Link to="/explore?tab=offers" className="hv-l-hero-link">See live offers →</Link>
         </div>
 
         <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
-          First 100 coaches to claim their profile get Premium free — forever. 67 spots remaining.
+          First 100 coaches and providers to join get Premium free — forever. 67 spots remaining.
         </div>
 
         <div
@@ -138,23 +138,23 @@ export default function Landing() {
         <div className="hv-l-steps">
           <div className="hv-l-step">
             <div className="hv-l-step-num">01</div>
-            <h3 className="hv-l-step-title">Search Any Coach</h3>
+            <h3 className="hv-l-step-title">Find Coaches & Providers</h3>
             <p className="hv-l-step-desc">
-              Whether they have a profile or not. Type any name and see what real clients said about working with them.
+              Search the network of coaches and service providers. Filter by category, tier, and offer to find someone who fits what you actually need.
             </p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">02</div>
-            <h3 className="hv-l-step-title">Read Real Reviews</h3>
+            <h3 className="hv-l-step-title">Verify With Real Reviews</h3>
             <p className="hv-l-step-desc">
-              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. You always know the source.
+              Every review is labeled — Purchase Verified if the reviewer paid for real work, or Community Review if unverified. Reviews are the trust layer, not the marketing.
             </p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">03</div>
-            <h3 className="hv-l-step-title">Leave Your Own</h3>
+            <h3 className="hv-l-step-title">Message & Hire</h3>
             <p className="hv-l-step-desc">
-              Worked with someone? Your honest review helps the next person make a smarter decision. Takes two minutes. No account needed.
+              Message providers directly, compare offers, and hire with confidence. After working together, leave a review to help the next person decide.
             </p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function Landing() {
         <div className="hv-l-container">
           <div className="hv-l-section-head">
             <div className="hv-l-section-label">What Makes Us Different</div>
-            <h2>Every review, <span className="hv-l-italic">verified.</span></h2>
+            <h2>A network <span className="hv-l-italic">built on proof.</span></h2>
           </div>
 
           <div className="hv-l-feature-grid">
@@ -269,8 +269,8 @@ export default function Landing() {
       {/* FINAL CTA */}
       <section className="hv-l-final hv-l-container">
         <div className="hv-l-section-label">Get Started</div>
-        <h2>Browse HireVy <span className="hv-l-italic">now.</span></h2>
-        <p className="hv-l-final-sub">Open the app. See verified offers. Find someone worth hiring.</p>
+        <h2>Find your next coach <span className="hv-l-italic">or provider.</span></h2>
+        <p className="hv-l-final-sub">Open the network. See live offers. Hire someone whose work is already verified.</p>
 
         <div className="hv-l-cta-row" style={{ marginBottom: 0 }}>
           <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open HireVy →</Link>
