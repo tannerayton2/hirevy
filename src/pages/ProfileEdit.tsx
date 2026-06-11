@@ -50,6 +50,7 @@ export default function ProfileEdit() {
   const [linkedin, setLinkedin] = useState("");
   const [tiktok, setTiktok] = useState("");
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [providerType, setProviderType] = useState<"coach" | "service_provider" | "">("");
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
   const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
