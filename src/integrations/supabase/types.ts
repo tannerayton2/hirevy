@@ -599,6 +599,7 @@ export type Database = {
           plan: string
           points: number
           preferred_categories: string[]
+          provider_type: string | null
           rating_sum: number
           review_count: number
           role: string | null
@@ -637,6 +638,7 @@ export type Database = {
           plan?: string
           points?: number
           preferred_categories?: string[]
+          provider_type?: string | null
           rating_sum?: number
           review_count?: number
           role?: string | null
@@ -675,6 +677,7 @@ export type Database = {
           plan?: string
           points?: number
           preferred_categories?: string[]
+          provider_type?: string | null
           rating_sum?: number
           review_count?: number
           role?: string | null
