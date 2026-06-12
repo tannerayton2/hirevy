@@ -139,26 +139,58 @@ export default function Messages() {
     };
   }, []);
 
-  // When the composer input gains focus (focusin fires before iOS animates the
-  // keyboard in), immediately scroll to the most recent message and pre-shrink
-  // the pane to a best-guess keyboard height so we don't show the old layout
-  // for a frame before the visualViewport resize event fires.
-  const onComposerFocus = useCallback(() => {
+  // rAF loop that samples window.visualViewport every frame for ~600ms so the
+  // pane height tracks the iOS keyboard's slide animation frame-by-frame
+  // instead of jumping once the resize event fires. The loop ends early once
+  // the viewport has been stable for ~150ms.
+  const vvRafRef = useRef<number | null>(null);
+  const trackViewport = useCallback(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
-    if (vv && vvHeight != null) {
-      // Heuristic: iOS keyboard is roughly 45% of viewport height. The real
-      // value lands within ~150ms via the visualViewport resize listener; the
-      // CSS transition smooths between the two.
-      const guess = Math.round(window.innerHeight * 0.55);
-      if (guess < vvHeight) setVvHeight(guess);
-    }
+    if (!vv) return;
+    if (vvRafRef.current != null) cancelAnimationFrame(vvRafRef.current);
+    const start = performance.now();
+    let lastHeight = vv.height;
+    let changed = false;
+    let stableSince = start;
+    const tick = (now: number) => {
+      setVvTop(vv.offsetTop);
+      setVvHeight(vv.height);
+      if (Math.abs(vv.height - lastHeight) > 0.5) {
+        lastHeight = vv.height;
+        changed = true;
+        stableSince = now;
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+      }
+      const elapsed = now - start;
+      // Stop once the viewport has been stable for 150ms after moving, or
+      // after the 600ms budget if it never changes (platform limitation —
+      // iOS only reports the final size via the resize listener above).
+      if (elapsed >= 600 || (changed && now - stableSince >= 150)) {
+        vvRafRef.current = null;
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+        return;
+      }
+      vvRafRef.current = requestAnimationFrame(tick);
+    };
+    vvRafRef.current = requestAnimationFrame(tick);
+  }, []);
+  useEffect(() => () => {
+    if (vvRafRef.current != null) cancelAnimationFrame(vvRafRef.current);
+  }, []);
+
+  // focusin fires before iOS animates the keyboard in — start tracking the
+  // viewport per-frame and keep the latest message in view.
+  const onComposerFocus = useCallback(() => {
+    trackViewport();
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     });
-    window.setTimeout(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-    }, 250);
-  }, [vvHeight]);
+  }, [trackViewport]);
+
+  // Same on focusout for the keyboard-close animation.
+  const onComposerBlur = useCallback(() => {
+    trackViewport();
+  }, [trackViewport]);
 
   const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
     if (!user) return;
@@ -763,7 +795,6 @@ export default function Messages() {
                 // On md+ these inline values are overridden by md:!top-auto etc.
                 top: vvTop + 56,
                 height: Math.max(0, vvHeight - 56),
-                transition: "height 150ms ease-out, top 150ms ease-out",
               }
             : undefined
         }
@@ -997,6 +1028,7 @@ export default function Messages() {
                 value={body}
                 onChange={onBodyChange}
                 onFocus={onComposerFocus}
+                onBlur={onComposerBlur}
                 placeholder="Write a message…"
                 maxLength={4000}
                 className="h-10 flex-1 rounded-full border-border bg-secondary px-4"
