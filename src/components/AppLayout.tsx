@@ -37,13 +37,13 @@ function SoonPill() {
   );
 }
 
-type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean; soon?: boolean };
+type NavKind = "icon" | "avatar";
+type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean; soon?: boolean; kind?: NavKind };
 
 const baseItems: NavItem[] = [
-  { to: "/explore", icon: Compass, label: "Explore", end: true },
-  
-  { to: "/messages", icon: MessagesSquare, label: "Messages", authOnly: true },
-  { to: "/me", icon: User, label: "Profile", authOnly: true },
+  { to: "/explore", icon: Search, label: "Search", end: true },
+  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
+  { to: "/me", icon: User, label: "Profile", authOnly: true, kind: "avatar" },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
 
