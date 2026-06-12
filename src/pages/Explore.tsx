@@ -80,6 +80,24 @@ export default function Explore() {
   const [offers, setOffers] = useState<OfferCardData[] | null>(null);
   const [loadingOffers, setLoadingOffers] = useState(false);
 
+  // ===== Live-search dropdown state =====
+  type LivePerson = Pick<CoachRow, "id" | "username" | "display_name" | "avatar_url" | "provider_type">;
+  type LiveOffer = {
+    id: string;
+    slug: string;
+    title: string;
+    price_cents: number | null;
+    price_max_cents: number | null;
+    pricing_model: string | null;
+    free_for_testimonial: boolean;
+    provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
+  };
+  const [liveOpen, setLiveOpen] = useState(false);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [livePeople, setLivePeople] = useState<LivePerson[]>([]);
+  const [liveOffers, setLiveOffers] = useState<LiveOffer[]>([]);
+  const searchBoxRef = useRef<HTMLDivElement | null>(null);
+
   const writeUrl = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     for (const [k, v] of Object.entries(patch)) {
