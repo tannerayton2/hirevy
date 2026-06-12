@@ -873,9 +873,10 @@ export default function Messages() {
 
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3" onClick={() => setPickerForMsg(null)}>
-              {grouped.map(({ msg: m, showTimestamp, groupStart }) => {
+              <div className="flex min-h-full flex-col justify-end">
+              {grouped.map(({ msg: m, showDivider, groupStart }) => {
                 const mine = m.sender_id === user!.id;
-                const showSeen = mine && lastSeenMineId === m.id;
+                const showSeen = mine && m.id === latestMineId && lastSeenMineId === latestMineId;
                 const rx = reactionsByMsg.get(m.id) ?? [];
                 const grouping = new Map<string, { count: number; mine: boolean }>();
                 for (const r of rx) {
@@ -888,7 +889,15 @@ export default function Messages() {
                 const isVoice = m.voice_duration_ms != null && m.attachment_url;
 
                 return (
-                  <div key={m.id} className={cn("group relative flex flex-col", mine ? "items-end" : "items-start", groupStart ? "mt-2.5" : "mt-[2px]")}>
+                  <div key={m.id}>
+                  {showDivider && (
+                    <div className="my-3 flex justify-center">
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        {formatRelative(m.created_at)}
+                      </span>
+                    </div>
+                  )}
+                  <div className={cn("group relative flex flex-col", mine ? "items-end" : "items-start", groupStart ? "mt-2.5" : "mt-[2px]")}>
                     <div className={cn("flex w-full items-end gap-1.5", mine ? "flex-row-reverse" : "flex-row")}>
                       {/* Hover-reply button (desktop) */}
                       <button
@@ -988,19 +997,17 @@ export default function Messages() {
                       </div>
                     )}
 
-                    {showTimestamp && (
-                      <span className={cn("mt-0.5 px-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground", mine ? "text-right" : "text-left")}>
-                        {formatRelative(m.created_at)}
-                      </span>
-                    )}
                     {showSeen && (
                       <span className="mt-0.5 px-1 text-[10px] uppercase tracking-[0.16em] text-primary">
                         Seen{otherRead?.last_read_at ? ` · ${formatRelative(otherRead.last_read_at)}` : ""}
                       </span>
                     )}
                   </div>
+                  </div>
                 );
               })}
+              </div>
+
 
               {otherTyping && (
                 <div className="flex items-center gap-1.5 px-2 pt-1 text-xs text-muted-foreground">
