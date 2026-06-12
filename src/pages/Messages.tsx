@@ -763,13 +763,14 @@ export default function Messages() {
                 // On md+ these inline values are overridden by md:!top-auto etc.
                 top: vvTop + 56,
                 height: Math.max(0, vvHeight - 56),
+                transition: "height 150ms ease-out, top 150ms ease-out",
               }
             : undefined
         }
         className={cn(
-          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col bg-background",
+          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col justify-end bg-background",
           "h-[100vh] h-[100dvh]",
-          "md:static md:!top-auto md:!h-full md:z-auto",
+          "md:static md:!top-auto md:!h-full md:z-auto md:justify-start",
           !activeId && !draftMode && !teamMode && "hidden md:flex",
         )}
       >
