@@ -623,9 +623,9 @@ export default function Profile() {
 
       {/* Reviews / Offers — two-section layout */}
       <section className="mt-8">
-        {/* Tab strip */}
-        <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
-          <div className="flex min-w-max items-center gap-1">
+        {/* Tab strip — full-width, evenly split */}
+        <div className="-mx-4 mb-6 border-b border-border md:mx-0">
+          <div className="flex w-full items-stretch">
             <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount + imported.length} label="Reviews" />
             {(offers.length > 0 || isMe) && (
               <TabButton active={activeTab === "offers"} onClick={() => setActiveTab("offers")} count={offers.length} label="Offers" />
@@ -636,61 +636,53 @@ export default function Profile() {
         {/* Reviews (verified + proof-backed merged) */}
         {activeTab === "reviews" && (
           <div>
-            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="inline-flex items-center gap-2 font-display text-xl font-semibold">
-                Reviews
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="About reviews">
-                      <Info className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-xs leading-relaxed">
-                    <p>Reviews from clients invited by the provider and from anyone who submitted proof of working with them. Each review's left bar shows its completeness.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </h2>
-              {!isMe && user && user.id !== profile.id && (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/r/${profile.username}/proof`}>Leave a review</Link>
-                </Button>
-              )}
-              {!user && (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-                </Button>
-              )}
+            {(!isMe && user && user.id !== profile.id) || !user ? (
+              <div className="mb-4 flex justify-end">
+                {!isMe && user && user.id !== profile.id && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/r/${profile.username}/proof`}>Leave a review</Link>
+                  </Button>
+                )}
+                {!user && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
+                  </Button>
+                )}
+              </div>
+            ) : null}
+
+            {/* Sub-pill toggle: Verified | Imported — centered */}
+            <div className="mb-6 mt-2 flex justify-center">
+              <div className="inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+                <button
+                  type="button"
+                  onClick={() => setReviewSub("verified")}
+                  aria-pressed={reviewSub === "verified"}
+                  className={cn(
+                    "inline-flex h-8 items-center rounded-full px-4 text-xs font-medium transition-colors",
+                    reviewSub === "verified"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Verified <span className="ml-1 text-muted-foreground">{totalReviewsCount}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReviewSub("imported")}
+                  aria-pressed={reviewSub === "imported"}
+                  className={cn(
+                    "inline-flex h-8 items-center rounded-full px-4 text-xs font-medium transition-colors",
+                    reviewSub === "imported"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Imported <span className="ml-1 text-muted-foreground">{imported.length}</span>
+                </button>
+              </div>
             </div>
 
-            {/* Sub-pill toggle: Verified | Imported */}
-            <div className="mb-4 inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
-              <button
-                type="button"
-                onClick={() => setReviewSub("verified")}
-                aria-pressed={reviewSub === "verified"}
-                className={cn(
-                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
-                  reviewSub === "verified"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Verified <span className="ml-1 text-muted-foreground">{totalReviewsCount}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setReviewSub("imported")}
-                aria-pressed={reviewSub === "imported"}
-                className={cn(
-                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
-                  reviewSub === "imported"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Imported <span className="ml-1 text-muted-foreground">{imported.length}</span>
-              </button>
-            </div>
 
             {reviewSub === "verified" && (<>
             {/* Filter + verified-purchases toggle */}
@@ -1168,7 +1160,7 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
       type="button"
       onClick={onClick}
       className={[
-        "relative -mb-px shrink-0 px-4 py-2.5 text-sm font-medium transition-colors",
+        "relative -mb-px flex flex-1 items-center justify-center gap-2 px-4 py-4 text-base font-semibold transition-colors",
         active
           ? "text-primary"
           : dim
@@ -1179,11 +1171,11 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
     >
       <span className="font-display tracking-wide">{label}</span>
       <span className={[
-        "ml-2 text-[11px] tabular-nums",
+        "text-[12px] tabular-nums",
         active ? "text-primary/80" : "text-muted-foreground/60",
       ].join(" ")}>· {count}</span>
       {active && (
-        <span aria-hidden className="absolute inset-x-2 -bottom-px h-[2px] bg-primary" />
+        <span aria-hidden className="absolute inset-x-0 -bottom-px h-[2.5px] bg-primary" />
       )}
     </button>
   );
