@@ -218,9 +218,12 @@ export default function SubmitReview() {
     setSaving(true);
     try {
       const paths: string[] = [];
+      if (files.length > 0 && !user) {
+        throw new Error("Please sign in to attach evidence files.");
+      }
       for (const f of files) {
         const ext = f.name.split(".").pop()?.toLowerCase() || "bin";
-        const path = `unclaimed/${crypto.randomUUID()}.${ext}`;
+        const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("review-evidence")
           .upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
@@ -596,11 +599,16 @@ export default function SubmitReview() {
             )}
           </div>
 
-          <Field label="Upload evidence (optional)" hint={`${files.length}/3`}>
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors hover:border-primary/40">
+          <Field label="Upload evidence (optional)" hint={user ? `${files.length}/3` : "Sign in to attach"}>
+            <label className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors",
+              user ? "cursor-pointer hover:border-primary/40" : "cursor-not-allowed opacity-60",
+            )}>
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
-                Add receipts, screenshots of results, or proof of purchase
+                {user
+                  ? "Add receipts, screenshots of results, or proof of purchase"
+                  : "Sign in to attach receipts or screenshots as evidence"}
               </span>
               <input
                 type="file"
@@ -608,7 +616,7 @@ export default function SubmitReview() {
                 multiple
                 className="hidden"
                 onChange={onPickFiles}
-                disabled={files.length >= 3}
+                disabled={!user || files.length >= 3}
               />
             </label>
             {files.length > 0 && (
