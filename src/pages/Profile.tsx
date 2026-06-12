@@ -140,7 +140,7 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey = tabParam === "imported" ? "imported" : "reviews";
+  const activeTab: TabKey = tabParam === "imported" ? "imported" : tabParam === "offers" ? "offers" : "reviews";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
     if (t === "reviews") next.delete("tab");
