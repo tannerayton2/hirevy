@@ -1160,7 +1160,7 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
       type="button"
       onClick={onClick}
       className={[
-        "relative -mb-px shrink-0 px-4 py-2.5 text-sm font-medium transition-colors",
+        "relative -mb-px flex flex-1 items-center justify-center gap-2 px-4 py-4 text-base font-semibold transition-colors",
         active
           ? "text-primary"
           : dim
@@ -1171,11 +1171,11 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
     >
       <span className="font-display tracking-wide">{label}</span>
       <span className={[
-        "ml-2 text-[11px] tabular-nums",
+        "text-[12px] tabular-nums",
         active ? "text-primary/80" : "text-muted-foreground/60",
       ].join(" ")}>· {count}</span>
       {active && (
-        <span aria-hidden className="absolute inset-x-2 -bottom-px h-[2px] bg-primary" />
+        <span aria-hidden className="absolute inset-x-0 -bottom-px h-[2.5px] bg-primary" />
       )}
     </button>
   );
