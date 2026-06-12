@@ -215,38 +215,43 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       <div className="mx-auto flex max-w-7xl">
         {/* Desktop sidebar */}
-        <aside className="hidden w-56 shrink-0 border-r border-border md:block">
-          <nav className="sticky top-14 flex flex-col gap-0.5 p-3">
-            {items.map((item) => {
-              const to = item.to === "/me" ? profilePath : item.to;
-              return (
-                <NavLink
-                  key={item.label}
-                  to={to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors",
-                      "hover:bg-secondary hover:text-foreground",
-                      isActive && "bg-secondary text-foreground",
-                    )
-                  }
-                >
-                  <span className="relative inline-flex">
-                    <item.icon className="h-4 w-4" />
-                    {item.to === "/messages" && <UnreadBadge count={unread} />}
-                    {item.soon && <SoonPill />}
-                    {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-                  </span>
-                  {item.label}
-                </NavLink>
-              );
-            })}
-          </nav>
-        </aside>
+        {!isSubmitReview && (
+          <aside className="hidden w-56 shrink-0 border-r border-border md:block">
+            <nav className="sticky top-14 flex flex-col gap-0.5 p-3">
+              {items.map((item) => {
+                const to = item.to === "/me" ? profilePath : item.to;
+                return (
+                  <NavLink
+                    key={item.label}
+                    to={to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors",
+                        "hover:bg-secondary hover:text-foreground",
+                        isActive && "bg-secondary text-foreground",
+                      )
+                    }
+                  >
+                    <span className="relative inline-flex">
+                      <item.icon className="h-4 w-4" />
+                      {item.to === "/messages" && <UnreadBadge count={unread} />}
+                      {item.soon && <SoonPill />}
+                      {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
+                    </span>
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
 
         {/* Main */}
-        <main className="min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
+        <main className={cn(
+          "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
+          isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
+        )}>
           {children}
         </main>
       </div>
