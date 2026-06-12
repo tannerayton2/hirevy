@@ -323,6 +323,20 @@ export default function Profile() {
     toast({ title: "Profile link copied", description: "Share it anywhere — it unfurls with your tier and reviews." });
   };
 
+  const handleShareReviewLink = async () => {
+    if (!reviewLink) return;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: `Leave a review for ${providerDisplayName}`, url: reviewLink });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(reviewLink);
+    toast({ title: "Review link copied", description: "Share it with past clients to collect a verified review." });
+  };
+
   const toggleFollow = async () => {
     if (!user || !profile) { window.location.href = "/auth"; return; }
     if (following) {
@@ -483,11 +497,19 @@ export default function Profile() {
         )}
 
         {isMe && (
-          <div className="mx-auto mt-3 max-w-[280px]">
+          <div className="mx-auto mt-3 max-w-[280px] space-y-3">
             <Button asChild size="sm" className="w-full">
               <Link to="/settings/offers/new">
                 <Plus className="mr-1.5 h-4 w-4" /> Add Offer
               </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => { void handleShareReviewLink(); }}
+            >
+              <LinkIcon className="mr-1.5 h-4 w-4" /> Share review link
             </Button>
           </div>
         )}
