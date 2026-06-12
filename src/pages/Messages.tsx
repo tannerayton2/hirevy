@@ -150,23 +150,27 @@ export default function Messages() {
     if (vvRafRef.current != null) cancelAnimationFrame(vvRafRef.current);
     const start = performance.now();
     let lastHeight = vv.height;
+    let changed = false;
     let stableSince = start;
     const tick = (now: number) => {
       setVvTop(vv.offsetTop);
       setVvHeight(vv.height);
       if (Math.abs(vv.height - lastHeight) > 0.5) {
         lastHeight = vv.height;
+        changed = true;
         stableSince = now;
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
       }
       const elapsed = now - start;
-      if (elapsed < 600 && now - stableSince < 150 + Math.min(elapsed, 300)) {
-        vvRafRef.current = requestAnimationFrame(tick);
-      } else if (elapsed < 600) {
-        vvRafRef.current = requestAnimationFrame(tick);
-      } else {
+      // Stop once the viewport has been stable for 150ms after moving, or
+      // after the 600ms budget if it never changes (platform limitation —
+      // iOS only reports the final size via the resize listener above).
+      if (elapsed >= 600 || (changed && now - stableSince >= 150)) {
         vvRafRef.current = null;
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+        return;
       }
+      vvRafRef.current = requestAnimationFrame(tick);
     };
     vvRafRef.current = requestAnimationFrame(tick);
   }, []);
