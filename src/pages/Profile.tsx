@@ -161,9 +161,10 @@ export default function Profile() {
 
     const offersQuery = supabase
       .from("offers")
-      .select("id, category, is_pinned")
+      .select("id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier, is_pinned, created_at")
       .eq("provider_id", prof.id)
       .eq("is_active", true)
+      .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
     const [offersRes, reviewsRes, unclaimedRes, proofRes, importedRes, followRes] = await Promise.all([
