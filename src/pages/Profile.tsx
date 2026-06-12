@@ -842,6 +842,77 @@ export default function Profile() {
                 </div>
               );
             })()}
+            </>)}
+
+            {reviewSub === "imported" && (
+              <div>
+                <p className="mb-4 text-xs text-muted-foreground/80">
+                  These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
+                </p>
+                {isMe && imported.length > 0 && (
+                  <div className="mb-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
+                      onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                    >
+                      <Plus className="mr-1 h-3.5 w-3.5" /> Add
+                    </Button>
+                  </div>
+                )}
+                {imported.length === 0 ? (
+                  isMe ? (
+                    <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                      <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                        Drop your best testimonials here — old DMs, client emails, video testimonials,
+                        anywhere you have proof of your work. These appear on your profile clearly
+                        labeled as imported.
+                      </p>
+                      <Button
+                        size="lg"
+                        className="mt-5"
+                        onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                      >
+                        <Plus className="mr-1.5 h-4 w-4" /> Add your first imported testimonial
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+                      {providerDisplayName} hasn't imported any testimonials yet.
+                    </p>
+                  )
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {imported.map((t) => (
+                      <ImportedTestimonialCard
+                        key={t.id}
+                        t={t}
+                        isOwner={isMe}
+                        onEdit={(item) => { setImportedEditing(item); setImportedModalOpen(true); }}
+                        onDelete={async (item) => {
+                          if (!confirm("Delete this imported testimonial?")) return;
+                          const { error } = await supabase
+                            .from("imported_testimonials")
+                            .delete()
+                            .eq("id", item.id);
+                          if (error) {
+                            toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+                            return;
+                          }
+                          toast({ title: "Deleted" });
+                          await loadAll();
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
+                  Imported testimonials are historical proof the provider brought from other platforms.
+                  They are not independently verified by HireVy and do not affect the tier badge or rating.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
