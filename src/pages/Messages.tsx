@@ -111,21 +111,24 @@ export default function Messages() {
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  // Visual viewport metrics — used to pin the chat pane to the visible area on
+  // iOS Safari so the composer sits flush above the on-screen keyboard with no
+  // dead gap. `vvTop`/`vvHeight` mirror window.visualViewport.{offsetTop,height}.
+  const [vvTop, setVvTop] = useState(0);
+  const [vvHeight, setVvHeight] = useState<number | null>(null);
 
-  // Track mobile keyboard via visualViewport so the input bar stays above it.
+  // Track the mobile keyboard via the visualViewport API.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const vv = window.visualViewport;
     if (!vv) return;
     const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardOffset(offset);
-      if (offset > 0) {
-        requestAnimationFrame(() => {
-          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-        });
-      }
+      setVvTop(vv.offsetTop);
+      setVvHeight(vv.height);
+      // Keep the latest message in view as the keyboard opens/closes.
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+      });
     };
     update();
     vv.addEventListener("resize", update);
@@ -134,6 +137,17 @@ export default function Messages() {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
     };
+  }, []);
+
+  // When the composer input is focused, scroll to the most recent message.
+  const onComposerFocus = useCallback(() => {
+    // Defer to next frame so iOS has begun resizing the visual viewport.
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    });
+    window.setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    }, 250);
   }, []);
 
   const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
@@ -730,9 +744,22 @@ export default function Messages() {
 
       {/* Conversation */}
       <section
-        style={keyboardOffset > 0 ? { bottom: keyboardOffset } : undefined}
+        style={
+          vvHeight != null
+            ? {
+                // Pin the chat pane to the visible viewport on mobile so the
+                // composer always sits flush above the iOS keyboard. We offset
+                // by the 56px sticky app header so it remains visible above.
+                // On md+ these inline values are overridden by md:!top-auto etc.
+                top: vvTop + 56,
+                height: Math.max(0, vvHeight - 56),
+              }
+            : undefined
+        }
         className={cn(
-          "fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto",
+          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col bg-background",
+          "h-[100vh] h-[100dvh]",
+          "md:static md:!top-auto md:!h-full md:z-auto",
           !activeId && !draftMode && !teamMode && "hidden md:flex",
         )}
       >
@@ -958,6 +985,7 @@ export default function Messages() {
               <Input
                 value={body}
                 onChange={onBodyChange}
+                onFocus={onComposerFocus}
                 placeholder="Write a message…"
                 maxLength={4000}
                 className="h-10 flex-1 rounded-full border-border bg-secondary px-4"
