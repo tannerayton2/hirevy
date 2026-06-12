@@ -497,11 +497,19 @@ export default function Profile() {
         )}
 
         {isMe && (
-          <div className="mx-auto mt-3 max-w-[280px]">
+          <div className="mx-auto mt-3 max-w-[280px] space-y-3">
             <Button asChild size="sm" className="w-full">
               <Link to="/settings/offers/new">
                 <Plus className="mr-1.5 h-4 w-4" /> Add Offer
               </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => { void handleShareReviewLink(); }}
+            >
+              <LinkIcon className="mr-1.5 h-4 w-4" /> Share review link
             </Button>
           </div>
         )}
