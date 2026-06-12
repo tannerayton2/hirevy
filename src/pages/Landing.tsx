@@ -441,7 +441,7 @@ const LANDING_CSS = `
   flex: 1; min-width: 0;
   background: transparent; border: none; outline: none;
   padding: 12px 16px;
-  font-family: 'Inter', sans-serif; font-size: 15px; color: var(--hv-ivory);
+  font-family: 'Inter', sans-serif; font-size: 16px; color: var(--hv-ivory);
 }
 .hv-l-search-input::placeholder { color: var(--hv-muted); }
 .hv-l-search-btn {
