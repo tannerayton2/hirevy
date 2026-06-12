@@ -615,6 +615,9 @@ export default function Profile() {
         <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
           <div className="flex min-w-max items-center gap-1">
             <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount} label="Reviews" />
+            {offers.length > 0 && (
+              <TabButton active={activeTab === "offers"} onClick={() => setActiveTab("offers")} count={offers.length} label="Offers" />
+            )}
             <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
         </div>
