@@ -744,9 +744,21 @@ export default function Messages() {
 
       {/* Conversation */}
       <section
-        style={keyboardOffset > 0 ? { bottom: keyboardOffset } : undefined}
+        style={
+          vvHeight != null
+            ? {
+                // Pin the chat pane to the visible viewport on mobile so the
+                // composer always sits flush above the iOS keyboard. On md+
+                // these inline values are overridden by md:!top-auto etc.
+                top: vvTop,
+                height: vvHeight,
+              }
+            : undefined
+        }
         className={cn(
-          "fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto",
+          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col bg-background",
+          "h-[100vh] h-[100dvh]",
+          "md:static md:!top-auto md:!h-full md:z-auto",
           !activeId && !draftMode && !teamMode && "hidden md:flex",
         )}
       >
