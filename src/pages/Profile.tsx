@@ -141,11 +141,22 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey = tabParam === "imported" ? "imported" : tabParam === "offers" ? "offers" : "reviews";
+  const subParam = searchParams.get("sub");
+  const activeTab: TabKey = tabParam === "offers" ? "offers" : "reviews";
+  const reviewSub: ReviewSubTab =
+    subParam === "imported" || tabParam === "imported" ? "imported" : "verified";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
     if (t === "reviews") next.delete("tab");
     else next.set("tab", t);
+    next.delete("sub");
+    setSearchParams(next, { replace: true });
+  };
+  const setReviewSub = (s: ReviewSubTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("tab");
+    if (s === "verified") next.delete("sub");
+    else next.set("sub", s);
     setSearchParams(next, { replace: true });
   };
 
