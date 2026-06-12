@@ -39,7 +39,8 @@ import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
 import { ShieldAlert } from "lucide-react";
 
-type TabKey = "reviews" | "imported" | "offers";
+type TabKey = "reviews" | "offers";
+type ReviewSubTab = "verified" | "imported";
 
 interface ProfileFull {
   id: string;
@@ -140,11 +141,22 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey = tabParam === "imported" ? "imported" : tabParam === "offers" ? "offers" : "reviews";
+  const subParam = searchParams.get("sub");
+  const activeTab: TabKey = tabParam === "offers" ? "offers" : "reviews";
+  const reviewSub: ReviewSubTab =
+    subParam === "imported" || tabParam === "imported" ? "imported" : "verified";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
     if (t === "reviews") next.delete("tab");
     else next.set("tab", t);
+    next.delete("sub");
+    setSearchParams(next, { replace: true });
+  };
+  const setReviewSub = (s: ReviewSubTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("tab");
+    if (s === "verified") next.delete("sub");
+    else next.set("sub", s);
     setSearchParams(next, { replace: true });
   };
 
@@ -609,16 +621,15 @@ export default function Profile() {
 
 
 
-      {/* Reviews / Imported — two-section layout */}
+      {/* Reviews / Offers — two-section layout */}
       <section className="mt-8">
         {/* Tab strip */}
         <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
           <div className="flex min-w-max items-center gap-1">
-            <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount} label="Reviews" />
-            {offers.length > 0 && (
+            <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount + imported.length} label="Reviews" />
+            {(offers.length > 0 || isMe) && (
               <TabButton active={activeTab === "offers"} onClick={() => setActiveTab("offers")} count={offers.length} label="Offers" />
             )}
-            <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
         </div>
 
@@ -651,6 +662,37 @@ export default function Profile() {
               )}
             </div>
 
+            {/* Sub-pill toggle: Verified | Imported */}
+            <div className="mb-4 inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+              <button
+                type="button"
+                onClick={() => setReviewSub("verified")}
+                aria-pressed={reviewSub === "verified"}
+                className={cn(
+                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
+                  reviewSub === "verified"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Verified <span className="ml-1 text-muted-foreground">{totalReviewsCount}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewSub("imported")}
+                aria-pressed={reviewSub === "imported"}
+                className={cn(
+                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
+                  reviewSub === "imported"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Imported <span className="ml-1 text-muted-foreground">{imported.length}</span>
+              </button>
+            </div>
+
+            {reviewSub === "verified" && (<>
             {/* Filter + verified-purchases toggle */}
             {(unifiedReviews.length > 0 || pinnedReview) && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -800,6 +842,77 @@ export default function Profile() {
                 </div>
               );
             })()}
+            </>)}
+
+            {reviewSub === "imported" && (
+              <div>
+                <p className="mb-4 text-xs text-muted-foreground/80">
+                  These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
+                </p>
+                {isMe && imported.length > 0 && (
+                  <div className="mb-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
+                      onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                    >
+                      <Plus className="mr-1 h-3.5 w-3.5" /> Add
+                    </Button>
+                  </div>
+                )}
+                {imported.length === 0 ? (
+                  isMe ? (
+                    <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                      <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                        Drop your best testimonials here — old DMs, client emails, video testimonials,
+                        anywhere you have proof of your work. These appear on your profile clearly
+                        labeled as imported.
+                      </p>
+                      <Button
+                        size="lg"
+                        className="mt-5"
+                        onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
+                      >
+                        <Plus className="mr-1.5 h-4 w-4" /> Add your first imported testimonial
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+                      {providerDisplayName} hasn't imported any testimonials yet.
+                    </p>
+                  )
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {imported.map((t) => (
+                      <ImportedTestimonialCard
+                        key={t.id}
+                        t={t}
+                        isOwner={isMe}
+                        onEdit={(item) => { setImportedEditing(item); setImportedModalOpen(true); }}
+                        onDelete={async (item) => {
+                          if (!confirm("Delete this imported testimonial?")) return;
+                          const { error } = await supabase
+                            .from("imported_testimonials")
+                            .delete()
+                            .eq("id", item.id);
+                          if (error) {
+                            toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+                            return;
+                          }
+                          toast({ title: "Deleted" });
+                          await loadAll();
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
+                  Imported testimonials are historical proof the provider brought from other platforms.
+                  They are not independently verified by HireVy and do not affect the tier badge or rating.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -816,98 +929,38 @@ export default function Profile() {
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {offers.map((o) => (
-                <OfferCard
-                  key={o.id}
-                  offer={{
-                    ...o,
-                    provider: {
-                      username: profile.username,
-                      display_name: profile.display_name,
-                      review_count: profile.review_count,
-                      rating_sum: profile.rating_sum,
-                    },
-                  }}
-                  owner={isMe}
-                  onChanged={loadAll}
-                  referrer="profile"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Imported */}
-        {activeTab === "imported" && (
-          <div>
-            <div className="mb-1 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold text-muted-foreground">Imported</h2>
-              {isMe && imported.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
-                  onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
-                >
-                  <Plus className="mr-1 h-3.5 w-3.5" /> Add
-                </Button>
-              )}
-            </div>
-            <p className="mb-4 text-xs text-muted-foreground/80">
-              These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
-            </p>
-
-            {imported.length === 0 ? (
-              isMe ? (
-                <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
-                  <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
-                    Drop your best testimonials here — old DMs, client emails, video testimonials,
-                    anywhere you have proof of your work. These appear on your profile clearly
-                    labeled as imported.
-                  </p>
-                  <Button
-                    size="lg"
-                    className="mt-5"
-                    onClick={() => { setImportedEditing(null); setImportedModalOpen(true); }}
-                  >
-                    <Plus className="mr-1.5 h-4 w-4" /> Add your first imported testimonial
-                  </Button>
-                </div>
-              ) : (
-                <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
-                  {providerDisplayName} hasn't imported any testimonials yet.
+            {offers.length === 0 && isMe ? (
+              <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                  Publish your first offer so clients can hire you directly from your profile.
                 </p>
-              )
+                <Button asChild size="lg" className="mt-5">
+                  <Link to="/settings/offers/new">
+                    <Plus className="mr-1.5 h-4 w-4" /> Add your first offer
+                  </Link>
+                </Button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {imported.map((t) => (
-                  <ImportedTestimonialCard
-                    key={t.id}
-                    t={t}
-                    isOwner={isMe}
-                    onEdit={(item) => { setImportedEditing(item); setImportedModalOpen(true); }}
-                    onDelete={async (item) => {
-                      if (!confirm("Delete this imported testimonial?")) return;
-                      const { error } = await supabase
-                        .from("imported_testimonials")
-                        .delete()
-                        .eq("id", item.id);
-                      if (error) {
-                        toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
-                        return;
-                      }
-                      toast({ title: "Deleted" });
-                      await loadAll();
+                {offers.map((o) => (
+                  <OfferCard
+                    key={o.id}
+                    offer={{
+                      ...o,
+                      provider: {
+                        username: profile.username,
+                        display_name: profile.display_name,
+                        review_count: profile.review_count,
+                        rating_sum: profile.rating_sum,
+                      },
                     }}
+                    owner={isMe}
+                    onChanged={loadAll}
+                    referrer="profile"
                   />
                 ))}
               </div>
             )}
-            <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
-              Imported testimonials are historical proof the provider brought from other platforms.
-              They are not independently verified by HireVy and do not affect the tier badge or rating.
-            </p>
           </div>
         )}
       </section>
