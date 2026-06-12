@@ -64,6 +64,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     pathname === "/messages" &&
     (!!msgParams.get("t") || !!msgParams.get("to") || msgParams.get("team") === "1");
 
+  const isSubmitReview = pathname === "/submit-review";
+
   const items = baseItems.filter((i) => {
     if (i.admin && !isAdmin) return false;
     if (i.authOnly && !user) return false;
