@@ -139,16 +139,26 @@ export default function Messages() {
     };
   }, []);
 
-  // When the composer input is focused, scroll to the most recent message.
+  // When the composer input gains focus (focusin fires before iOS animates the
+  // keyboard in), immediately scroll to the most recent message and pre-shrink
+  // the pane to a best-guess keyboard height so we don't show the old layout
+  // for a frame before the visualViewport resize event fires.
   const onComposerFocus = useCallback(() => {
-    // Defer to next frame so iOS has begun resizing the visual viewport.
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (vv && vvHeight != null) {
+      // Heuristic: iOS keyboard is roughly 45% of viewport height. The real
+      // value lands within ~150ms via the visualViewport resize listener; the
+      // CSS transition smooths between the two.
+      const guess = Math.round(window.innerHeight * 0.55);
+      if (guess < vvHeight) setVvHeight(guess);
+    }
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     });
     window.setTimeout(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }, 250);
-  }, []);
+  }, [vvHeight]);
 
   const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
     if (!user) return;
