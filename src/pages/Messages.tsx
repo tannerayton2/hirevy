@@ -569,19 +569,26 @@ export default function Messages() {
   const msgById = useMemo(() => new Map(msgs.map((m) => [m.id, m])), [msgs]);
 
   const grouped = useMemo(() => {
-    const out: { msg: Msg; showTimestamp: boolean; groupStart: boolean }[] = [];
+    const GAP = 30 * 60 * 1000;
+    const out: { msg: Msg; showDivider: boolean; groupStart: boolean }[] = [];
     for (let i = 0; i < msgs.length; i++) {
       const m = msgs[i];
       const prev = msgs[i - 1];
-      const next = msgs[i + 1];
-      const sameAsNext = next && next.sender_id === m.sender_id
-        && (new Date(next.created_at).getTime() - new Date(m.created_at).getTime()) < 2 * 60 * 1000;
-      const sameAsPrev = prev && prev.sender_id === m.sender_id
-        && (new Date(m.created_at).getTime() - new Date(prev.created_at).getTime()) < 2 * 60 * 1000;
-      out.push({ msg: m, showTimestamp: !sameAsNext, groupStart: !sameAsPrev });
+      const gap = prev ? (new Date(m.created_at).getTime() - new Date(prev.created_at).getTime()) : Infinity;
+      const showDivider = !prev || gap > GAP;
+      const sameAsPrev = prev && prev.sender_id === m.sender_id && gap < 2 * 60 * 1000;
+      out.push({ msg: m, showDivider, groupStart: !sameAsPrev || showDivider });
     }
     return out;
   }, [msgs]);
+
+  const latestMineId = useMemo(() => {
+    if (!user) return null;
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].sender_id === user.id) return msgs[i].id;
+    }
+    return null;
+  }, [msgs, user]);
 
   const reactionsByMsg = useMemo(() => {
     const map = new Map<string, Reaction[]>();
