@@ -218,9 +218,12 @@ export default function SubmitReview() {
     setSaving(true);
     try {
       const paths: string[] = [];
+      if (files.length > 0 && !user) {
+        throw new Error("Please sign in to attach evidence files.");
+      }
       for (const f of files) {
         const ext = f.name.split(".").pop()?.toLowerCase() || "bin";
-        const path = `unclaimed/${crypto.randomUUID()}.${ext}`;
+        const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("review-evidence")
           .upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
