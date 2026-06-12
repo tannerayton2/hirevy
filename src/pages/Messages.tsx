@@ -748,10 +748,11 @@ export default function Messages() {
           vvHeight != null
             ? {
                 // Pin the chat pane to the visible viewport on mobile so the
-                // composer always sits flush above the iOS keyboard. On md+
-                // these inline values are overridden by md:!top-auto etc.
-                top: vvTop,
-                height: vvHeight,
+                // composer always sits flush above the iOS keyboard. We offset
+                // by the 56px sticky app header so it remains visible above.
+                // On md+ these inline values are overridden by md:!top-auto etc.
+                top: vvTop + 56,
+                height: Math.max(0, vvHeight - 56),
               }
             : undefined
         }
