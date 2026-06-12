@@ -68,6 +68,15 @@ function snippet(m: Msg | undefined): string {
   return (m.body || "").slice(0, 80);
 }
 
+// Message attachments live in a private bucket. Stored `attachment_url` is a
+// storage path (new uploads) or a legacy public URL (older rows). Strip any
+// legacy URL prefix so we can resign with createSignedUrl.
+function extractAttachmentPath(stored: string): string {
+  const marker = "/message-attachments/";
+  const i = stored.indexOf(marker);
+  return i === -1 ? stored : stored.slice(i + marker.length);
+}
+
 export default function Messages() {
   const { user, loading } = useAuth();
   const [params, setParams] = useSearchParams();
