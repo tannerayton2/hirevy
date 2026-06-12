@@ -20,6 +20,7 @@ import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonia
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
+import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
