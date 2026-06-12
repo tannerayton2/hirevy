@@ -985,6 +985,7 @@ export default function Messages() {
               <Input
                 value={body}
                 onChange={onBodyChange}
+                onFocus={onComposerFocus}
                 placeholder="Write a message…"
                 maxLength={4000}
                 className="h-10 flex-1 rounded-full border-border bg-secondary px-4"
