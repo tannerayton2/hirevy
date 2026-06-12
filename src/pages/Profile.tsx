@@ -110,7 +110,7 @@ function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   return out;
 }
 
-type OfferRow = { id: string; category: string; is_pinned?: boolean };
+type OfferRow = OfferCardData & { is_pinned?: boolean; created_at?: string };
 
 export default function Profile() {
   const { username = "" } = useParams();
