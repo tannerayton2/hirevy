@@ -20,6 +20,7 @@ import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonia
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
+import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 
 import { CategoryChip } from "@/components/CategoryChip";
 import { fetchAvgFirstResponseMs, formatResponseTime } from "@/lib/responseTime";
@@ -38,7 +39,7 @@ import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
 import { ShieldAlert } from "lucide-react";
 
-type TabKey = "reviews" | "imported";
+type TabKey = "reviews" | "imported" | "offers";
 
 interface ProfileFull {
   id: string;
@@ -109,7 +110,7 @@ function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   return out;
 }
 
-type OfferRow = { id: string; category: string; is_pinned?: boolean };
+type OfferRow = OfferCardData & { is_pinned?: boolean; created_at?: string };
 
 export default function Profile() {
   const { username = "" } = useParams();
@@ -139,7 +140,7 @@ export default function Profile() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabKey = tabParam === "imported" ? "imported" : "reviews";
+  const activeTab: TabKey = tabParam === "imported" ? "imported" : tabParam === "offers" ? "offers" : "reviews";
   const setActiveTab = (t: TabKey) => {
     const next = new URLSearchParams(searchParams);
     if (t === "reviews") next.delete("tab");
@@ -160,9 +161,10 @@ export default function Profile() {
 
     const offersQuery = supabase
       .from("offers")
-      .select("id, category, is_pinned")
+      .select("id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier, is_pinned, created_at")
       .eq("provider_id", prof.id)
       .eq("is_active", true)
+      .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
     const [offersRes, reviewsRes, unclaimedRes, proofRes, importedRes, followRes] = await Promise.all([
@@ -613,6 +615,9 @@ export default function Profile() {
         <div className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
           <div className="flex min-w-max items-center gap-1">
             <TabButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} count={totalReviewsCount} label="Reviews" />
+            {offers.length > 0 && (
+              <TabButton active={activeTab === "offers"} onClick={() => setActiveTab("offers")} count={offers.length} label="Offers" />
+            )}
             <TabButton active={activeTab === "imported"} onClick={() => setActiveTab("imported")} count={imported.length} label="Imported" />
           </div>
         </div>
@@ -795,6 +800,41 @@ export default function Profile() {
                 </div>
               );
             })()}
+          </div>
+        )}
+
+        {/* Offers */}
+        {activeTab === "offers" && (
+          <div>
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold">Offers</h2>
+              {isMe && (
+                <Button asChild size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary">
+                  <Link to="/settings/offers/new">
+                    <Plus className="mr-1 h-3.5 w-3.5" /> Add Offer
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {offers.map((o) => (
+                <OfferCard
+                  key={o.id}
+                  offer={{
+                    ...o,
+                    provider: {
+                      username: profile.username,
+                      display_name: profile.display_name,
+                      review_count: profile.review_count,
+                      rating_sum: profile.rating_sum,
+                    },
+                  }}
+                  owner={isMe}
+                  onChanged={loadAll}
+                  referrer="profile"
+                />
+              ))}
+            </div>
           </div>
         )}
 
