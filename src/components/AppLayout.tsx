@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -64,6 +64,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     pathname === "/messages" &&
     (!!msgParams.get("t") || !!msgParams.get("to") || msgParams.get("team") === "1");
 
+  const isSubmitReview = pathname === "/submit-review";
+
   const items = baseItems.filter((i) => {
     if (i.admin && !isAdmin) return false;
     if (i.authOnly && !user) return false;
@@ -98,139 +100,158 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background text-foreground">
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
+        {isSubmitReview ? (
+          <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-secondary"
+            >
+              <ArrowLeft className="h-5 w-5 text-foreground" />
+            </button>
             <Logo />
-          </NavLink>
-          <div className="flex items-center gap-1">
-            {user && <NotificationsBell />}
-            {isOwnProfile ? (
-
-              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Open profile menu"
-                    className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-secondary"
-                  >
-                    <span className="text-xs uppercase tracking-[0.18em] text-primary">
-                      @{profile?.username}
-                    </span>
-                    <Menu className="h-5 w-5 text-primary" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
-                >
-                  <nav className="flex flex-col gap-0.5 p-4 pt-12">
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <SettingsIcon className="h-4 w-4" /> Edit Profile
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); void copyReviewLink(); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <LinkIcon className="h-4 w-4" /> Copy Review Link
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/settings/following"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <UserCheck className="h-4 w-4" /> Following
-                    </button>
-                    <div className="mt-2 mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Legal</div>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/terms"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <FileText className="h-4 w-4" /> Terms of Service
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/privacy"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <Shield className="h-4 w-4" /> Privacy Policy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <SettingsIcon className="h-4 w-4" /> Settings
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
-                      className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    >
-                      <MessageCircle className="h-4 w-4" /> Send us a message
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
-                      className="mt-1 flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-                    >
-                      <LogOut className="h-4 w-4" /> Log Out
-                    </button>
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            ) : user ? (
-              <NavLink to={profilePath} className="text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
-                @{profile?.username ?? "you"}
-              </NavLink>
-            ) : (
-              <Button asChild size="sm" variant="default">
-                <NavLink to="/auth"><LogIn className="mr-1.5 h-3.5 w-3.5" /> Sign in</NavLink>
-              </Button>
-            )}
           </div>
-        </div>
+        ) : (
+          <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
+            <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
+              <Logo />
+            </NavLink>
+            <div className="flex items-center gap-1">
+              {user && <NotificationsBell />}
+              {isOwnProfile ? (
+
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open profile menu"
+                      className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-secondary"
+                    >
+                      <span className="text-xs uppercase tracking-[0.18em] text-primary">
+                        @{profile?.username}
+                      </span>
+                      <Menu className="h-5 w-5 text-primary" />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
+                  >
+                    <nav className="flex flex-col gap-0.5 p-4 pt-12">
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <SettingsIcon className="h-4 w-4" /> Edit Profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); void copyReviewLink(); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <LinkIcon className="h-4 w-4" /> Copy Review Link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/settings/following"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <UserCheck className="h-4 w-4" /> Following
+                      </button>
+                      <div className="mt-2 mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Legal</div>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/terms"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <FileText className="h-4 w-4" /> Terms of Service
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/privacy"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <Shield className="h-4 w-4" /> Privacy Policy
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <SettingsIcon className="h-4 w-4" /> Settings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        <MessageCircle className="h-4 w-4" /> Send us a message
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
+                        className="mt-1 flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                      >
+                        <LogOut className="h-4 w-4" /> Log Out
+                      </button>
+                    </nav>
+                  </SheetContent>
+                </Sheet>
+              ) : user ? (
+                <NavLink to={profilePath} className="text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
+                  @{profile?.username ?? "you"}
+                </NavLink>
+              ) : (
+                <Button asChild size="sm" variant="default">
+                  <NavLink to="/auth"><LogIn className="mr-1.5 h-3.5 w-3.5" /> Sign in</NavLink>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="mx-auto flex max-w-7xl">
         {/* Desktop sidebar */}
-        <aside className="hidden w-56 shrink-0 border-r border-border md:block">
-          <nav className="sticky top-14 flex flex-col gap-0.5 p-3">
-            {items.map((item) => {
-              const to = item.to === "/me" ? profilePath : item.to;
-              return (
-                <NavLink
-                  key={item.label}
-                  to={to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors",
-                      "hover:bg-secondary hover:text-foreground",
-                      isActive && "bg-secondary text-foreground",
-                    )
-                  }
-                >
-                  <span className="relative inline-flex">
-                    <item.icon className="h-4 w-4" />
-                    {item.to === "/messages" && <UnreadBadge count={unread} />}
-                    {item.soon && <SoonPill />}
-                    {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-                  </span>
-                  {item.label}
-                </NavLink>
-              );
-            })}
-          </nav>
-        </aside>
+        {!isSubmitReview && (
+          <aside className="hidden w-56 shrink-0 border-r border-border md:block">
+            <nav className="sticky top-14 flex flex-col gap-0.5 p-3">
+              {items.map((item) => {
+                const to = item.to === "/me" ? profilePath : item.to;
+                return (
+                  <NavLink
+                    key={item.label}
+                    to={to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors",
+                        "hover:bg-secondary hover:text-foreground",
+                        isActive && "bg-secondary text-foreground",
+                      )
+                    }
+                  >
+                    <span className="relative inline-flex">
+                      <item.icon className="h-4 w-4" />
+                      {item.to === "/messages" && <UnreadBadge count={unread} />}
+                      {item.soon && <SoonPill />}
+                      {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
+                    </span>
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
 
         {/* Main */}
-        <main className="min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
+        <main className={cn(
+          "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
+          isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
+        )}>
           {children}
         </main>
       </div>
@@ -240,7 +261,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         aria-label="Primary"
         className={cn(
           "fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
-          inOpenConversation && "hidden",
+          (inOpenConversation || isSubmitReview) && "hidden",
         )}
       >
         {(() => {
