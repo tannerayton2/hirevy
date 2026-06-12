@@ -731,13 +731,16 @@ export default function Messages() {
       {/* Conversation */}
       <section
         style={keyboardOffset > 0 ? { bottom: keyboardOffset } : undefined}
-        className={cn("fixed inset-x-0 bottom-14 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto", !activeId && !draftMode && !teamMode && "hidden md:flex")}
+        className={cn(
+          "fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-background md:static md:bottom-auto md:top-auto md:z-auto md:h-full md:min-h-0 md:!bottom-auto",
+          !activeId && !draftMode && !teamMode && "hidden md:flex",
+        )}
       >
         {teamMode ? (
           <TeamChatPane />
         ) : (activeId || draftMode) ? (
           <>
-            <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <button
                   type="button"
@@ -943,14 +946,31 @@ export default function Messages() {
               </div>
             )}
 
-            <form onSubmit={send} className="flex items-center gap-2 border-t border-border p-3">
+            <form
+              onSubmit={send}
+              className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+            >
               <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-              <Button type="button" size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Attach image" className="shrink-0">
+              <Button type="button" size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Attach image" className="shrink-0 text-muted-foreground hover:text-foreground">
                 <ImagePlus className="h-5 w-5" />
               </Button>
               <VoiceRecorder onComplete={sendVoice} disabled={sending} />
-              <Input value={body} onChange={onBodyChange} placeholder="Write a message…" maxLength={4000} />
-              <Button type="submit" size="icon" disabled={sending || (!body.trim() && !pendingFile)}><Send className="h-4 w-4" /></Button>
+              <Input
+                value={body}
+                onChange={onBodyChange}
+                placeholder="Write a message…"
+                maxLength={4000}
+                className="h-10 flex-1 rounded-full border-border bg-secondary px-4"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={sending || (!body.trim() && !pendingFile)}
+                aria-label="Send message"
+                className="shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
             </form>
           </>
         ) : (

@@ -51,9 +51,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile, signOut } = useAuth();
   const unread = useUnreadDocumentTitle("HireVy");
   const isAdmin = isAdminUsername(profile?.username);
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Hide the mobile floating pill nav when an individual conversation is open
+  // (chat thread, draft compose, or the HireVy Team chat) so the chat view can
+  // take the full height like Instagram DMs.
+  const msgParams = new URLSearchParams(location.search);
+  const inOpenConversation =
+    pathname === "/messages" &&
+    (!!msgParams.get("t") || !!msgParams.get("to") || msgParams.get("team") === "1");
 
   const items = baseItems.filter((i) => {
     if (i.admin && !isAdmin) return false;
@@ -229,7 +238,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile floating pill nav */}
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden"
+        className={cn(
+          "fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
+          inOpenConversation && "hidden",
+        )}
       >
         {(() => {
           const mobileTabs = [
