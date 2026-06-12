@@ -768,9 +768,9 @@ export default function Messages() {
             : undefined
         }
         className={cn(
-          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col justify-end bg-background",
+          "fixed inset-x-0 left-0 right-0 z-30 flex flex-col bg-background",
           "h-[100vh] h-[100dvh]",
-          "md:static md:!top-auto md:!h-full md:z-auto md:justify-start",
+          "md:static md:!top-auto md:!h-full md:z-auto",
           !activeId && !draftMode && !teamMode && "hidden md:flex",
         )}
       >
