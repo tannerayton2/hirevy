@@ -1058,8 +1058,17 @@ export default function Messages() {
             </form>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
-            Pick a conversation to start.
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-10 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="font-display text-lg font-semibold text-foreground">Your messages</h2>
+              <p className="max-w-xs text-sm text-muted-foreground">Pick a conversation, or start a new one with a coach or provider.</p>
+            </div>
+            <Button onClick={() => setComposeOpen(true)} className="mt-1 rounded-full">
+              <PenSquare className="mr-1.5 h-4 w-4" /> New message
+            </Button>
           </div>
         )}
       </section>
