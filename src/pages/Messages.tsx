@@ -637,10 +637,15 @@ export default function Messages() {
   if (!loading && !user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="md:grid md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[320px_1fr]">
+    <div className="md:grid md:h-[calc(100vh-56px)] md:auto-rows-auto md:grid-cols-[340px_1fr] md:gap-4 md:p-4">
       {/* Inbox */}
-      <aside className={cn("border-r border-border md:block", (activeId || teamMode || draftMode) && "hidden md:block")}>
-        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+      <aside
+        className={cn(
+          "md:block md:rounded-2xl md:border md:border-white/5 md:bg-card/60 md:shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] md:backdrop-blur-xl md:overflow-hidden",
+          (activeId || teamMode || draftMode) && "hidden md:block",
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-border/60 px-4 py-4 md:border-white/5">
           <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
           <Button
             type="button"
@@ -648,28 +653,30 @@ export default function Messages() {
             variant="ghost"
             onClick={() => setComposeOpen(true)}
             aria-label="New message"
-            className="text-primary hover:text-primary"
+            className="rounded-full text-primary hover:bg-primary/10 hover:text-primary"
           >
             <PenSquare className="h-5 w-5" />
           </Button>
         </div>
         {/* Pinned HireVy Team thread */}
-        <button
-          onClick={() => setParams({ team: "1" }, { replace: true })}
-          className={cn(
-            "flex w-full items-center gap-3 border-b border-border bg-primary/5 px-4 py-2 text-left transition-colors hover:bg-primary/10",
-            teamMode && "bg-primary/15",
-          )}
-        >
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
-            HV
-            <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-foreground">HireVy Team</p>
-            <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
-          </div>
-        </button>
+        <div className="px-2 pt-2 md:px-2">
+          <button
+            onClick={() => setParams({ team: "1" }, { replace: true })}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-primary/10",
+              teamMode ? "bg-primary/15" : "bg-primary/5",
+            )}
+          >
+            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
+              HV
+              <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">HireVy Team</p>
+              <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
+            </div>
+          </button>
+        </div>
         {threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
@@ -680,11 +687,12 @@ export default function Messages() {
             <Button className="mt-5" onClick={() => navigate("/explore")}>Browse Coaches</Button>
           </div>
         ) : (
-          <ul className="divide-y divide-border">
+          <ul className="flex flex-col gap-0.5 p-2">
             {threads.map((t) => {
               const isUnread = unreadThreadIds.has(t.id) && activeId !== t.id;
               const name = t.other?.display_name || `@${t.other?.username ?? "user"}`;
-              const preview = t.lastMsg ? snippet(t.lastMsg) : `@${t.other?.username ?? ""}`;
+              const handle = t.other?.username ? `@${t.other.username}` : "";
+              const preview = t.lastMsg ? snippet(t.lastMsg) : handle;
               const ts = t.lastMsg?.created_at ?? t.last_message_at;
               return (
               <li key={t.id}>
@@ -694,8 +702,8 @@ export default function Messages() {
                   onClick={() => { setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); }}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnreadThreadIds((prev) => { const n = new Set(prev); n.delete(t.id); return n; }); setParams({ t: t.id }, { replace: true }); } }}
                   className={cn(
-                    "flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-secondary",
-                    activeId === t.id && "bg-secondary",
+                    "flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-secondary/60",
+                    activeId === t.id && "bg-primary/15",
                   )}
                 >
                   {t.other?.username ? (
@@ -712,21 +720,26 @@ export default function Messages() {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      {t.other?.username ? (
-                        <NavLink
-                          to={`/${t.other.username}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="truncate text-sm font-normal text-foreground hover:underline"
-                        >
-                          {name}
-                        </NavLink>
-                      ) : (
-                        <p className="truncate text-sm font-normal text-foreground">{name}</p>
-                      )}
+                      <div className="flex min-w-0 items-baseline gap-1.5">
+                        {t.other?.username ? (
+                          <NavLink
+                            to={`/${t.other.username}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="truncate text-sm font-semibold text-foreground hover:underline"
+                          >
+                            {name}
+                          </NavLink>
+                        ) : (
+                          <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                        )}
+                        {handle && name !== handle && (
+                          <span className="shrink truncate text-[11px] text-muted-foreground">{handle}</span>
+                        )}
+                      </div>
                       {ts && <span className="shrink-0 text-[11px] text-muted-foreground">{shortTimestamp(ts)}</span>}
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-xs", isUnread ? "font-bold text-white" : "font-normal text-muted-foreground")}>{preview}</p>
+                      <p className={cn("truncate text-xs", isUnread ? "font-semibold text-foreground" : "font-normal text-muted-foreground")}>{preview}</p>
                       {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.55)]" aria-label="Unread" />}
                     </div>
                   </div>
