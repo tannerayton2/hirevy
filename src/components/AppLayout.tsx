@@ -238,7 +238,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile floating pill nav */}
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden"
+        className={cn(
+          "fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
+          inOpenConversation && "hidden",
+        )}
       >
         {(() => {
           const mobileTabs = [
