@@ -213,37 +213,62 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      <div className="mx-auto flex max-w-7xl">
+      <div className="mx-auto flex w-full max-w-7xl">
         {/* Desktop sidebar */}
         {!isSubmitReview && (
-          <aside className="hidden w-56 shrink-0 border-r border-border md:block">
-            <nav className="sticky top-14 flex flex-col gap-0.5 p-3">
-              {items.map((item) => {
-                const to = item.to === "/me" ? profilePath : item.to;
-                return (
-                  <NavLink
-                    key={item.label}
-                    to={to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors",
-                        "hover:bg-secondary hover:text-foreground",
-                        isActive && "bg-secondary text-foreground",
-                      )
-                    }
-                  >
-                    <span className="relative inline-flex">
-                      <item.icon className="h-4 w-4" />
-                      {item.to === "/messages" && <UnreadBadge count={unread} />}
-                      {item.soon && <SoonPill />}
-                      {item.admin && <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-                    </span>
-                    {item.label}
-                  </NavLink>
-                );
-              })}
-            </nav>
+          <aside className="hidden w-64 shrink-0 md:block">
+            <div className="sticky top-[72px] m-3 rounded-2xl border border-white/5 bg-card/60 p-3 shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] backdrop-blur-xl">
+              <nav className="flex flex-col gap-1">
+                {items.map((item) => {
+                  const to = item.to === "/me" ? profilePath : item.to;
+                  const isAvatar = item.kind === "avatar";
+                  return (
+                    <NavLink
+                      key={item.label}
+                      to={to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        cn(
+                          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium tracking-wide transition-colors",
+                          isActive
+                            ? "bg-primary/15 text-primary"
+                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <span className="relative inline-flex items-center justify-center">
+                            {isAvatar ? (
+                              <span
+                                className={cn(
+                                  "flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-secondary text-[10px] font-semibold uppercase text-muted-foreground",
+                                  isActive && "ring-2 ring-primary ring-offset-2 ring-offset-card",
+                                )}
+                              >
+                                {profile?.avatar_url ? (
+                                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <span>{(profile?.username ?? "?").slice(0, 1)}</span>
+                                )}
+                              </span>
+                            ) : (
+                              <item.icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                            )}
+                            {item.to === "/messages" && <UnreadBadge count={unread} />}
+                            {item.soon && <SoonPill />}
+                            {item.admin && (
+                              <span className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                            )}
+                          </span>
+                          <span>{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+            </div>
           </aside>
         )}
 
