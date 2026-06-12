@@ -511,10 +511,10 @@ export default function Explore() {
         </div>
       )}
 
-      {/* Floating "Review a Coach" FAB */}
+      {/* Floating "Review a Coach" FAB — hidden on mobile */}
       <Link
         to={reviewLink}
-        className="fixed bottom-24 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.55)] transition-transform hover:scale-[1.03] md:bottom-8"
+        className="hidden sm:inline-flex fixed bottom-24 right-5 z-30 items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.55)] transition-transform hover:scale-[1.03] md:bottom-8"
         aria-label="Review a Coach"
       >
         <Plus className="h-4 w-4" />
