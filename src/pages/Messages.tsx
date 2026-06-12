@@ -107,6 +107,7 @@ export default function Messages() {
   const lastTypingSentRef = useRef(0);
   const otherTypingTimerRef = useRef<number | null>(null);
   const longPressRef = useRef<number | null>(null);
+  const [signedAttachmentUrls, setSignedAttachmentUrls] = useState<Record<string, string>>({});
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
