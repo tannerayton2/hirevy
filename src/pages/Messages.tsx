@@ -331,6 +331,27 @@ export default function Messages() {
   // Auto-scroll
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [msgs, otherTyping]);
 
+  // Resolve private message-attachment paths to short-lived signed URLs.
+  useEffect(() => {
+    const needed = Array.from(new Set(
+      msgs.map((m) => m.attachment_url).filter((u): u is string => !!u && !signedAttachmentUrls[u])
+    ));
+    if (needed.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const updates: Record<string, string> = {};
+      await Promise.all(needed.map(async (stored) => {
+        const path = extractAttachmentPath(stored);
+        const { data } = await supabase.storage.from("message-attachments").createSignedUrl(path, 60 * 60);
+        if (data?.signedUrl) updates[stored] = data.signedUrl;
+      }));
+      if (!cancelled && Object.keys(updates).length) {
+        setSignedAttachmentUrls((prev) => ({ ...prev, ...updates }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [msgs, signedAttachmentUrls]);
+
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
@@ -347,7 +368,8 @@ export default function Messages() {
     const path = `${user.id}/${threadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from("message-attachments").upload(path, file, { contentType, upsert: false });
     if (error) throw error;
-    return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
+    // Store the storage path; render layer signs a short-lived URL on demand.
+    return path;
   };
 
   // Lazily create a thread (only when actually sending the first message in draft mode).
