@@ -929,25 +929,38 @@ export default function Profile() {
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {offers.map((o) => (
-                <OfferCard
-                  key={o.id}
-                  offer={{
-                    ...o,
-                    provider: {
-                      username: profile.username,
-                      display_name: profile.display_name,
-                      review_count: profile.review_count,
-                      rating_sum: profile.rating_sum,
-                    },
-                  }}
-                  owner={isMe}
-                  onChanged={loadAll}
-                  referrer="profile"
-                />
-              ))}
-            </div>
+            {offers.length === 0 && isMe ? (
+              <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                  Publish your first offer so clients can hire you directly from your profile.
+                </p>
+                <Button asChild size="lg" className="mt-5">
+                  <Link to="/settings/offers/new">
+                    <Plus className="mr-1.5 h-4 w-4" /> Add your first offer
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {offers.map((o) => (
+                  <OfferCard
+                    key={o.id}
+                    offer={{
+                      ...o,
+                      provider: {
+                        username: profile.username,
+                        display_name: profile.display_name,
+                        review_count: profile.review_count,
+                        rating_sum: profile.rating_sum,
+                      },
+                    }}
+                    owner={isMe}
+                    onChanged={loadAll}
+                    referrer="profile"
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </section>
