@@ -851,18 +851,25 @@ export default function Messages() {
                         )}
 
                         {isVoice ? (
-                          <VoiceNotePlayer url={m.attachment_url!} durationMs={m.voice_duration_ms} mine={mine} />
+                          <VoiceNotePlayer url={signedAttachmentUrls[m.attachment_url!] ?? ""} durationMs={m.voice_duration_ms} mine={mine} />
                         ) : (
                           <>
-                            {m.attachment_url && (
-                              <button
-                                type="button"
-                                onClick={() => setLightbox(m.attachment_url)}
-                                className="block overflow-hidden rounded-xl"
-                              >
-                                <img src={m.attachment_url} alt="" className="max-h-72 max-w-full object-cover" loading="lazy" />
-                              </button>
-                            )}
+                            {m.attachment_url && (() => {
+                              const resolved = signedAttachmentUrls[m.attachment_url] ?? "";
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => resolved && setLightbox(resolved)}
+                                  className="block overflow-hidden rounded-xl"
+                                >
+                                  {resolved ? (
+                                    <img src={resolved} alt="" className="max-h-72 max-w-full object-cover" loading="lazy" />
+                                  ) : (
+                                    <div className="flex h-40 w-40 items-center justify-center bg-foreground/5 text-xs text-muted-foreground">Loading…</div>
+                                  )}
+                                </button>
+                              );
+                            })()}
                             {m.body && <p className={cn("whitespace-pre-wrap break-words", m.attachment_url && "px-2 py-1.5")}>{m.body}</p>}
                           </>
                         )}
