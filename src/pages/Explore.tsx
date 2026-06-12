@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
+import { formatOfferPrice } from "@/lib/pricing";
 
 const BROWSE_CATEGORIES = [
   "Business Coaching", "Sales", "Copywriting", "Fitness",
@@ -78,6 +79,24 @@ export default function Explore() {
   // Offers state
   const [offers, setOffers] = useState<OfferCardData[] | null>(null);
   const [loadingOffers, setLoadingOffers] = useState(false);
+
+  // ===== Live-search dropdown state =====
+  type LivePerson = Pick<CoachRow, "id" | "username" | "display_name" | "avatar_url" | "provider_type">;
+  type LiveOffer = {
+    id: string;
+    slug: string;
+    title: string;
+    price_cents: number | null;
+    price_max_cents: number | null;
+    pricing_model: string | null;
+    free_for_testimonial: boolean;
+    provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
+  };
+  const [liveOpen, setLiveOpen] = useState(false);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [livePeople, setLivePeople] = useState<LivePerson[]>([]);
+  const [liveOffers, setLiveOffers] = useState<LiveOffer[]>([]);
+  const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const writeUrl = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
@@ -187,11 +206,82 @@ export default function Explore() {
     return () => { cancel = true; };
   }, [subTab, submitted, activeCategory, providerType, freeOnly]);
 
-  const onSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  // ===== Live dropdown: debounced fetch on each keystroke =====
+  useEffect(() => {
     const q = query.trim();
+    if (q.length === 0) {
+      setLivePeople([]);
+      setLiveOffers([]);
+      setLiveLoading(false);
+      return;
+    }
+    let cancel = false;
+    setLiveLoading(true);
+    const t = setTimeout(() => {
+      void (async () => {
+        if (subTab === "people") {
+          const term = `%${q}%`;
+          const safe = q.replace(/[\\{}"]/g, "");
+          let req = supabase
+            .from("profiles")
+            .select("id, username, display_name, avatar_url, provider_type")
+            .eq("is_claimed", true)
+            .or(`username.ilike.${term},display_name.ilike.${term},keywords.cs.{"${safe}"}`)
+            .limit(20);
+          if (activeCategory) req = req.eq("service_category", activeCategory);
+          const { data } = await req;
+          const rows = ((data as LivePerson[] | null) ?? []).filter((c) => matchProviderType(c.provider_type));
+          if (!cancel) {
+            setLivePeople(rows.slice(0, 6));
+            setLiveOffers([]);
+            setLiveLoading(false);
+          }
+        } else {
+          let req = supabase
+            .from("offers")
+            .select(`id, slug, title, price_cents, price_max_cents, pricing_model, free_for_testimonial,
+                     provider:profiles!offers_provider_id_fkey ( username, display_name, provider_type )`)
+            .eq("is_active", true)
+            .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+            .limit(20);
+          if (freeOnly) req = req.eq("free_for_testimonial", true);
+          if (activeCategory) req = req.eq("category", activeCategory);
+          const { data } = await req;
+          const rows = ((data as unknown as LiveOffer[] | null) ?? [])
+            .filter((o) => matchProviderType(o.provider?.provider_type ?? null));
+          if (!cancel) {
+            setLiveOffers(rows.slice(0, 6));
+            setLivePeople([]);
+            setLiveLoading(false);
+          }
+        }
+      })();
+    }, 220);
+    return () => { cancel = true; clearTimeout(t); };
+  }, [query, subTab, activeCategory, providerType, freeOnly]);
+
+  // Close dropdown when clicking outside the search box
+  useEffect(() => {
+    if (!liveOpen) return;
+    const onDocDown = (e: MouseEvent) => {
+      if (!searchBoxRef.current) return;
+      if (!searchBoxRef.current.contains(e.target as Node)) setLiveOpen(false);
+    };
+    document.addEventListener("mousedown", onDocDown);
+    return () => document.removeEventListener("mousedown", onDocDown);
+  }, [liveOpen]);
+
+  const runFullSearch = (raw?: string) => {
+    const q = (raw ?? query).trim();
+    setQuery(q);
     setSubmitted(q);
     writeUrl({ q: q || null });
+    setLiveOpen(false);
+  };
+
+  const onSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    runFullSearch();
   };
 
   const toggleCategory = (cat: string) => {
@@ -206,19 +296,106 @@ export default function Explore() {
   const showingResults = submitted.trim().length > 0 || !!activeCategory;
   const reviewLink = activeCategory ? `/submit-review?cat=${encodeURIComponent(activeCategory)}` : "/submit-review";
 
+  const providerTypeLabel = (pt: ProviderType | null | undefined) =>
+    pt === "service_provider" ? "Service Provider" : "Coach";
+
+  const showDropdown = liveOpen && query.trim().length > 0;
+
   return (
     <div className="relative px-4 py-6 md:px-8 md:py-8">
       {/* Search */}
-      <form onSubmit={onSearch} className="relative mx-auto max-w-2xl">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search coaches, providers, and offers..."
-          className="h-12 pl-9 text-sm"
-          aria-label="Search coaches, providers, and offers"
-        />
-      </form>
+      <div ref={searchBoxRef} className="relative mx-auto max-w-2xl">
+        <form onSubmit={onSearch} className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setLiveOpen(true); }}
+            onFocus={() => { if (query.trim().length > 0) setLiveOpen(true); }}
+            placeholder="Search coaches, providers, and offers..."
+            className="h-12 pl-9"
+            aria-label="Search coaches, providers, and offers"
+            autoComplete="off"
+          />
+        </form>
+
+        {showDropdown && (
+          <div
+            role="listbox"
+            className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-md border border-border bg-popover shadow-[0_18px_40px_-12px_rgba(0,0,0,0.6)]"
+          >
+            {liveLoading && livePeople.length === 0 && liveOffers.length === 0 ? (
+              <div className="px-4 py-6 text-center text-xs text-muted-foreground">Searching…</div>
+            ) : (
+              <>
+                {subTab === "people" && livePeople.length === 0 && !liveLoading && (
+                  <div className="px-4 py-6 text-center text-xs text-muted-foreground">No people match yet.</div>
+                )}
+                {subTab === "offers" && liveOffers.length === 0 && !liveLoading && (
+                  <div className="px-4 py-6 text-center text-xs text-muted-foreground">No offers match yet.</div>
+                )}
+
+                {subTab === "people" && livePeople.map((p) => {
+                  const name = p.display_name || p.username;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setLiveOpen(false); navigate(`/@${p.username}`); }}
+                      className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-accent/10"
+                    >
+                      <CoachAvatar name={name} url={p.avatar_url} size={36} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          @{p.username} · {providerTypeLabel(p.provider_type)}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {subTab === "offers" && liveOffers.map((o) => {
+                  const price = formatOfferPrice(o);
+                  const providerName = o.provider?.display_name || o.provider?.username || "";
+                  const href = o.provider?.username ? `/@${o.provider.username}/${o.slug}` : "#";
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setLiveOpen(false); navigate(href); }}
+                      className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-accent/10"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{o.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{providerName}</p>
+                      </div>
+                      {o.free_for_testimonial ? (
+                        <span className="shrink-0 rounded-[3px] bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+                          Free
+                        </span>
+                      ) : price ? (
+                        <span className="shrink-0 text-xs font-semibold text-foreground/90">{price}</span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => runFullSearch()}
+                  className="flex w-full items-center justify-between gap-2 border-t border-border bg-card/60 px-3 py-2.5 text-left text-sm font-semibold text-primary transition-colors hover:bg-accent/10"
+                >
+                  <span>See all results for "{query.trim()}"</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Sub-tabs: People / Offers */}
       <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center gap-1 border-b border-border">
