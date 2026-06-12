@@ -596,11 +596,16 @@ export default function SubmitReview() {
             )}
           </div>
 
-          <Field label="Upload evidence (optional)" hint={`${files.length}/3`}>
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors hover:border-primary/40">
+          <Field label="Upload evidence (optional)" hint={user ? `${files.length}/3` : "Sign in to attach"}>
+            <label className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors",
+              user ? "cursor-pointer hover:border-primary/40" : "cursor-not-allowed opacity-60",
+            )}>
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
-                Add receipts, screenshots of results, or proof of purchase
+                {user
+                  ? "Add receipts, screenshots of results, or proof of purchase"
+                  : "Sign in to attach receipts or screenshots as evidence"}
               </span>
               <input
                 type="file"
@@ -608,7 +613,7 @@ export default function SubmitReview() {
                 multiple
                 className="hidden"
                 onChange={onPickFiles}
-                disabled={files.length >= 3}
+                disabled={!user || files.length >= 3}
               />
             </label>
             {files.length > 0 && (
