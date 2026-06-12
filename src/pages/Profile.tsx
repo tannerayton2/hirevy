@@ -323,6 +323,20 @@ export default function Profile() {
     toast({ title: "Profile link copied", description: "Share it anywhere — it unfurls with your tier and reviews." });
   };
 
+  const handleShareReviewLink = async () => {
+    if (!reviewLink) return;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: `Leave a review for ${providerDisplayName}`, url: reviewLink });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(reviewLink);
+    toast({ title: "Review link copied", description: "Share it with past clients to collect a verified review." });
+  };
+
   const toggleFollow = async () => {
     if (!user || !profile) { window.location.href = "/auth"; return; }
     if (following) {
