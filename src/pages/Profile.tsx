@@ -662,6 +662,37 @@ export default function Profile() {
               )}
             </div>
 
+            {/* Sub-pill toggle: Verified | Imported */}
+            <div className="mb-4 inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+              <button
+                type="button"
+                onClick={() => setReviewSub("verified")}
+                aria-pressed={reviewSub === "verified"}
+                className={cn(
+                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
+                  reviewSub === "verified"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Verified <span className="ml-1 text-muted-foreground">{totalReviewsCount}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewSub("imported")}
+                aria-pressed={reviewSub === "imported"}
+                className={cn(
+                  "inline-flex h-7 items-center rounded-full px-3 text-xs font-medium transition-colors",
+                  reviewSub === "imported"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Imported <span className="ml-1 text-muted-foreground">{imported.length}</span>
+              </button>
+            </div>
+
+            {reviewSub === "verified" && (<>
             {/* Filter + verified-purchases toggle */}
             {(unifiedReviews.length > 0 || pinnedReview) && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
