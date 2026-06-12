@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
+import { formatOfferPrice } from "@/lib/pricing";
 
 const BROWSE_CATEGORIES = [
   "Business Coaching", "Sales", "Copywriting", "Fitness",
