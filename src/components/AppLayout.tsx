@@ -51,9 +51,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile, signOut } = useAuth();
   const unread = useUnreadDocumentTitle("HireVy");
   const isAdmin = isAdminUsername(profile?.username);
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Hide the mobile floating pill nav when an individual conversation is open
+  // (chat thread, draft compose, or the HireVy Team chat) so the chat view can
+  // take the full height like Instagram DMs.
+  const msgParams = new URLSearchParams(location.search);
+  const inOpenConversation =
+    pathname === "/messages" &&
+    (!!msgParams.get("t") || !!msgParams.get("to") || msgParams.get("team") === "1");
 
   const items = baseItems.filter((i) => {
     if (i.admin && !isAdmin) return false;
