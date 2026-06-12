@@ -803,6 +803,41 @@ export default function Profile() {
           </div>
         )}
 
+        {/* Offers */}
+        {activeTab === "offers" && (
+          <div>
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold">Offers</h2>
+              {isMe && (
+                <Button asChild size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary">
+                  <Link to="/settings/offers/new">
+                    <Plus className="mr-1 h-3.5 w-3.5" /> Add Offer
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {offers.map((o) => (
+                <OfferCard
+                  key={o.id}
+                  offer={{
+                    ...o,
+                    provider: {
+                      username: profile.username,
+                      display_name: profile.display_name,
+                      review_count: profile.review_count,
+                      rating_sum: profile.rating_sum,
+                    },
+                  }}
+                  owner={isMe}
+                  onChanged={loadAll}
+                  referrer="profile"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Imported */}
         {activeTab === "imported" && (
           <div>
