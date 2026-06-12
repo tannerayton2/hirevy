@@ -814,7 +814,7 @@ export default function Messages() {
         className={cn(
           "fixed inset-x-0 left-0 right-0 z-30 flex flex-col bg-background",
           "h-[100vh] h-[100dvh]",
-          "md:static md:!top-auto md:!h-full md:z-auto",
+          "md:static md:!top-auto md:!h-full md:z-auto md:overflow-hidden md:rounded-2xl md:border md:border-white/5 md:bg-card/60 md:shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] md:backdrop-blur-xl",
           !activeId && !draftMode && !teamMode && "hidden md:flex",
         )}
       >
