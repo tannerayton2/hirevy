@@ -68,6 +68,15 @@ function snippet(m: Msg | undefined): string {
   return (m.body || "").slice(0, 80);
 }
 
+// Message attachments live in a private bucket. Stored `attachment_url` is a
+// storage path (new uploads) or a legacy public URL (older rows). Strip any
+// legacy URL prefix so we can resign with createSignedUrl.
+function extractAttachmentPath(stored: string): string {
+  const marker = "/message-attachments/";
+  const i = stored.indexOf(marker);
+  return i === -1 ? stored : stored.slice(i + marker.length);
+}
+
 export default function Messages() {
   const { user, loading } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -98,6 +107,7 @@ export default function Messages() {
   const lastTypingSentRef = useRef(0);
   const otherTypingTimerRef = useRef<number | null>(null);
   const longPressRef = useRef<number | null>(null);
+  const [signedAttachmentUrls, setSignedAttachmentUrls] = useState<Record<string, string>>({});
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
@@ -321,6 +331,27 @@ export default function Messages() {
   // Auto-scroll
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [msgs, otherTyping]);
 
+  // Resolve private message-attachment paths to short-lived signed URLs.
+  useEffect(() => {
+    const needed = Array.from(new Set(
+      msgs.map((m) => m.attachment_url).filter((u): u is string => !!u && !signedAttachmentUrls[u])
+    ));
+    if (needed.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const updates: Record<string, string> = {};
+      await Promise.all(needed.map(async (stored) => {
+        const path = extractAttachmentPath(stored);
+        const { data } = await supabase.storage.from("message-attachments").createSignedUrl(path, 60 * 60);
+        if (data?.signedUrl) updates[stored] = data.signedUrl;
+      }));
+      if (!cancelled && Object.keys(updates).length) {
+        setSignedAttachmentUrls((prev) => ({ ...prev, ...updates }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [msgs, signedAttachmentUrls]);
+
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
@@ -337,7 +368,8 @@ export default function Messages() {
     const path = `${user.id}/${threadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from("message-attachments").upload(path, file, { contentType, upsert: false });
     if (error) throw error;
-    return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
+    // Store the storage path; render layer signs a short-lived URL on demand.
+    return path;
   };
 
   // Lazily create a thread (only when actually sending the first message in draft mode).
@@ -819,18 +851,25 @@ export default function Messages() {
                         )}
 
                         {isVoice ? (
-                          <VoiceNotePlayer url={m.attachment_url!} durationMs={m.voice_duration_ms} mine={mine} />
+                          <VoiceNotePlayer url={signedAttachmentUrls[m.attachment_url!] ?? ""} durationMs={m.voice_duration_ms} mine={mine} />
                         ) : (
                           <>
-                            {m.attachment_url && (
-                              <button
-                                type="button"
-                                onClick={() => setLightbox(m.attachment_url)}
-                                className="block overflow-hidden rounded-xl"
-                              >
-                                <img src={m.attachment_url} alt="" className="max-h-72 max-w-full object-cover" loading="lazy" />
-                              </button>
-                            )}
+                            {m.attachment_url && (() => {
+                              const resolved = signedAttachmentUrls[m.attachment_url] ?? "";
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => resolved && setLightbox(resolved)}
+                                  className="block overflow-hidden rounded-xl"
+                                >
+                                  {resolved ? (
+                                    <img src={resolved} alt="" className="max-h-72 max-w-full object-cover" loading="lazy" />
+                                  ) : (
+                                    <div className="flex h-40 w-40 items-center justify-center bg-foreground/5 text-xs text-muted-foreground">Loading…</div>
+                                  )}
+                                </button>
+                              );
+                            })()}
                             {m.body && <p className={cn("whitespace-pre-wrap break-words", m.attachment_url && "px-2 py-1.5")}>{m.body}</p>}
                           </>
                         )}
