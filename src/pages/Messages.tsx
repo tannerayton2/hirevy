@@ -111,21 +111,24 @@ export default function Messages() {
   const msgRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [unreadThreadIds, setUnreadThreadIds] = useState<Set<string>>(new Set());
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  // Visual viewport metrics — used to pin the chat pane to the visible area on
+  // iOS Safari so the composer sits flush above the on-screen keyboard with no
+  // dead gap. `vvTop`/`vvHeight` mirror window.visualViewport.{offsetTop,height}.
+  const [vvTop, setVvTop] = useState(0);
+  const [vvHeight, setVvHeight] = useState<number | null>(null);
 
-  // Track mobile keyboard via visualViewport so the input bar stays above it.
+  // Track the mobile keyboard via the visualViewport API.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const vv = window.visualViewport;
     if (!vv) return;
     const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardOffset(offset);
-      if (offset > 0) {
-        requestAnimationFrame(() => {
-          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-        });
-      }
+      setVvTop(vv.offsetTop);
+      setVvHeight(vv.height);
+      // Keep the latest message in view as the keyboard opens/closes.
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+      });
     };
     update();
     vv.addEventListener("resize", update);
@@ -134,6 +137,17 @@ export default function Messages() {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
     };
+  }, []);
+
+  // When the composer input is focused, scroll to the most recent message.
+  const onComposerFocus = useCallback(() => {
+    // Defer to next frame so iOS has begun resizing the visual viewport.
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    });
+    window.setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    }, 250);
   }, []);
 
   const recomputeUnreadThreads = useCallback(async (threadsList: { id: string; last_message_at: string }[]) => {
