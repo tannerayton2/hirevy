@@ -282,7 +282,7 @@ Deno.serve(async (req) => {
     url: canonical,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    image: DEFAULT_IMAGE,
+    ...imageFor(null),
     type: "website",
   };
 
