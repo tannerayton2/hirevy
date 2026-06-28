@@ -72,6 +72,8 @@ interface MetaPayload {
   title: string;
   description: string;
   image: string;
+  imageWidth: number;
+  imageHeight: number;
   type: "website" | "profile";
 }
 
@@ -80,6 +82,8 @@ function renderHtml(m: MetaPayload): string {
   const d = escapeHtml(m.description);
   const u = escapeHtml(m.url);
   const i = escapeHtml(m.image);
+  const isSquare = m.imageWidth === m.imageHeight;
+  const twitterCard = isSquare ? "summary" : "summary_large_image";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -94,11 +98,12 @@ function renderHtml(m: MetaPayload): string {
 <meta property="og:title" content="${t}" />
 <meta property="og:description" content="${d}" />
 <meta property="og:image" content="${i}" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:image:secure_url" content="${i}" />
+<meta property="og:image:width" content="${m.imageWidth}" />
+<meta property="og:image:height" content="${m.imageHeight}" />
 <meta property="og:image:alt" content="${t}" />
 
-<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:card" content="${twitterCard}" />
 <meta name="twitter:title" content="${t}" />
 <meta name="twitter:description" content="${d}" />
 <meta name="twitter:image" content="${i}" />
@@ -109,6 +114,18 @@ function renderHtml(m: MetaPayload): string {
 <p><a href="${u}">${t}</a></p>
 </body>
 </html>`;
+}
+
+// og:image dimensions. Avatars in the "avatars" bucket are cropped square
+// (AvatarCropper outputs >=600px). The branded default is 1200x630.
+const AVATAR_DIM = 600;
+const DEFAULT_IMG_W = 1200;
+const DEFAULT_IMG_H = 630;
+function imageFor(avatarUrl: string | null | undefined): { image: string; imageWidth: number; imageHeight: number } {
+  if (avatarUrl && /^https?:\/\//i.test(avatarUrl)) {
+    return { image: avatarUrl, imageWidth: AVATAR_DIM, imageHeight: AVATAR_DIM };
+  }
+  return { image: DEFAULT_IMAGE, imageWidth: DEFAULT_IMG_W, imageHeight: DEFAULT_IMG_H };
 }
 
 function metaResponse(m: MetaPayload): Response {
