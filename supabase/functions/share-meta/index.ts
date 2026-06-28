@@ -178,7 +178,7 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
       url: canonical,
       title: `@${username} on HireVy`,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "profile",
     };
   }
@@ -193,7 +193,7 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
     url: canonical,
     title: `${name} on HireVy`,
     description,
-    image: data.avatar_url || DEFAULT_IMAGE,
+    ...imageFor(data.avatar_url),
     type: "profile",
   };
 }
@@ -210,7 +210,7 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
       url: canonical,
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "website",
     };
   }
@@ -225,16 +225,20 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
       url: canonical,
       title: `Offer on HireVy`,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "website",
     };
   }
   const name = prof.display_name?.trim() || `@${prof.username}`;
+  // offer covers are landscape; if present use default dims, else fall back to branded image
+  const cover = offer.cover_url && /^https?:\/\//i.test(offer.cover_url)
+    ? { image: offer.cover_url, imageWidth: DEFAULT_IMG_W, imageHeight: DEFAULT_IMG_H }
+    : imageFor(null);
   return {
     url: canonical,
     title: `${offer.title} — by ${name} on HireVy`,
     description: truncate(offer.description ?? "", 160) || DEFAULT_DESCRIPTION,
-    image: offer.cover_url || DEFAULT_IMAGE,
+    ...cover,
     type: "website",
   };
 }
@@ -243,15 +247,15 @@ async function buildReviewMeta(usernameRaw: string, canonical: string): Promise<
   const username = usernameRaw.replace(/^@/, "");
   const { data } = await supabase
     .from("profiles")
-    .select("display_name, username")
+    .select("display_name, username, avatar_url")
     .eq("username", username)
-    .maybeSingle<{ display_name: string | null; username: string }>();
+    .maybeSingle<{ display_name: string | null; username: string; avatar_url: string | null }>();
   const name = data?.display_name?.trim() || (data ? `@${data.username}` : `@${username}`);
   return {
     url: canonical,
     title: `Review ${name} on HireVy`,
-    description: "Leave an honest review. Reviews are public; emails stay private.",
-    image: DEFAULT_IMAGE,
+    description: `Leave an honest, verified review for ${name}. Reviews are public; emails stay private.`,
+    ...imageFor(data?.avatar_url),
     type: "website",
   };
 }
