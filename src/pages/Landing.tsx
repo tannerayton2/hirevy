@@ -108,27 +108,6 @@ export default function Landing() {
           >
             Get Started
           </Link>
-          <button
-            type="button"
-            onClick={() => {
-              document.getElementById("demo-video")?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "1rem 2.5rem",
-              fontSize: "1.0625rem",
-              fontWeight: 600,
-              borderRadius: "9999px",
-              background: "hsl(var(--card))",
-              color: "hsl(var(--foreground))",
-              border: "1px solid hsl(var(--border))",
-              cursor: "pointer",
-            }}
-          >
-            ▶ Watch Demo
-          </button>
         </div>
       </section>
 
@@ -160,20 +139,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* VIDEO PLACEHOLDER with How It Works heading */}
-      <section className="hv-l-video-wrap hv-l-container" id="demo-video">
-
-        <div className="hv-l-section-head hv-l-video-head">
-          <div className="hv-l-section-label">How it works</div>
-          <h2>Simple, <span className="hv-l-italic">honest,</span> verified.</h2>
-        </div>
-        <div className="hv-l-video-card">
-          <button type="button" className="hv-l-video-play" aria-label="Play demo video">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <div className="hv-l-video-caption">See how HireVy works — demo coming soon.</div>
-        </div>
-      </section>
 
       {/* MANIFESTO */}
       <section className="hv-l-manifesto hv-l-container">

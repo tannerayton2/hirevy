@@ -192,7 +192,7 @@ function CreateCoachProfileForm({
               onChange={(e) => { setSlugTouched(true); setSlug(slugifyName(e.target.value)); }}
               required
             />
-            <p className="mt-1 text-xs text-muted-foreground">URL: /coach/{slug || "your-slug"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">URL: /@{slug || "your-slug"}</p>
           </div>
         </div>
 
@@ -270,8 +270,8 @@ function CreateCoachProfileForm({
         {success && (
           <div className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
             Profile created.{" "}
-            <Link to={`/coach/${success.slug}`} className="font-medium text-primary underline">
-              View /coach/{success.slug}
+            <Link to={`/@${success.slug}`} className="font-medium text-primary underline">
+              View /@{success.slug}
             </Link>
           </div>
         )}
@@ -1457,7 +1457,7 @@ function EditUnclaimedProfileDialog({
                   value={data.username}
                   onChange={(e) => update("username", slugifyName(e.target.value))}
                 />
-                <p className="mt-1 text-xs text-muted-foreground">URL: /coach/{data.username || "your-slug"}</p>
+                <p className="mt-1 text-xs text-muted-foreground">URL: /@{data.username || "your-slug"}</p>
               </div>
             </div>
 
@@ -1617,8 +1617,8 @@ function ManageUnclaimedProfiles() {
               <TableRow key={r.id}>
                 <TableCell className="font-medium">{r.display_name ?? "—"}</TableCell>
                 <TableCell>
-                  <Link to={`/coach/${r.username}`} className="text-muted-foreground hover:text-primary">
-                    /coach/{r.username}
+                  <Link to={`/@${r.username}`} className="text-muted-foreground hover:text-primary">
+                    /@{r.username}
                   </Link>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{r.service_category ?? "—"}</TableCell>
