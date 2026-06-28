@@ -116,13 +116,39 @@ function renderHtml(m: MetaPayload): string {
 </html>`;
 }
 
-// og:image dimensions. Avatars in the "avatars" bucket are cropped square
-// (AvatarCropper outputs >=600px). The branded default is 1200x630.
+// og:image dimensions. Avatars are served through Supabase's image-transform
+// render endpoint at a fixed 600x600 JPEG so crawlers get a small, predictable,
+// definitely-decodable image. The branded default is 1200x630.
 const AVATAR_DIM = 600;
 const DEFAULT_IMG_W = 1200;
 const DEFAULT_IMG_H = 630;
+
+// Rewrites a public Supabase storage URL to the on-the-fly image-render URL,
+// which returns a freshly transcoded JPEG. Returns null if the URL isn't a
+// Supabase public storage URL we recognize.
+function toRenderedAvatar(rawUrl: string): string | null {
+  try {
+    const u = new URL(rawUrl);
+    // Expected path: /storage/v1/object/public/<bucket>/<rest>
+    const marker = "/storage/v1/object/public/";
+    const idx = u.pathname.indexOf(marker);
+    if (idx === -1) return null;
+    const rest = u.pathname.slice(idx + marker.length);
+    const rendered = `${u.origin}/storage/v1/render/image/public/${rest}` +
+      `?width=${AVATAR_DIM}&height=${AVATAR_DIM}&resize=cover&quality=80`;
+    return rendered;
+  } catch {
+    return null;
+  }
+}
+
 function imageFor(avatarUrl: string | null | undefined): { image: string; imageWidth: number; imageHeight: number } {
   if (avatarUrl && /^https?:\/\//i.test(avatarUrl)) {
+    const rendered = toRenderedAvatar(avatarUrl);
+    if (rendered) {
+      return { image: rendered, imageWidth: AVATAR_DIM, imageHeight: AVATAR_DIM };
+    }
+    // Not a Supabase storage URL — pass through as-is; we still know it's absolute.
     return { image: avatarUrl, imageWidth: AVATAR_DIM, imageHeight: AVATAR_DIM };
   }
   return { image: DEFAULT_IMAGE, imageWidth: DEFAULT_IMG_W, imageHeight: DEFAULT_IMG_H };
