@@ -162,12 +162,16 @@ export default function Profile() {
 
   const loadAll = async () => {
     setLoading(true);
+    // Internal flag columns are restricted from anonymous access at the database level.
+    // Only request them when there's a signed-in user.
+    const baseCols = "id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, role, provider_type";
+    const privateCols = "notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus, incomplete_banner_dismissed";
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, score_sum, points, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, is_claimed, notified_first_review_received, notified_points_tier, awarded_claim_bonus, awarded_profile_complete_bonus, role, provider_type, incomplete_banner_dismissed")
+      .select(user ? `${baseCols}, ${privateCols}` : baseCols)
       .eq("username", handle)
       .maybeSingle();
-    const prof = p as ProfileFull | null;
+    const prof = p as unknown as ProfileFull | null;
     setProfile(prof);
     if (!prof) { setLoading(false); return; }
 
