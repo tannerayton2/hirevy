@@ -67,7 +67,7 @@ const App = () => (
 
             <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
 
-            <Route path="/coach/:username" element={<AppLayout><Profile /></AppLayout>} />
+            
 
             <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
             <Route path="/@:username/offers" element={<AppLayout><ProfileOffers /></AppLayout>} />

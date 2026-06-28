@@ -212,15 +212,6 @@ export default function OfferDetail() {
         </div>
       </div>
 
-      {/* Reviews mentioning this offer (placeholder section, populated in a future pass) */}
-      <section className="mt-8">
-        <h2 className="border-b border-border pb-2 font-display text-lg font-semibold">
-          Reviews mentioning this offer
-        </h2>
-        <p className="mt-4 text-sm italic text-muted-foreground">
-          No reviews mention this offer yet.
-        </p>
-      </section>
     </div>
   );
 }
