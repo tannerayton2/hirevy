@@ -171,7 +171,7 @@ export default function Profile() {
       .select(user ? `${baseCols}, ${privateCols}` : baseCols)
       .eq("username", handle)
       .maybeSingle();
-    const prof = p as ProfileFull | null;
+    const prof = p as unknown as ProfileFull | null;
     setProfile(prof);
     if (!prof) { setLoading(false); return; }
 
