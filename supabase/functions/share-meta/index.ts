@@ -72,6 +72,8 @@ interface MetaPayload {
   title: string;
   description: string;
   image: string;
+  imageWidth: number;
+  imageHeight: number;
   type: "website" | "profile";
 }
 
@@ -80,6 +82,8 @@ function renderHtml(m: MetaPayload): string {
   const d = escapeHtml(m.description);
   const u = escapeHtml(m.url);
   const i = escapeHtml(m.image);
+  const isSquare = m.imageWidth === m.imageHeight;
+  const twitterCard = isSquare ? "summary" : "summary_large_image";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -94,11 +98,12 @@ function renderHtml(m: MetaPayload): string {
 <meta property="og:title" content="${t}" />
 <meta property="og:description" content="${d}" />
 <meta property="og:image" content="${i}" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:image:secure_url" content="${i}" />
+<meta property="og:image:width" content="${m.imageWidth}" />
+<meta property="og:image:height" content="${m.imageHeight}" />
 <meta property="og:image:alt" content="${t}" />
 
-<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:card" content="${twitterCard}" />
 <meta name="twitter:title" content="${t}" />
 <meta name="twitter:description" content="${d}" />
 <meta name="twitter:image" content="${i}" />
@@ -109,6 +114,18 @@ function renderHtml(m: MetaPayload): string {
 <p><a href="${u}">${t}</a></p>
 </body>
 </html>`;
+}
+
+// og:image dimensions. Avatars in the "avatars" bucket are cropped square
+// (AvatarCropper outputs >=600px). The branded default is 1200x630.
+const AVATAR_DIM = 600;
+const DEFAULT_IMG_W = 1200;
+const DEFAULT_IMG_H = 630;
+function imageFor(avatarUrl: string | null | undefined): { image: string; imageWidth: number; imageHeight: number } {
+  if (avatarUrl && /^https?:\/\//i.test(avatarUrl)) {
+    return { image: avatarUrl, imageWidth: AVATAR_DIM, imageHeight: AVATAR_DIM };
+  }
+  return { image: DEFAULT_IMAGE, imageWidth: DEFAULT_IMG_W, imageHeight: DEFAULT_IMG_H };
 }
 
 function metaResponse(m: MetaPayload): Response {
@@ -161,7 +178,7 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
       url: canonical,
       title: `@${username} on HireVy`,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "profile",
     };
   }
@@ -176,7 +193,7 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
     url: canonical,
     title: `${name} on HireVy`,
     description,
-    image: data.avatar_url || DEFAULT_IMAGE,
+    ...imageFor(data.avatar_url),
     type: "profile",
   };
 }
@@ -193,7 +210,7 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
       url: canonical,
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "website",
     };
   }
@@ -208,16 +225,20 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
       url: canonical,
       title: `Offer on HireVy`,
       description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
+      ...imageFor(null),
       type: "website",
     };
   }
   const name = prof.display_name?.trim() || `@${prof.username}`;
+  // offer covers are landscape; if present use default dims, else fall back to branded image
+  const cover = offer.cover_url && /^https?:\/\//i.test(offer.cover_url)
+    ? { image: offer.cover_url, imageWidth: DEFAULT_IMG_W, imageHeight: DEFAULT_IMG_H }
+    : imageFor(null);
   return {
     url: canonical,
     title: `${offer.title} — by ${name} on HireVy`,
     description: truncate(offer.description ?? "", 160) || DEFAULT_DESCRIPTION,
-    image: offer.cover_url || DEFAULT_IMAGE,
+    ...cover,
     type: "website",
   };
 }
@@ -226,15 +247,15 @@ async function buildReviewMeta(usernameRaw: string, canonical: string): Promise<
   const username = usernameRaw.replace(/^@/, "");
   const { data } = await supabase
     .from("profiles")
-    .select("display_name, username")
+    .select("display_name, username, avatar_url")
     .eq("username", username)
-    .maybeSingle<{ display_name: string | null; username: string }>();
+    .maybeSingle<{ display_name: string | null; username: string; avatar_url: string | null }>();
   const name = data?.display_name?.trim() || (data ? `@${data.username}` : `@${username}`);
   return {
     url: canonical,
     title: `Review ${name} on HireVy`,
-    description: "Leave an honest review. Reviews are public; emails stay private.",
-    image: DEFAULT_IMAGE,
+    description: `Leave an honest, verified review for ${name}. Reviews are public; emails stay private.`,
+    ...imageFor(data?.avatar_url),
     type: "website",
   };
 }
@@ -261,7 +282,7 @@ Deno.serve(async (req) => {
     url: canonical,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    image: DEFAULT_IMAGE,
+    ...imageFor(null),
     type: "website",
   };
 
