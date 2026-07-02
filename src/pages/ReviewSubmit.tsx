@@ -39,16 +39,16 @@ export default function ReviewSubmit() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("reviews").insert({
-      provider_id: provider.id,
-      reviewer_name: name.trim(),
-      reviewer_email: email.trim().toLowerCase(),
-      rating,
-      body: body.trim(),
+    const { error } = await supabase.rpc("submit_public_review", {
+      p_provider_id: provider.id,
+      p_reviewer_name: name.trim(),
+      p_reviewer_email: email.trim().toLowerCase(),
+      p_rating: rating,
+      p_body: body.trim(),
     });
     setBusy(false);
     if (error) {
-      const msg = error.message.includes("duplicate")
+      const msg = /already reviewed|duplicate|unique/i.test(error.message)
         ? "You've already left a review for this provider."
         : error.message;
       toast({ title: "Could not submit", description: msg, variant: "destructive" });
