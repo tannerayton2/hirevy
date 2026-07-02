@@ -242,25 +242,31 @@ export default function SubmitReview() {
         ? `${body.trim()}\n\n---\n${extras.join("\n")}`
         : body.trim();
 
-      const { error } = await supabase.from("unclaimed_reviews").insert({
-        coach_name: coachName.trim().slice(0, 120),
-        instagram_handle: instagram.trim() || null,
-        offer_url: offerUrl.trim() || null,
-        rating,
-        body: composedBody,
-        purchased,
-        amount_paid_bracket: purchased && amount ? amount : null,
-        evidence_paths: paths,
-        strength_tier: tier,
-        reviewer_email: email.trim(),
-        unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
-        unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
-        needs_profile: isUnmatched && !linkedProfileId,
-        linked_profile_id: linkedProfileId,
-      } as never);
+      const { data: newId, error } = await supabase.rpc("submit_unclaimed_review", {
+        p_coach_name: coachName.trim().slice(0, 120),
+        p_instagram_handle: instagram.trim() || null,
+        p_offer_url: offerUrl.trim() || null,
+        p_rating: rating,
+        p_body: composedBody,
+        p_purchased: purchased,
+        p_amount_paid_bracket: purchased && amount ? amount : null,
+        p_evidence_paths: paths,
+        p_strength_tier: tier,
+        p_reviewer_email: email.trim(),
+        p_unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
+        p_unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
+        p_needs_profile: isUnmatched && !linkedProfileId,
+        p_linked_profile_id: linkedProfileId,
+      });
       if (error) throw error;
 
-      toast({ title: "Review submitted", description: "Thanks — your review is live." });
+      try {
+        await supabase.functions.invoke("send-review-verification", {
+          body: { review_id: newId, review_type: "unclaimed", origin: window.location.origin },
+        });
+      } catch { /* non-fatal */ }
+
+      toast({ title: "Check your email", description: "Confirm your review via the link we just sent." });
       setConfirmOpen(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
