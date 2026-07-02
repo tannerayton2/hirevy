@@ -12,6 +12,7 @@ import Auth from "./pages/Auth.tsx";
 import SignUp from "./pages/SignUp.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import VerifyReview from "./pages/VerifyReview.tsx";
 
 import Profile from "./pages/Profile.tsx";
 import OfferDetail from "./pages/OfferDetail.tsx";
