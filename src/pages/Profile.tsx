@@ -632,6 +632,35 @@ export default function Profile() {
         )}
       </div>
 
+      {/* Unclaimed profile banner */}
+      {profile && !profile.is_claimed && (
+        <div className="mx-auto mt-5 max-w-xl rounded-md border border-amber-500/40 bg-amber-500/[0.08] px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">This profile is unclaimed.</p>
+                <p className="text-muted-foreground">
+                  Reviews below were submitted by clients before {providerDisplayName} joined HireVy.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => setClaimOpen(true)}
+                className="bg-amber-500 text-black hover:bg-amber-400"
+              >
+                Is this you? Claim this profile
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setReportOpen(true)} className="text-xs">
+                <Flag className="mr-1 h-3.5 w-3.5" /> Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {profile && !isMe && (
         <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
       )}
