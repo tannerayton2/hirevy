@@ -39,16 +39,16 @@ export default function ReviewSubmit() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("reviews").insert({
-      provider_id: provider.id,
-      reviewer_name: name.trim(),
-      reviewer_email: email.trim().toLowerCase(),
-      rating,
-      body: body.trim(),
+    const { error } = await supabase.rpc("submit_public_review", {
+      p_provider_id: provider.id,
+      p_reviewer_name: name.trim(),
+      p_reviewer_email: email.trim().toLowerCase(),
+      p_rating: rating,
+      p_body: body.trim(),
     });
     setBusy(false);
     if (error) {
-      const msg = error.message.includes("duplicate")
+      const msg = /already reviewed|duplicate|unique/i.test(error.message)
         ? "You've already left a review for this provider."
         : error.message;
       toast({ title: "Could not submit", description: msg, variant: "destructive" });
@@ -64,8 +64,8 @@ export default function ReviewSubmit() {
       <Logo />
       {done ? (
         <div className="mt-12 rounded-md border border-border bg-card p-6 text-center">
-          <h1 className="font-display text-2xl font-semibold">Review submitted</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Your review is now live on @{provider.username}'s profile. Thank you for the proof.</p>
+          <h1 className="font-display text-2xl font-semibold">Check your email</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Your review is pending email confirmation. Click the link we just sent to {email || "your email"} to publish it on @{provider.username}'s profile.</p>
           <Button className="mt-6" onClick={() => nav(`/@${provider.username}`)}>View profile</Button>
         </div>
       ) : (
