@@ -118,9 +118,11 @@ export default function Profile() {
   const handle = username.startsWith("@") ? username.slice(1) : username;
   const { user, profile: me, signOut } = useAuth();
   const [reportOpen, setReportOpen] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [unclaimedReviews, setUnclaimedReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
