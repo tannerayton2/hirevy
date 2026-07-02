@@ -140,6 +140,9 @@ export default function Landing() {
         </div>
       </section>
 
+      <VerifiedReviewsStrip />
+
+
 
       {/* MANIFESTO */}
       <section className="hv-l-manifesto hv-l-container">
