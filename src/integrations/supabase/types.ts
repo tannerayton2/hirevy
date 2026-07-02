@@ -1249,6 +1249,16 @@ export type Database = {
         }
         Returns: number
       }
+      get_my_profile_flags: {
+        Args: never
+        Returns: {
+          awarded_claim_bonus: boolean
+          awarded_profile_complete_bonus: boolean
+          incomplete_banner_dismissed: boolean
+          notified_first_review_received: boolean
+          notified_points_tier: string
+        }[]
+      }
       get_or_create_thread: { Args: { other_user: string }; Returns: string }
       has_role: {
         Args: {
