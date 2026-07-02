@@ -30,6 +30,7 @@ import SubmitReview from "./pages/SubmitReview.tsx";
 import Following from "./pages/Following.tsx";
 import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
+import HowVerificationWorks from "./pages/HowVerificationWorks.tsx";
 
 const queryClient = new QueryClient();
 
