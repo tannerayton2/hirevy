@@ -855,6 +855,9 @@ export type Database = {
           rating: number
           reviewer_email: string
           reviewer_name: string
+          status: string
+          verified_at: string | null
+          verify_token: string
         }
         Insert: {
           body?: string
@@ -865,6 +868,9 @@ export type Database = {
           rating: number
           reviewer_email: string
           reviewer_name: string
+          status?: string
+          verified_at?: string | null
+          verify_token?: string
         }
         Update: {
           body?: string
@@ -875,6 +881,9 @@ export type Database = {
           rating?: number
           reviewer_email?: string
           reviewer_name?: string
+          status?: string
+          verified_at?: string | null
+          verify_token?: string
         }
         Relationships: [
           {
@@ -1025,7 +1034,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_reviews: {
+        Row: {
+          body: string | null
+          completeness_score: number | null
+          created_at: string | null
+          id: string | null
+          provider_id: string | null
+          rating: number | null
+          reviewer_name: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          body?: string | null
+          completeness_score?: number | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          body?: string | null
+          completeness_score?: number | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_broadcast_notification: {
@@ -1197,7 +1246,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_public_review: {
+        Args: {
+          p_body: string
+          p_provider_id: string
+          p_rating: number
+          p_reviewer_email: string
+          p_reviewer_name: string
+        }
+        Returns: string
+      }
       tier_for_review_count: { Args: { c: number }; Returns: string }
+      verify_review: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
