@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
+import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { cn } from "@/lib/utils";
 import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
