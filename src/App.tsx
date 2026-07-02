@@ -53,6 +53,7 @@ const App = () => (
             <Route path="/verify-review" element={<VerifyReview />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/how-verification-works" element={<HowVerificationWorks />} />
             
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
