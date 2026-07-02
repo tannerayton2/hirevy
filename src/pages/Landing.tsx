@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageMeta } from "@/lib/usePageMeta";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Public marketing landing page. Logged-in users auto-redirect to /explore.
@@ -139,6 +140,9 @@ export default function Landing() {
         </div>
       </section>
 
+      <VerifiedReviewsStrip />
+
+
 
       {/* MANIFESTO */}
       <section className="hv-l-manifesto hv-l-container">
@@ -250,10 +254,107 @@ export default function Landing() {
             <Link to="/terms" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Terms of Service</Link>
             <span style={{ color: "var(--hv-line)" }}>•</span>
             <Link to="/privacy" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Privacy Policy</Link>
+            <span style={{ color: "var(--hv-line)" }}>•</span>
+            <Link to="/how-verification-works" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>How Verification Works</Link>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+type VerifiedReviewItem = {
+  id: string;
+  rating: number;
+  body: string;
+  reviewer_name: string | null;
+  provider: { username: string; display_name: string | null; avatar_url: string | null };
+};
+
+function VerifiedReviewsStrip() {
+  const [items, setItems] = useState<VerifiedReviewItem[] | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    void (async () => {
+      const { data: rows, error } = await supabase
+        .from("public_reviews")
+        .select("id, rating, body, reviewer_name, provider_id, created_at")
+        .gte("rating", 4)
+        .order("rating", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(24);
+      if (cancel) return;
+      if (error || !rows) { setItems([]); return; }
+      const qualifying = rows.filter((r) => (r.body ?? "").trim().length >= 140 && r.provider_id);
+      const providerIds = Array.from(new Set(qualifying.map((r) => r.provider_id as string)));
+      if (providerIds.length === 0) { setItems([]); return; }
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .in("id", providerIds);
+      if (cancel) return;
+      const pmap = new Map((profs ?? []).map((p) => [p.id, p]));
+      const chosen: VerifiedReviewItem[] = [];
+      const seen = new Set<string>();
+      for (const r of qualifying) {
+        const p = pmap.get(r.provider_id as string);
+        if (!p || !p.username) continue;
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        chosen.push({
+          id: r.id as string,
+          rating: r.rating as number,
+          body: (r.body as string).trim(),
+          reviewer_name: (r.reviewer_name as string | null) ?? null,
+          provider: { username: p.username, display_name: p.display_name ?? null, avatar_url: p.avatar_url ?? null },
+        });
+        if (chosen.length >= 3) break;
+      }
+      setItems(chosen);
+    })();
+    return () => { cancel = true; };
+  }, []);
+
+  if (!items || items.length < 2) return null;
+
+  return (
+    <section className="hv-l-trust hv-l-container">
+      <div className="hv-l-section-head">
+        <div className="hv-l-section-label">Verified reviews</div>
+        <h2>Real reviews, <span className="hv-l-italic">real people.</span></h2>
+      </div>
+      <div className="hv-l-trust-grid">
+        {items.map((r) => (
+          <Link key={r.id} to={`/@${r.provider.username}`} className="hv-l-trust-card">
+            <div className="hv-l-trust-stars" aria-label={`${r.rating} out of 5`}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} className={i < r.rating ? "hv-l-star on" : "hv-l-star"}>★</span>
+              ))}
+            </div>
+            <p className="hv-l-trust-body">"{r.body.length > 260 ? r.body.slice(0, 257).trimEnd() + "…" : r.body}"</p>
+            <div className="hv-l-trust-meta">
+              {r.provider.avatar_url ? (
+                <img src={r.provider.avatar_url} alt="" className="hv-l-trust-avatar" />
+              ) : (
+                <span className="hv-l-trust-avatar hv-l-trust-avatar--fallback">
+                  {(r.provider.display_name || r.provider.username).trim().charAt(0).toUpperCase()}
+                </span>
+              )}
+              <div className="hv-l-trust-meta-text">
+                <div className="hv-l-trust-reviewer">{r.reviewer_name || "Verified reviewer"}</div>
+                <div className="hv-l-trust-provider">
+                  reviewed <span className="hv-l-trust-provider-name">{r.provider.display_name || r.provider.username}</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+      <div className="hv-l-trust-foot">
+        <Link to="/how-verification-works" className="hv-l-trust-link">How verification works →</Link>
+      </div>
+    </section>
   );
 }
 
@@ -560,4 +661,31 @@ const LANDING_CSS = `
 .hv-l-fade-3 { animation-delay: 0.4s; }
 .hv-l-fade-4 { animation-delay: 0.55s; }
 .hv-l-fade-5 { animation-delay: 0.7s; }
+
+/* Verified reviews strip */
+.hv-l-trust { padding: 60px 0 20px; position: relative; z-index: 2; }
+.hv-l-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; }
+@media (max-width: 900px) { .hv-l-trust-grid { grid-template-columns: 1fr; } }
+.hv-l-trust-card {
+  display: flex; flex-direction: column; gap: 18px;
+  background: linear-gradient(180deg, rgba(212,162,76,0.05) 0%, rgba(212,162,76,0.01) 100%);
+  border: 1px solid var(--hv-line); border-radius: 18px;
+  padding: 26px 24px; text-decoration: none; color: var(--hv-ivory);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hv-l-trust-card:hover { border-color: rgba(212,162,76,0.45); transform: translateY(-3px); box-shadow: var(--hv-shadow-gold); }
+.hv-l-trust-stars { display: inline-flex; gap: 3px; font-size: 15px; }
+.hv-l-star { color: rgba(255,255,255,0.15); }
+.hv-l-star.on { color: var(--hv-gold); text-shadow: 0 0 8px rgba(212,162,76,0.35); }
+.hv-l-trust-body { font-family: 'Fraunces', serif; font-size: 17px; line-height: 1.55; color: var(--hv-ivory); font-weight: 400; margin: 0; flex: 1; }
+.hv-l-trust-meta { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--hv-line); }
+.hv-l-trust-avatar { width: 40px; height: 40px; border-radius: 999px; object-fit: cover; border: 1px solid var(--hv-line); }
+.hv-l-trust-avatar--fallback { display: inline-flex; align-items: center; justify-content: center; background: rgba(212,162,76,0.12); color: var(--hv-gold); font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; }
+.hv-l-trust-meta-text { min-width: 0; }
+.hv-l-trust-reviewer { font-size: 13px; font-weight: 500; color: var(--hv-ivory); }
+.hv-l-trust-provider { font-size: 12px; color: var(--hv-muted); margin-top: 2px; }
+.hv-l-trust-provider-name { color: var(--hv-gold); }
+.hv-l-trust-foot { display: flex; justify-content: center; margin-top: 26px; }
+.hv-l-trust-link { color: var(--hv-gold); font-size: 13px; letter-spacing: 0.05em; text-decoration: none; border-bottom: 1px solid var(--hv-line); padding-bottom: 3px; transition: border-color 0.25s ease; }
+.hv-l-trust-link:hover { border-color: var(--hv-gold); }
 `;
