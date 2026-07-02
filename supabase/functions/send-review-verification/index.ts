@@ -73,13 +73,17 @@ Deno.serve(async (req) => {
     ]);
     if (((c1 ?? 0) + (c2 ?? 0)) > 3) return json({ error: 'rate_limited' }, 429);
 
-    const { data: provider } = await supabase
-      .from('profiles')
-      .select('username, display_name')
-      .eq('id', review.provider_id)
-      .maybeSingle();
-
-    const providerName = provider?.display_name || (provider?.username ? `@${provider.username}` : 'the provider');
+    let providerName = review.coach_name || 'the provider';
+    if (review.provider_id) {
+      const { data: provider } = await supabase
+        .from('profiles')
+        .select('username, display_name')
+        .eq('id', review.provider_id)
+        .maybeSingle();
+      if (provider) {
+        providerName = provider.display_name || (provider.username ? `@${provider.username}` : providerName);
+      }
+    }
 
     const safeOrigin = typeof origin === 'string' && /^https?:\/\//.test(origin)
       ? origin.replace(/\/$/, '')
