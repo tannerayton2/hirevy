@@ -765,6 +765,8 @@ export default function Admin() {
                 </Tabs>
               )}
 
+              {active === "review-queue" && <ReviewQueuePanel />}
+
               {active === "claims" && <ClaimRequestsPanel />}
 
               {active === "profile-requests" && (
