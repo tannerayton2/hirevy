@@ -394,7 +394,7 @@ export default function Profile() {
 
   const providerDisplayName = profile.display_name || profile.username;
   const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
-  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0;
+  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0 || unclaimedReviews.length > 0;
 
   return (
     <TooltipProvider delayDuration={150}>
