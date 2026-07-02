@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageMeta } from "@/lib/usePageMeta";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Public marketing landing page. Logged-in users auto-redirect to /explore.
