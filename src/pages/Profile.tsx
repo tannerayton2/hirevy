@@ -746,6 +746,11 @@ export default function Profile() {
                 </button>
               </div>
             </div>
+            <div className="mb-4 -mt-3 flex justify-center">
+              <Link to="/how-verification-works" className="text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline">
+                How verification works →
+              </Link>
+            </div>
 
 
             {reviewSub === "verified" && (<>
