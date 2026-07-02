@@ -22,6 +22,7 @@ export default function ReviewSubmit() {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [emailDelayed, setEmailDelayed] = useState(false);
 
   useEffect(() => {
     void supabase
@@ -39,21 +40,31 @@ export default function ReviewSubmit() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.rpc("submit_public_review", {
+    const { data, error } = await supabase.rpc("submit_public_review", {
       p_provider_id: provider.id,
       p_reviewer_name: name.trim(),
       p_reviewer_email: email.trim().toLowerCase(),
       p_rating: rating,
       p_body: body.trim(),
     });
-    setBusy(false);
     if (error) {
+      setBusy(false);
       const msg = /already reviewed|duplicate|unique/i.test(error.message)
         ? "You've already left a review for this provider."
         : error.message;
       toast({ title: "Could not submit", description: msg, variant: "destructive" });
       return;
     }
+    const reviewId = data as string | null;
+    try {
+      const { error: fnError } = await supabase.functions.invoke("send-review-verification", {
+        body: { review_id: reviewId, origin: window.location.origin },
+      });
+      if (fnError) setEmailDelayed(true);
+    } catch {
+      setEmailDelayed(true);
+    }
+    setBusy(false);
     setDone(true);
   };
 
@@ -66,6 +77,9 @@ export default function ReviewSubmit() {
         <div className="mt-12 rounded-md border border-border bg-card p-6 text-center">
           <h1 className="font-display text-2xl font-semibold">Check your email</h1>
           <p className="mt-2 text-sm text-muted-foreground">Your review is pending email confirmation. Click the link we just sent to {email || "your email"} to publish it on @{provider.username}'s profile.</p>
+          {emailDelayed && (
+            <p className="mt-3 text-xs text-muted-foreground">Note: the confirmation email may be delayed. Check your inbox in a few minutes.</p>
+          )}
           <Button className="mt-6" onClick={() => nav(`/@${provider.username}`)}>View profile</Button>
         </div>
       ) : (

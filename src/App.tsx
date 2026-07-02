@@ -12,6 +12,7 @@ import Auth from "./pages/Auth.tsx";
 import SignUp from "./pages/SignUp.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import VerifyReview from "./pages/VerifyReview.tsx";
 
 import Profile from "./pages/Profile.tsx";
 import OfferDetail from "./pages/OfferDetail.tsx";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-review" element={<VerifyReview />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             
