@@ -661,4 +661,31 @@ const LANDING_CSS = `
 .hv-l-fade-3 { animation-delay: 0.4s; }
 .hv-l-fade-4 { animation-delay: 0.55s; }
 .hv-l-fade-5 { animation-delay: 0.7s; }
+
+/* Verified reviews strip */
+.hv-l-trust { padding: 60px 0 20px; position: relative; z-index: 2; }
+.hv-l-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; }
+@media (max-width: 900px) { .hv-l-trust-grid { grid-template-columns: 1fr; } }
+.hv-l-trust-card {
+  display: flex; flex-direction: column; gap: 18px;
+  background: linear-gradient(180deg, rgba(212,162,76,0.05) 0%, rgba(212,162,76,0.01) 100%);
+  border: 1px solid var(--hv-line); border-radius: 18px;
+  padding: 26px 24px; text-decoration: none; color: var(--hv-ivory);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hv-l-trust-card:hover { border-color: rgba(212,162,76,0.45); transform: translateY(-3px); box-shadow: var(--hv-shadow-gold); }
+.hv-l-trust-stars { display: inline-flex; gap: 3px; font-size: 15px; }
+.hv-l-star { color: rgba(255,255,255,0.15); }
+.hv-l-star.on { color: var(--hv-gold); text-shadow: 0 0 8px rgba(212,162,76,0.35); }
+.hv-l-trust-body { font-family: 'Fraunces', serif; font-size: 17px; line-height: 1.55; color: var(--hv-ivory); font-weight: 400; margin: 0; flex: 1; }
+.hv-l-trust-meta { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--hv-line); }
+.hv-l-trust-avatar { width: 40px; height: 40px; border-radius: 999px; object-fit: cover; border: 1px solid var(--hv-line); }
+.hv-l-trust-avatar--fallback { display: inline-flex; align-items: center; justify-content: center; background: rgba(212,162,76,0.12); color: var(--hv-gold); font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; }
+.hv-l-trust-meta-text { min-width: 0; }
+.hv-l-trust-reviewer { font-size: 13px; font-weight: 500; color: var(--hv-ivory); }
+.hv-l-trust-provider { font-size: 12px; color: var(--hv-muted); margin-top: 2px; }
+.hv-l-trust-provider-name { color: var(--hv-gold); }
+.hv-l-trust-foot { display: flex; justify-content: center; margin-top: 26px; }
+.hv-l-trust-link { color: var(--hv-gold); font-size: 13px; letter-spacing: 0.05em; text-decoration: none; border-bottom: 1px solid var(--hv-line); padding-bottom: 3px; transition: border-color 0.25s ease; }
+.hv-l-trust-link:hover { border-color: var(--hv-gold); }
 `;
