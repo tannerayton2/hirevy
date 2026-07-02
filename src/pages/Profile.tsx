@@ -635,6 +635,14 @@ export default function Profile() {
       {profile && !isMe && (
         <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
       )}
+      {profile && !profile.is_claimed && (
+        <ClaimProfileModal
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          profileId={profile.id}
+          providerDisplayName={providerDisplayName}
+        />
+      )}
 
 
 
