@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Check, Filter as FilterIcon } from "lucide-react";
 import { ReportProfileModal } from "@/components/ReportProfileModal";
+import { ClaimProfileModal } from "@/components/ClaimProfileModal";
 import { cn } from "@/lib/utils";
 import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
@@ -118,9 +119,11 @@ export default function Profile() {
   const handle = username.startsWith("@") ? username.slice(1) : username;
   const { user, profile: me, signOut } = useAuth();
   const [reportOpen, setReportOpen] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [unclaimedReviews, setUnclaimedReviews] = useState<Review[]>([]);
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
@@ -218,7 +221,8 @@ export default function Profile() {
       created_at: r.created_at,
       completeness_score: r.completeness_score,
     } as Review));
-    setReviews([...verifiedReviews, ...unclaimedRows]);
+    setReviews(verifiedReviews);
+    setUnclaimedReviews(unclaimedRows);
     setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setImported((importedRes.data as unknown as ImportedTestimonial[]) ?? []);
     setFollowing(!!followRes.data);
@@ -390,7 +394,7 @@ export default function Profile() {
 
   const providerDisplayName = profile.display_name || profile.username;
   const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
-  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0;
+  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0 || unclaimedReviews.length > 0;
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -607,10 +611,7 @@ export default function Profile() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onSelect={() => {
-                      if (!user) { navigate("/auth"); return; }
-                      setReportOpen(true);
-                    }}
+                    onSelect={() => setReportOpen(true)}
                   >
                     <Flag className="mr-2 h-4 w-4" /> Report Profile
                   </DropdownMenuItem>
@@ -631,8 +632,45 @@ export default function Profile() {
         )}
       </div>
 
+      {/* Unclaimed profile banner */}
+      {profile && !profile.is_claimed && (
+        <div className="mx-auto mt-5 max-w-xl rounded-md border border-amber-500/40 bg-amber-500/[0.08] px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">This profile is unclaimed.</p>
+                <p className="text-muted-foreground">
+                  Reviews below were submitted by clients before {providerDisplayName} joined HireVy.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => setClaimOpen(true)}
+                className="bg-amber-500 text-black hover:bg-amber-400"
+              >
+                Is this you? Claim this profile
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setReportOpen(true)} className="text-xs">
+                <Flag className="mr-1 h-3.5 w-3.5" /> Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {profile && !isMe && (
         <ReportProfileModal open={reportOpen} onOpenChange={setReportOpen} profileId={profile.id} />
+      )}
+      {profile && !profile.is_claimed && (
+        <ClaimProfileModal
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          profileId={profile.id}
+          providerDisplayName={providerDisplayName}
+        />
       )}
 
 
@@ -860,7 +898,53 @@ export default function Profile() {
                 </div>
               );
             })()}
+
+            {/* Pre-claim / unclaimed reviews — visually distinct */}
+            {unclaimedReviews.length > 0 && (
+              <div className="mt-8">
+                <div className="mb-3 flex items-end justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Reviews submitted before this profile was claimed
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground/80">
+                      Left by clients when {providerDisplayName} wasn't yet on HireVy. Not counted toward verified stats.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(true)}
+                    className="shrink-0 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  >
+                    <Flag className="mr-1 inline h-3 w-3" /> Report
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {unclaimedReviews.map((r) => (
+                    <article
+                      key={r.id}
+                      className="relative rounded-md border border-dashed border-amber-500/40 bg-amber-500/[0.04] p-4"
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="font-semibold">{r.reviewer_name}</p>
+                        <StarRating value={r.rating} size={14} />
+                      </div>
+                      <ExpandableReviewText text={r.body} className="text-sm text-muted-foreground" />
+                      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                        <span>
+                          {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                        </span>
+                        <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-amber-600">
+                          Pre-claim
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
             </>)}
+
 
             {reviewSub === "imported" && (
               <div>
