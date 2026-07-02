@@ -567,6 +567,7 @@ export default function Admin() {
   type SectionKey =
     | "dashboard"
     | "moderation"
+    | "review-queue"
     | "claims"
     | "profile-requests"
     | "team-messages"
