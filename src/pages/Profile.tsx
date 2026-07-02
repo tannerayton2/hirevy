@@ -221,7 +221,8 @@ export default function Profile() {
       created_at: r.created_at,
       completeness_score: r.completeness_score,
     } as Review));
-    setReviews([...verifiedReviews, ...unclaimedRows]);
+    setReviews(verifiedReviews);
+    setUnclaimedReviews(unclaimedRows);
     setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setImported((importedRes.data as unknown as ImportedTestimonial[]) ?? []);
     setFollowing(!!followRes.data);
