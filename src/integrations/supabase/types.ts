@@ -1148,9 +1148,30 @@ export type Database = {
               username: string
             }[]
           }
+      admin_delete_review: {
+        Args: { p_review_id: string; p_review_type: string }
+        Returns: undefined
+      }
       admin_delete_unclaimed_profile: {
         Args: { p_profile_id: string }
         Returns: undefined
+      }
+      admin_list_review_queue: {
+        Args: { p_limit?: number }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          rating: number
+          review_type: string
+          reviewer_email: string
+          reviewer_name: string
+          status: string
+          target_name: string
+          target_profile_id: string
+          target_username: string
+          verified_at: string
+        }[]
       }
       admin_list_unclaimed_profiles: {
         Args: never
@@ -1214,6 +1235,10 @@ export type Database = {
             }
             Returns: undefined
           }
+      admin_verify_review: {
+        Args: { p_review_id: string; p_review_type: string }
+        Returns: undefined
+      }
       compute_review_score: {
         Args: {
           p_amount_filled: boolean
