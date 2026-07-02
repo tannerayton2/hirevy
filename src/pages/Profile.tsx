@@ -611,10 +611,7 @@ export default function Profile() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onSelect={() => {
-                      if (!user) { navigate("/auth"); return; }
-                      setReportOpen(true);
-                    }}
+                    onSelect={() => setReportOpen(true)}
                   >
                     <Flag className="mr-2 h-4 w-4" /> Report Profile
                   </DropdownMenuItem>
