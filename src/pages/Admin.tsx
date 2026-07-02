@@ -619,6 +619,7 @@ export default function Admin() {
   const NAV: { key: SectionKey; label: string; icon: typeof Users }[] = [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "moderation", label: "Moderation", icon: Flag },
+    { key: "review-queue", label: "Review Moderation", icon: Star },
     { key: "claims", label: "Claim Requests", icon: UserPlus },
     { key: "profile-requests", label: "Profile Requests", icon: FileWarning },
     { key: "team-messages", label: "Team Messages", icon: MessageSquare },
