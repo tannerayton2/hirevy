@@ -567,6 +567,7 @@ export default function Admin() {
   type SectionKey =
     | "dashboard"
     | "moderation"
+    | "review-queue"
     | "claims"
     | "profile-requests"
     | "team-messages"
@@ -618,6 +619,7 @@ export default function Admin() {
   const NAV: { key: SectionKey; label: string; icon: typeof Users }[] = [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "moderation", label: "Moderation", icon: Flag },
+    { key: "review-queue", label: "Review Moderation", icon: Star },
     { key: "claims", label: "Claim Requests", icon: UserPlus },
     { key: "profile-requests", label: "Profile Requests", icon: FileWarning },
     { key: "team-messages", label: "Team Messages", icon: MessageSquare },
@@ -762,6 +764,8 @@ export default function Admin() {
                   </TabsContent>
                 </Tabs>
               )}
+
+              {active === "review-queue" && <ReviewQueuePanel />}
 
               {active === "claims" && <ClaimRequestsPanel />}
 
@@ -921,6 +925,201 @@ function ReportedProfilesPanel() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ---------------- Review Moderation Queue ----------------
+
+type ReviewQueueRow = {
+  id: string;
+  review_type: "public" | "unclaimed";
+  status: string;
+  rating: number;
+  body: string | null;
+  reviewer_name: string | null;
+  reviewer_email: string | null;
+  target_name: string | null;
+  target_username: string | null;
+  target_profile_id: string | null;
+  created_at: string;
+  verified_at: string | null;
+};
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
+function ReviewQueuePanel() {
+  const [rows, setRows] = useState<ReviewQueueRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "verified">("pending");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErr(null);
+    const { data, error } = await supabase.rpc("admin_list_review_queue" as never, { p_limit: 200 } as never);
+    if (error) setErr(error.message);
+    else setRows((data ?? []) as ReviewQueueRow[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const verify = async (r: ReviewQueueRow) => {
+    setBusyId(r.id);
+    const { error } = await supabase.rpc("admin_verify_review" as never, {
+      p_review_id: r.id, p_review_type: r.review_type,
+    } as never);
+    setBusyId(null);
+    if (error) { toast({ title: "Verify failed", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Review verified" });
+    setRows((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "verified", verified_at: new Date().toISOString() } : x));
+  };
+
+  const remove = async (r: ReviewQueueRow) => {
+    setBusyId(r.id);
+    const { error } = await supabase.rpc("admin_delete_review" as never, {
+      p_review_id: r.id, p_review_type: r.review_type,
+    } as never);
+    setBusyId(null);
+    if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Review deleted" });
+    setRows((prev) => prev.filter((x) => x.id !== r.id));
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (err) return <div className="text-sm text-destructive">{err}</div>;
+
+  const filtered = rows.filter((r) => filter === "all" ? true : r.status === filter);
+  const counts = {
+    pending: rows.filter((r) => r.status === "pending").length,
+    verified: rows.filter((r) => r.status === "verified").length,
+    all: rows.length,
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {(["pending", "verified", "all"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setFilter(k)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs uppercase tracking-[0.14em]",
+              filter === k
+                ? "border-primary bg-primary/10 text-foreground"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {k} <span className="ml-1 text-muted-foreground/70">({counts[k]})</span>
+          </button>
+        ))}
+        <Button size="sm" variant="outline" className="ml-auto" onClick={() => void load()}>
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState icon={Star} message="No reviews in this view." />
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((r) => (
+            <div key={`${r.review_type}-${r.id}`} className="rounded-md border border-border bg-card/60 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className={cn(
+                      "rounded-sm border px-1.5 py-0.5 uppercase tracking-[0.14em]",
+                      r.review_type === "public"
+                        ? "border-primary/40 text-primary"
+                        : "border-amber-500/40 text-amber-500",
+                    )}>
+                      {r.review_type}
+                    </span>
+                    <span className={cn(
+                      "rounded-sm border px-1.5 py-0.5 uppercase tracking-[0.14em]",
+                      r.status === "pending"
+                        ? "border-yellow-500/40 text-yellow-500"
+                        : "border-emerald-500/40 text-emerald-500",
+                    )}>
+                      {r.status}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {r.rating}★ · {timeAgo(r.created_at)}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm">
+                    <span className="text-muted-foreground">From:</span>{" "}
+                    <span className="font-medium">{r.reviewer_name ?? "—"}</span>
+                    {r.reviewer_email && (
+                      <span className="text-muted-foreground"> &lt;{r.reviewer_email}&gt;</span>
+                    )}
+                    {" · "}
+                    <span className="text-muted-foreground">Target:</span>{" "}
+                    {r.target_username ? (
+                      <Link to={`/@${r.target_username}`} className="font-medium hover:text-primary">
+                        @{r.target_username}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{r.target_name ?? "—"}</span>
+                    )}
+                  </p>
+                  {r.body && (
+                    <p className="mt-1.5 line-clamp-3 whitespace-pre-line text-sm text-muted-foreground">
+                      {r.body}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {r.status !== "verified" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busyId === r.id}
+                      onClick={() => void verify(r)}
+                    >
+                      <Check className="h-3.5 w-3.5" /> Verify now
+                    </Button>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" disabled={busyId === r.id}>
+                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this review?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently removes the review from the {r.review_type} table.
+                          If it was verified, provider stats will be recalculated by the delete trigger.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => void remove(r)}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
