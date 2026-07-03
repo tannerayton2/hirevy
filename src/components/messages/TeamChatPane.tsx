@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
-// Logo not used; Aytopus mark rendered inline as text avatar
+import logoUrl from "@/assets/aytopus-logo.png";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -87,8 +87,8 @@ export function TeamChatPane() {
   return (
     <section className="flex h-full flex-col">
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
-          HV
+        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background ring-1 ring-border">
+          <img src={logoUrl} alt="Aytopus" className="h-8 w-8 object-contain" draggable={false} />
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
         </div>
         <div>
