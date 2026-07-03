@@ -3,6 +3,7 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/Logo";
 
 /**
  * Public marketing landing page. Logged-in users auto-redirect to /explore.
@@ -34,11 +35,9 @@ export default function Landing() {
 
       <nav className="hv-l-container">
         <div className="hv-l-nav-inner">
-          <div className="hv-l-logo hv-l-fade hv-l-fade-1">
-            <span className="hv-l-h">Hire</span>
-            <span className="hv-l-v">Vy</span>
-            <span className="hv-l-dot" />
-          </div>
+          <Link to="/" aria-label="Aytopus home" className="hv-l-logo hv-l-fade hv-l-fade-1">
+            <Logo />
+          </Link>
           <div className="hv-l-nav-actions hv-l-fade hv-l-fade-1">
             
             <Link to="/auth" className="hv-l-nav-signup">Log In</Link>
