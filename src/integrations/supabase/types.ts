@@ -1258,6 +1258,7 @@ export type Database = {
           incomplete_banner_dismissed: boolean
           notified_first_review_received: boolean
           notified_points_tier: string
+          onboarding_completed: boolean
           points: number
         }[]
       }
