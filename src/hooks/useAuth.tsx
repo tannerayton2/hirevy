@@ -48,10 +48,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setProfile(null); return; }
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, role, provider_type, preferred_categories, onboarding_completed, incomplete_banner_dismissed")
+      .select("id, username, display_name, avatar_url, bio, service_category, review_count, rating_sum, follower_count, created_at, pinned_review_id, website_url, instagram_url, twitter_url, youtube_url, linkedin_url, tiktok_url, role, provider_type, preferred_categories")
       .eq("id", uid)
       .maybeSingle();
-    let prof = (data as Profile | null) ?? null;
+    let prof = data
+      ? ({ ...(data as object), onboarding_completed: false, incomplete_banner_dismissed: false } as Profile)
+      : null;
+    if (prof) {
+      // Owner-only flags come from a SECURITY DEFINER RPC (not exposed via table SELECT).
+      const { data: flags } = await supabase.rpc("get_my_profile_flags");
+      const row = (Array.isArray(flags) ? flags[0] : flags) as
+        | { onboarding_completed: boolean | null; incomplete_banner_dismissed: boolean | null }
+        | null;
+      if (row) {
+        prof = {
+          ...prof,
+          onboarding_completed: !!row.onboarding_completed,
+          incomplete_banner_dismissed: !!row.incomplete_banner_dismissed,
+        };
+      }
+    }
     // Apply pending provider_type from OAuth signup flow
     if (prof && !prof.provider_type) {
       try {
