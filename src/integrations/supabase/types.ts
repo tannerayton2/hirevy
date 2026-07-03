@@ -1253,10 +1253,12 @@ export type Database = {
         Args: never
         Returns: {
           awarded_claim_bonus: boolean
+          awarded_first_review_submitted_bonus: boolean
           awarded_profile_complete_bonus: boolean
           incomplete_banner_dismissed: boolean
           notified_first_review_received: boolean
           notified_points_tier: string
+          points: number
         }[]
       }
       get_or_create_thread: { Args: { other_user: string }; Returns: string }
