@@ -101,7 +101,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         {isSubmitReview ? (
-          <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
+          <div className="relative mx-auto flex h-14 max-w-7xl items-center px-4">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -110,28 +110,49 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
-            <Logo />
-          </div>
-        ) : (
-          <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-            <NavLink to={user ? "/explore" : "/"} className="flex items-center gap-2">
+            <NavLink
+              to={user ? "/explore" : "/"}
+              aria-label="Aytopus home"
+              className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            >
               <Logo />
             </NavLink>
-            <div className="flex items-center gap-1">
-              {user && <NotificationsBell />}
-              {isOwnProfile ? (
+          </div>
+        ) : (
+          <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4">
+            {/* Left: notification bell */}
+            <div className="flex items-center">
+              {user ? (
+                <NotificationsBell />
+              ) : (
+                <span className="h-9 w-9" aria-hidden />
+              )}
+            </div>
 
+            {/* Center: logo */}
+            <NavLink
+              to={user ? "/explore" : "/"}
+              aria-label="Aytopus home"
+              className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            >
+              <Logo />
+            </NavLink>
+
+            {/* Right: avatar / auth */}
+            <div className="flex items-center">
+              {isOwnProfile ? (
                 <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                   <SheetTrigger asChild>
                     <button
                       type="button"
                       aria-label="Open profile menu"
-                      className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-secondary"
+                      className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-secondary text-[11px] font-semibold uppercase text-muted-foreground ring-1 ring-border transition-colors hover:ring-primary"
                     >
-                      <span className="text-xs uppercase tracking-[0.18em] text-primary">
-                        @{profile?.username}
-                      </span>
-                      <Menu className="h-5 w-5 text-primary" />
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span>{(profile?.username ?? "?").slice(0, 1)}</span>
+                      )}
                     </button>
                   </SheetTrigger>
                   <SheetContent
@@ -200,8 +221,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   </SheetContent>
                 </Sheet>
               ) : user ? (
-                <NavLink to={profilePath} className="text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
-                  @{profile?.username ?? "you"}
+                <NavLink
+                  to={profilePath}
+                  aria-label={`Open ${profile?.username ?? "your"} profile`}
+                  className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-secondary text-[11px] font-semibold uppercase text-muted-foreground ring-1 ring-border transition-colors hover:ring-primary"
+                >
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{(profile?.username ?? "?").slice(0, 1)}</span>
+                  )}
                 </NavLink>
               ) : (
                 <Button asChild size="sm" variant="default">
