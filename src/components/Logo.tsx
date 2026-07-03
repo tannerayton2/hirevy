@@ -6,10 +6,7 @@ export function Logo({ className }: { className?: string }) {
     <img
       src={logoUrl}
       alt="Aytopus"
-      className={cn(
-        "h-7 w-auto md:h-9 select-none bg-transparent [mix-blend-mode:screen]",
-        className,
-      )}
+      className={cn("h-7 w-auto md:h-9 select-none", className)}
       draggable={false}
     />
   );
