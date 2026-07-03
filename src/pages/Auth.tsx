@@ -42,7 +42,7 @@ export default function Auth() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <Logo className="text-2xl" />
+          <Logo className="mx-auto" />
           <h1 className="mt-6 font-display text-3xl font-bold">Welcome back.</h1>
         </div>
 
