@@ -1,15 +1,13 @@
 import { cn } from "@/lib/utils";
+import logoUrl from "@/assets/aytopus-logo.png";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-baseline gap-0.5 font-display text-xl font-bold uppercase tracking-[0.18em] text-foreground",
-        className,
-      )}
-    >
-      <span>AYTOPUS</span>
-      <span className="ml-0.5 h-1.5 w-1.5 translate-y-[-2px] rounded-full bg-primary" />
-    </span>
+    <img
+      src={logoUrl}
+      alt="Aytopus"
+      className={cn("h-7 w-auto md:h-9 select-none", className)}
+      draggable={false}
+    />
   );
 }
