@@ -6,13 +6,13 @@
 //
 // Behaviour:
 //  - Crawler User-Agent  -> 200 HTML with full per-page OG tags
-//  - Anyone else         -> 302 redirect to the canonical hirevy.lovable.app URL
+//  - Anyone else         -> 302 redirect to the canonical aytopus.lovable.app URL
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const SITE_ORIGIN = "https://hirevy.lovable.app";
+const SITE_ORIGIN = "https://aytopus.lovable.app";
 const DEFAULT_IMAGE = `${SITE_ORIGIN}/og-default.png`;
-const DEFAULT_TITLE = "HireVy — Hire by proof, not promises";
+const DEFAULT_TITLE = "Aytopus — Hire by proof, not promises";
 const DEFAULT_DESCRIPTION =
   "Verified reviews for coaches, consultants, and service providers. Browse providers ranked by what their clients actually said.";
 
@@ -93,7 +93,7 @@ function renderHtml(m: MetaPayload): string {
 <link rel="canonical" href="${u}" />
 
 <meta property="og:type" content="${m.type}" />
-<meta property="og:site_name" content="HireVy" />
+<meta property="og:site_name" content="Aytopus" />
 <meta property="og:url" content="${u}" />
 <meta property="og:title" content="${t}" />
 <meta property="og:description" content="${d}" />
@@ -202,7 +202,7 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
   if (!data) {
     return {
       url: canonical,
-      title: `@${username} on HireVy`,
+      title: `@${username} on Aytopus`,
       description: DEFAULT_DESCRIPTION,
       ...imageFor(null),
       type: "profile",
@@ -213,11 +213,11 @@ async function buildProfileMeta(usernameRaw: string, canonical: string): Promise
   const avg = data.review_count > 0 ? data.rating_sum / data.review_count : 0;
   const description = data.review_count > 0
     ? `${tier} tier · ${data.review_count} verified review${data.review_count === 1 ? "" : "s"} · ${avg.toFixed(1)} stars`
-    : "Verified reviews on HireVy";
+    : "Verified reviews on Aytopus";
 
   return {
     url: canonical,
-    title: `${name} on HireVy`,
+    title: `${name} on Aytopus`,
     description,
     ...imageFor(data.avatar_url),
     type: "profile",
@@ -249,7 +249,7 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
   if (!offer) {
     return {
       url: canonical,
-      title: `Offer on HireVy`,
+      title: `Offer on Aytopus`,
       description: DEFAULT_DESCRIPTION,
       ...imageFor(null),
       type: "website",
@@ -262,7 +262,7 @@ async function buildOfferMeta(usernameRaw: string, slug: string, canonical: stri
     : imageFor(null);
   return {
     url: canonical,
-    title: `${offer.title} — by ${name} on HireVy`,
+    title: `${offer.title} — by ${name} on Aytopus`,
     description: truncate(offer.description ?? "", 160) || DEFAULT_DESCRIPTION,
     ...cover,
     type: "website",
@@ -279,7 +279,7 @@ async function buildReviewMeta(usernameRaw: string, canonical: string): Promise<
   const name = data?.display_name?.trim() || (data ? `@${data.username}` : `@${username}`);
   return {
     url: canonical,
-    title: `Review ${name} on HireVy`,
+    title: `Review ${name} on Aytopus`,
     description: `Leave an honest, verified review for ${name}. Reviews are public; emails stay private.`,
     ...imageFor(data?.avatar_url),
     type: "website",

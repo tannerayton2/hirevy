@@ -15,7 +15,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   usePageMeta(
-    "HireVy — Hire Verified Coaches & Service Providers",
+    "Aytopus — Hire Verified Coaches & Service Providers",
     "The network for hiring coaches and service providers — every member verified, every review tied to real work.",
   );
 
@@ -242,14 +242,14 @@ export default function Landing() {
         <p className="hv-l-final-sub">Open the network. See live offers. Hire someone whose work is already verified.</p>
 
         <div className="hv-l-cta-row" style={{ marginBottom: 0 }}>
-          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open HireVy →</Link>
+          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open Aytopus →</Link>
         </div>
       </section>
 
       <footer className="hv-l-footer">
         <div className="hv-l-container">
           <div className="hv-l-tagline">Bringing trust back to the info industry.</div>
-          <div>HireVy © 2026 — hirevy.lovable.app</div>
+          <div>Aytopus © 2026 — aytopus.lovable.app</div>
           <div style={{ marginTop: 12, display: "flex", gap: 16, justifyContent: "center" }}>
             <Link to="/terms" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Terms of Service</Link>
             <span style={{ color: "var(--hv-line)" }}>•</span>

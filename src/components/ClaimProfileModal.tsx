@@ -23,8 +23,8 @@ export function ClaimProfileModal({
   const [sent, setSent] = useState(false);
 
   const openInstagram = () => {
-    const webUrl = "https://instagram.com/hirevy.app";
-    const deepLink = "instagram://user?username=hirevy.app";
+    const webUrl = "https://instagram.com/aytopus.app";
+    const deepLink = "instagram://user?username=aytopus.app";
     const fallback = window.setTimeout(() => {
       window.open(webUrl, "_blank", "noopener,noreferrer");
     }, 600);
@@ -47,7 +47,7 @@ export function ClaimProfileModal({
     const { error } = await supabase.from("claims_requests").insert({
       profile_id: profileId,
       full_name: profile?.display_name || profile?.username || "Unspecified",
-      email: user?.email || "no-reply@hirevy.app",
+      email: user?.email || "no-reply@aytopus.app",
       verification_method: "website",
       verification_value: null,
       notes: text.slice(0, 2000),

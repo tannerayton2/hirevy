@@ -665,7 +665,7 @@ export default function Messages() {
             <PenSquare className="h-5 w-5" />
           </Button>
         </div>
-        {/* Pinned HireVy Team thread */}
+        {/* Pinned Aytopus Team thread */}
         <div className="px-2 pt-2 md:px-2">
           <button
             onClick={() => setParams({ team: "1" }, { replace: true })}
@@ -679,8 +679,8 @@ export default function Messages() {
               <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">HireVy Team</p>
-              <p className="truncate text-xs text-muted-foreground">Get help from the HireVy team</p>
+              <p className="truncate text-sm font-semibold text-foreground">Aytopus Team</p>
+              <p className="truncate text-xs text-muted-foreground">Get help from the Aytopus team</p>
             </div>
           </button>
         </div>

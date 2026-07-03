@@ -87,14 +87,14 @@ Deno.serve(async (req) => {
 
     const safeOrigin = typeof origin === 'string' && /^https?:\/\//.test(origin)
       ? origin.replace(/\/$/, '')
-      : 'https://hirevy.lovable.app';
+      : 'https://aytopus.lovable.app';
     const verifyUrl = `${safeOrigin}/verify-review?token=${encodeURIComponent(review.verify_token)}`;
 
     const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafaf7;padding:32px;color:#111">
       <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #eee;border-radius:12px;padding:32px">
         <h1 style="font-size:22px;margin:0 0 12px">Confirm your review</h1>
         <p style="font-size:15px;line-height:1.5;color:#444;margin:0 0 20px">
-          Please confirm your review for <strong>${escapeHtml(providerName)}</strong> on HireVy. Once confirmed, it will be published on their profile.
+          Please confirm your review for <strong>${escapeHtml(providerName)}</strong> on Aytopus. Once confirmed, it will be published on their profile.
         </p>
         <p style="margin:24px 0">
           <a href="${verifyUrl}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Confirm my review</a>
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'HireVy <onboarding@resend.dev>',
+        from: 'Aytopus <onboarding@resend.dev>',
         to: [review.reviewer_email],
         subject: `Confirm your review for ${providerName}`,
         html,

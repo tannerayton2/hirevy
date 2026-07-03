@@ -457,7 +457,7 @@ export default function ProofReviewSubmit() {
           <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-4 text-sm">
             <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(!!v)} className="mt-0.5" />
             <span className="text-foreground/90">
-              I confirm everything I've submitted is accurate. I understand this review will be public and HireVy may
+              I confirm everything I've submitted is accurate. I understand this review will be public and Aytopus may
               investigate false submissions.
             </span>
           </label>

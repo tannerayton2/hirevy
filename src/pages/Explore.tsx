@@ -51,7 +51,7 @@ const PROFILE_COLS = "id, username, display_name, avatar_url, service_category, 
 
 export default function Explore() {
   usePageMeta(
-    "Browse Verified Coaches, Service Providers & Offers | HireVy",
+    "Browse Verified Coaches, Service Providers & Offers | Aytopus",
     "Search coaches, service providers, and offers. Read verified reviews and hire with confidence.",
   );
   const navigate = useNavigate();
