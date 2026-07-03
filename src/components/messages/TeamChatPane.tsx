@@ -92,7 +92,7 @@ export function TeamChatPane() {
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Aytopus Team</p>
+          <p className="text-sm font-semibold">AYTOPUS TEAM</p>
           <p className="text-xs text-muted-foreground">We usually reply within a day</p>
         </div>
       </header>

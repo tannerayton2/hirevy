@@ -674,12 +674,12 @@ export default function Messages() {
               teamMode ? "bg-primary/15" : "bg-primary/5",
             )}
           >
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-sm font-bold text-primary">
-              HV
+            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background ring-1 ring-border">
+              <img src={aytopusLogo} alt="Aytopus" className="h-8 w-8 object-contain" draggable={false} />
               <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">Aytopus Team</p>
+              <p className="truncate text-sm font-semibold text-foreground">AYTOPUS TEAM</p>
               <p className="truncate text-xs text-muted-foreground">Get help from the Aytopus team</p>
             </div>
           </button>
