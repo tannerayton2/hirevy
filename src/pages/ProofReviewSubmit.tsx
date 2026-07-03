@@ -204,12 +204,10 @@ export default function ProofReviewSubmit() {
 
     // First review submitted ever → +5 points bonus + popup, shown only once.
     if (user) {
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("awarded_first_review_submitted_bonus, points")
-        .eq("id", user.id)
-        .maybeSingle();
-      const row = prof as { awarded_first_review_submitted_bonus: boolean; points: number } | null;
+      const { data: flags } = await supabase.rpc("get_my_profile_flags");
+      const row = (Array.isArray(flags) ? flags[0] : flags) as
+        | { awarded_first_review_submitted_bonus: boolean; points: number }
+        | null;
       if (row && !row.awarded_first_review_submitted_bonus) {
         await supabase.from("profiles").update({
           awarded_first_review_submitted_bonus: true,
