@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
-// Logo not used; HireVy mark rendered inline as text avatar
+// Logo not used; Aytopus mark rendered inline as text avatar
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -92,7 +92,7 @@ export function TeamChatPane() {
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
         </div>
         <div>
-          <p className="text-sm font-semibold">HireVy Team</p>
+          <p className="text-sm font-semibold">Aytopus Team</p>
           <p className="text-xs text-muted-foreground">We usually reply within a day</p>
         </div>
       </header>
@@ -100,7 +100,7 @@ export function TeamChatPane() {
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
         {msgs.length === 0 && (
           <p className="mx-auto max-w-sm rounded-md border border-border bg-card/40 p-4 text-center text-sm text-muted-foreground">
-            Hi! Send us a question, feedback, or anything else. The HireVy team will reply here.
+            Hi! Send us a question, feedback, or anything else. The Aytopus team will reply here.
           </p>
         )}
         {msgs.map((m) => {
@@ -127,7 +127,7 @@ export function TeamChatPane() {
         <Input
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Message the HireVy team…"
+          placeholder="Message the Aytopus team…"
           maxLength={4000}
         />
         <Button type="submit" size="icon" disabled={sending || !body.trim()}>

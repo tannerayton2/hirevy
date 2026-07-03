@@ -49,7 +49,7 @@ const baseItems: NavItem[] = [
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, profile, signOut } = useAuth();
-  const unread = useUnreadDocumentTitle("HireVy");
+  const unread = useUnreadDocumentTitle("Aytopus");
   const isAdmin = isAdminUsername(profile?.username);
   const location = useLocation();
   const { pathname } = location;
@@ -57,7 +57,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Hide the mobile floating pill nav when an individual conversation is open
-  // (chat thread, draft compose, or the HireVy Team chat) so the chat view can
+  // (chat thread, draft compose, or the Aytopus Team chat) so the chat view can
   // take the full height like Instagram DMs.
   const msgParams = new URLSearchParams(location.search);
   const inOpenConversation =

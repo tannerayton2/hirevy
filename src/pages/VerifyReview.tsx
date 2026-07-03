@@ -35,7 +35,7 @@ export default function VerifyReview() {
             <CheckCircle2 className="mx-auto h-12 w-12 text-primary" />
             <h1 className="mt-4 font-display text-2xl font-semibold">Your review is now live</h1>
             <p className="mt-2 text-sm text-muted-foreground">Thanks for helping others hire with confidence.</p>
-            <Button className="mt-6" onClick={() => nav("/explore")}>Explore HireVy</Button>
+            <Button className="mt-6" onClick={() => nav("/explore")}>Explore Aytopus</Button>
           </>
         )}
         {state === "invalid" && (

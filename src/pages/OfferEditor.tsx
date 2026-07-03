@@ -338,13 +338,13 @@ export default function OfferEditor() {
             >
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold">Host on HireVy</span>
+                <span className="text-sm font-semibold">Host on Aytopus</span>
               </div>
               <p className="text-xs text-muted-foreground">Collect inquiries via messaging.</p>
             </button>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-            Most providers link to where they already sell. Only choose <span className="font-semibold text-foreground">Host on HireVy</span> if you don't have a sales page yet and want to collect inquiries through HireVy messaging.
+            Most providers link to where they already sell. Only choose <span className="font-semibold text-foreground">Host on Aytopus</span> if you don't have a sales page yet and want to collect inquiries through Aytopus messaging.
           </p>
         </div>
 

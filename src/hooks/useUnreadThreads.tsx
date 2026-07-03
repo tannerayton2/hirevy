@@ -70,8 +70,8 @@ export function useUnreadThreads(): number {
   return onMessages ? 0 : count;
 }
 
-/** Updates document.title with an unread prefix like "(2) HireVy". */
-export function useUnreadDocumentTitle(baseTitle = "HireVy") {
+/** Updates document.title with an unread prefix like "(2) Aytopus". */
+export function useUnreadDocumentTitle(baseTitle = "Aytopus") {
   const count = useUnreadThreads();
   useEffect(() => {
     const original = document.title.replace(/^\(\d+\+?\)\s*/, "");

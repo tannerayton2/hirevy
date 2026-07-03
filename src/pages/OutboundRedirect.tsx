@@ -33,7 +33,7 @@ export default function OutboundRedirect() {
         provider: { username: string };
       };
 
-      // If hosted on HireVy or no cta_link, route back to the in-app detail page.
+      // If hosted on Aytopus or no cta_link, route back to the in-app detail page.
       if (offer.hosted_on_hirevy || !offer.cta_link) {
         window.location.replace(`/@${offer.provider.username}/${offer.slug}`);
         return;

@@ -4,7 +4,7 @@
 //
 // We point share links at the Supabase Functions hostname directly because
 // Lovable hosting can't rewrite arbitrary paths to edge functions at the CDN.
-// The function 302s humans to the canonical hirevy.lovable.app URL anyway,
+// The function 302s humans to the canonical aytopus.lovable.app URL anyway,
 // so the address bar still ends up on the real page.
 
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;

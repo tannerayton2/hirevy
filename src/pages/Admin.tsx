@@ -1367,7 +1367,7 @@ function TeamMessagesPanel() {
                     <div className={cn("min-w-0 flex-1", isAdmin && "flex flex-col items-end")}>
                       <div className="flex items-baseline gap-2">
                         <p className="text-xs font-bold text-foreground">
-                          {isAdmin ? "HireVy Team" : name}
+                          {isAdmin ? "Aytopus Team" : name}
                         </p>
                         <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">
                           {fmt(m.created_at)}

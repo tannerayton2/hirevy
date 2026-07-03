@@ -93,7 +93,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
     setOpenFormalDispute(false);
     setDisputeReason("");
     setDisputeEvidence("");
-    toast({ title: "Dispute submitted", description: "A HireVy admin will review your dispute." });
+    toast({ title: "Dispute submitted", description: "A Aytopus admin will review your dispute." });
   };
 
   const submitProofRequest = async () => {
@@ -216,7 +216,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
               <DialogHeader>
                 <DialogTitle>Submit a formal dispute</DialogTitle>
                 <DialogDescription>
-                  A HireVy admin will review this. You'll be contacted at the email below.
+                  A Aytopus admin will review this. You'll be contacted at the email below.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">

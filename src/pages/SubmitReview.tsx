@@ -74,7 +74,7 @@ const MIN_BODY = 150;
 
 export default function SubmitReview() {
   usePageMeta(
-    "Leave a Review | HireVy",
+    "Leave a Review | Aytopus",
     "Share your honest experience with a coach or service provider. Help others make smarter hiring decisions.",
   );
   const { user } = useAuth();
@@ -352,7 +352,7 @@ export default function SubmitReview() {
         <section className="space-y-5">
           <header>
             <h2 className="font-display text-lg font-semibold">Who are you reviewing?</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Search for an existing HireVy profile or add a new one.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Search for an existing Aytopus profile or add a new one.</p>
           </header>
 
           <Field label="Coach or provider name" required>
@@ -653,7 +653,7 @@ export default function SubmitReview() {
           Submit Review
         </Button>
         <p className="text-center text-xs text-muted-foreground">
-          Your review will be posted publicly on the coach's HireVy profile.
+          Your review will be posted publicly on the coach's Aytopus profile.
         </p>
       </form>
 

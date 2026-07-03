@@ -110,7 +110,7 @@ export const TIER_TAGLINE: Record<Tier, string> = {
   silver: "Trusted by a growing community.",
   gold: "Consistently strong reviews from real clients.",
   platinum: "Proven excellence at scale.",
-  diamond: "Elite — top of the HireVy leaderboard.",
+  diamond: "Elite — top of the Aytopus leaderboard.",
 };
 
 export const TIER_THRESHOLDS: Record<Tier, string> = TIER_REQUIREMENT;

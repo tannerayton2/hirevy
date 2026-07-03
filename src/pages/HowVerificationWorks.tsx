@@ -4,7 +4,7 @@ import { usePageMeta } from "@/lib/usePageMeta";
 
 export default function HowVerificationWorks() {
   usePageMeta(
-    "How Review Verification Works | HireVy",
+    "How Review Verification Works | Aytopus",
     "Plain-language guide: how email-confirmed public reviews, proof-backed reviews, provider protections, and human-reviewed disputes keep the network honest.",
   );
 
@@ -16,7 +16,7 @@ export default function HowVerificationWorks() {
         </div>
         <h1 className="font-display text-3xl font-bold md:text-4xl">How verification works</h1>
         <p className="mt-3 text-sm text-muted-foreground md:text-base">
-          Every review on HireVy has to earn its place. Here's exactly what happens before a review shows up on a profile — and what happens if someone disputes one.
+          Every review on Aytopus has to earn its place. Here's exactly what happens before a review shows up on a profile — and what happens if someone disputes one.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export default function HowVerificationWorks() {
         <Section
           icon={<FileCheck2 className="h-5 w-5" />}
           title="Proof-backed reviews require evidence and an account"
-          body="Proof-backed reviews are the highest trust tier. The reviewer must be signed in to a HireVy account and attach evidence of the engagement — a receipt, deliverable, contract, screenshot, or similar. These reviews are labeled distinctly on the profile so buyers can tell them apart from public reviews at a glance."
+          body="Proof-backed reviews are the highest trust tier. The reviewer must be signed in to a Aytopus account and attach evidence of the engagement — a receipt, deliverable, contract, screenshot, or similar. These reviews are labeled distinctly on the profile so buyers can tell them apart from public reviews at a glance."
         />
         <Section
           icon={<Lock className="h-5 w-5" />}
@@ -39,7 +39,7 @@ export default function HowVerificationWorks() {
         <Section
           icon={<Scale className="h-5 w-5" />}
           title="Disputes are reviewed by a human"
-          body="If a provider believes a review is fake, defamatory, or off-topic, they can open a dispute. A HireVy moderator reviews the submission, the evidence, and any reply thread before deciding. We remove reviews that clearly break the rules, and we leave the rest — negative reviews are not removed just for being negative."
+          body="If a provider believes a review is fake, defamatory, or off-topic, they can open a dispute. A Aytopus moderator reviews the submission, the evidence, and any reply thread before deciding. We remove reviews that clearly break the rules, and we leave the rest — negative reviews are not removed just for being negative."
         />
       </div>
 

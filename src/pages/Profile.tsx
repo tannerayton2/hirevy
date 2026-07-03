@@ -377,10 +377,10 @@ export default function Profile() {
 
   const metaName = profile?.display_name || profile?.username || handle;
   usePageMeta(
-    `${metaName} Reviews — Verified Client Ratings | HireVy.`,
+    `${metaName} Reviews — Verified Client Ratings | Aytopus.`,
     (profile?.review_count ?? 0) > 0
-      ? `See verified reviews for ${metaName} on HireVy. Real ratings from real clients who actually worked with them. Read reviews before you hire.`
-      : `See reviews for ${metaName} on HireVy. Be the first to leave a verified review.`,
+      ? `See verified reviews for ${metaName} on Aytopus. Real ratings from real clients who actually worked with them. Read reviews before you hire.`
+      : `See reviews for ${metaName} on Aytopus. Be the first to leave a verified review.`,
   );
 
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
@@ -388,7 +388,7 @@ export default function Profile() {
     return (
       <div className="p-8">
         <h1 className="font-display text-2xl font-semibold">No such profile</h1>
-        <p className="mt-2 text-sm text-muted-foreground">@{handle} doesn't exist on HireVy.</p>
+        <p className="mt-2 text-sm text-muted-foreground">@{handle} doesn't exist on Aytopus.</p>
         <Button asChild variant="outline" className="mt-4"><Link to="/">Back to Explore</Link></Button>
       </div>
     );
@@ -643,7 +643,7 @@ export default function Profile() {
               <div className="text-sm">
                 <p className="font-semibold text-foreground">This profile is unclaimed.</p>
                 <p className="text-muted-foreground">
-                  Reviews below were submitted by clients before {providerDisplayName} joined HireVy.
+                  Reviews below were submitted by clients before {providerDisplayName} joined Aytopus.
                 </p>
               </div>
             </div>
@@ -680,7 +680,7 @@ export default function Profile() {
       {/* Empty state for visitors on a brand-new profile */}
       {!hasAnyContent && !isMe && (
         <div className="mt-8 rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
-          <p className="font-display text-xl font-semibold">{providerDisplayName} is just getting started on HireVy.</p>
+          <p className="font-display text-xl font-semibold">{providerDisplayName} is just getting started on Aytopus.</p>
           <p className="mt-2 text-sm text-muted-foreground">Check back soon — offers and reviews will appear here.</p>
         </div>
       )}
@@ -889,7 +889,7 @@ export default function Profile() {
                         <div className="w-full max-w-sm rounded-lg border border-primary/40 bg-card/95 p-6 text-center shadow-[0_8px_30px_-12px_hsl(40_55%_52%/0.4)] backdrop-blur">
                           <h3 className="font-display text-xl font-semibold text-foreground">See all reviews</h3>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Create a free account to read every review on HireVy — no credit card required.
+                            Create a free account to read every review on Aytopus — no credit card required.
                           </p>
                           <Button asChild className="mt-5 h-11 w-full font-semibold" style={{ background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)", color: "#2a1c00" }}>
                             <Link to="/signup">Sign up free</Link>
@@ -915,7 +915,7 @@ export default function Profile() {
                       Reviews submitted before this profile was claimed
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground/80">
-                      Left by clients when {providerDisplayName} wasn't yet on HireVy. Not counted toward verified stats.
+                      Left by clients when {providerDisplayName} wasn't yet on Aytopus. Not counted toward verified stats.
                     </p>
                   </div>
                   <button
@@ -956,7 +956,7 @@ export default function Profile() {
             {reviewSub === "imported" && (
               <div>
                 <p className="mb-4 text-xs text-muted-foreground/80">
-                  These reviews were submitted by the provider from external sources and have not been independently verified by HireVy.
+                  These reviews were submitted by the provider from external sources and have not been independently verified by Aytopus.
                 </p>
                 {isMe && imported.length > 0 && (
                   <div className="mb-3">
@@ -1018,7 +1018,7 @@ export default function Profile() {
                 )}
                 <p className="mt-4 text-[11px] italic leading-relaxed text-muted-foreground/80">
                   Imported testimonials are historical proof the provider brought from other platforms.
-                  They are not independently verified by HireVy and do not affect the tier badge or rating.
+                  They are not independently verified by Aytopus and do not affect the tier badge or rating.
                 </p>
               </div>
             )}
