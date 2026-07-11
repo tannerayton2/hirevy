@@ -43,6 +43,17 @@ import { ShieldAlert } from "lucide-react";
 type TabKey = "reviews" | "offers";
 type ReviewSubTab = "verified" | "imported";
 
+function DetailedReviewBadge() {
+  return (
+    <span
+      title="Detailed Review — 150+ characters"
+      className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-primary ring-1 ring-primary/30"
+    >
+      <BadgeCheck className="h-3 w-3" /> Detailed
+    </span>
+  );
+}
+
 interface ProfileFull {
   id: string;
   username: string;
