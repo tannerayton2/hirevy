@@ -70,7 +70,8 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
   return "basic";
 }
 
-const MIN_BODY = 150;
+const MIN_BODY = 60;
+const DETAILED_THRESHOLD = 150;
 
 export default function SubmitReview() {
   usePageMeta(
