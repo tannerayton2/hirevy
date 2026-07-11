@@ -953,7 +953,10 @@ export default function Profile() {
                     >
                       <div className="mb-2 flex items-center justify-between">
                         <p className="font-semibold">{r.reviewer_name}</p>
-                        <StarRating value={r.rating} size={14} />
+                        <div className="flex items-center gap-2">
+                          {r.is_detailed && <DetailedReviewBadge />}
+                          <StarRating value={r.rating} size={14} />
+                        </div>
                       </div>
                       <ExpandableReviewText text={r.body} className="text-sm text-muted-foreground" />
                       <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
