@@ -197,7 +197,7 @@ export default function Profile() {
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
       supabase
         .from("unclaimed_reviews")
-        .select("id, coach_name, rating, body, created_at, completeness_score")
+        .select("id, coach_name, rating, body, created_at, completeness_score, is_detailed")
         .eq("linked_profile_id", prof.id)
         .order("created_at", { ascending: false }),
       supabase
