@@ -854,6 +854,7 @@ export default function Profile() {
                     <p className="font-semibold">{u.data.reviewer_name}</p>
                     <div className="flex items-center gap-2">
                       <StarRating value={u.data.rating} size={14} />
+                      {u.is_detailed && <DetailedReviewBadge />}
                       <ReviewCompletenessShield score={u.score} />
                     </div>
                   </div>
