@@ -218,7 +218,7 @@ export default function Profile() {
     setOffers((offersRes.data as unknown as OfferRow[]) ?? []);
     const verifiedReviews = (reviewsRes.data as unknown as Review[]) ?? [];
     const unclaimedRows = ((unclaimedRes.data as unknown as Array<{
-      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number;
+      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number; is_detailed: boolean;
     }>) ?? []).map((r) => ({
       id: r.id,
       reviewer_name: r.coach_name,
@@ -226,6 +226,7 @@ export default function Profile() {
       body: r.body,
       created_at: r.created_at,
       completeness_score: r.completeness_score,
+      is_detailed: r.is_detailed,
     } as Review));
     setReviews(verifiedReviews);
     setUnclaimedReviews(unclaimedRows);
