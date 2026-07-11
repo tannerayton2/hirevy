@@ -851,6 +851,7 @@ export type Database = {
           completeness_score: number
           created_at: string
           id: string
+          is_detailed: boolean | null
           provider_id: string
           rating: number
           reviewer_email: string
@@ -864,6 +865,7 @@ export type Database = {
           completeness_score?: number
           created_at?: string
           id?: string
+          is_detailed?: boolean | null
           provider_id: string
           rating: number
           reviewer_email: string
@@ -877,6 +879,7 @@ export type Database = {
           completeness_score?: number
           created_at?: string
           id?: string
+          is_detailed?: boolean | null
           provider_id?: string
           rating?: number
           reviewer_email?: string
@@ -932,6 +935,7 @@ export type Database = {
           evidence_paths: string[]
           id: string
           instagram_handle: string | null
+          is_detailed: boolean | null
           linked_profile_id: string | null
           needs_profile: boolean
           offer_url: string | null
@@ -954,6 +958,7 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          is_detailed?: boolean | null
           linked_profile_id?: string | null
           needs_profile?: boolean
           offer_url?: string | null
@@ -976,6 +981,7 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           instagram_handle?: string | null
+          is_detailed?: boolean | null
           linked_profile_id?: string | null
           needs_profile?: boolean
           offer_url?: string | null
@@ -1278,6 +1284,7 @@ export type Database = {
           completeness_score: number
           created_at: string
           id: string
+          is_detailed: boolean
           provider_id: string
           rating: number
           reviewer_name: string
