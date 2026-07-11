@@ -293,6 +293,7 @@ export default function Profile() {
         created_at: r.created_at,
         rating: r.rating,
         score: r.completeness_score ?? 0,
+        is_detailed: !!r.is_detailed,
         data: r,
       }));
     const p: UnifiedReview[] = proofReviews.map((r) => ({
@@ -301,6 +302,7 @@ export default function Profile() {
       created_at: r.created_at,
       rating: r.rating,
       score: r.completeness_score ?? 0,
+      is_detailed: (r.body?.length ?? 0) >= 150,
       data: r,
     }));
     return [...v, ...p];
