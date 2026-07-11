@@ -7,7 +7,7 @@ import { StarRating } from "@/components/StarRating";
 import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, MoreHorizontal, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
+import { BadgeCheck, Clock, ExternalLink, Globe, Info, Instagram, Link as LinkIcon, Linkedin, LogOut, Menu, MessageSquare, MoreHorizontal, Pin, PinOff, Plus, Settings as SettingsIcon, Share2, Star, Twitter, Users, UserCheck, Flag, Youtube } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TIER_LABEL, type Tier } from "@/lib/tiers";
 import { CongratsModal } from "@/components/CongratsModal";
@@ -42,6 +42,17 @@ import { ShieldAlert } from "lucide-react";
 
 type TabKey = "reviews" | "offers";
 type ReviewSubTab = "verified" | "imported";
+
+function DetailedReviewBadge() {
+  return (
+    <span
+      title="Detailed Review — 150+ characters"
+      className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-primary ring-1 ring-primary/30"
+    >
+      <BadgeCheck className="h-3 w-3" /> Detailed
+    </span>
+  );
+}
 
 interface ProfileFull {
   id: string;
@@ -80,6 +91,7 @@ interface Review {
   body: string;
   created_at: string;
   completeness_score: number;
+  is_detailed?: boolean;
 }
 
 type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
@@ -94,8 +106,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 type UnifiedReview =
-  | { kind: "verified"; id: string; created_at: string; rating: number; score: number; data: Review }
-  | { kind: "proof"; id: string; created_at: string; rating: number; score: number; data: ProofReview };
+  | { kind: "verified"; id: string; created_at: string; rating: number; score: number; is_detailed: boolean; data: Review }
+  | { kind: "proof"; id: string; created_at: string; rating: number; score: number; is_detailed: boolean; data: ProofReview };
 
 function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
   const out = [...items];
@@ -103,12 +115,15 @@ function sortUnified(items: UnifiedReview[], key: SortKey): UnifiedReview[] {
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   const byDateAsc = (a: UnifiedReview, b: UnifiedReview) =>
     new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  if (key === "newest") out.sort(byDateDesc);
-  if (key === "oldest") out.sort(byDateAsc);
-  if (key === "highest") out.sort((a, b) => b.rating - a.rating || byDateDesc(a, b));
-  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || byDateDesc(a, b));
-  if (key === "complete") out.sort((a, b) => b.score - a.score || byDateDesc(a, b));
-  if (key === "complete_asc") out.sort((a, b) => a.score - b.score || byDateDesc(a, b));
+  // Detailed reviews always float above non-detailed within the same rating tier.
+  const detailFirst = (a: UnifiedReview, b: UnifiedReview) =>
+    Number(b.is_detailed) - Number(a.is_detailed);
+  if (key === "newest") out.sort((a, b) => detailFirst(a, b) || byDateDesc(a, b));
+  if (key === "oldest") out.sort((a, b) => detailFirst(a, b) || byDateAsc(a, b));
+  if (key === "highest") out.sort((a, b) => b.rating - a.rating || detailFirst(a, b) || byDateDesc(a, b));
+  if (key === "lowest") out.sort((a, b) => a.rating - b.rating || detailFirst(a, b) || byDateDesc(a, b));
+  if (key === "complete") out.sort((a, b) => b.score - a.score || detailFirst(a, b) || byDateDesc(a, b));
+  if (key === "complete_asc") out.sort((a, b) => a.score - b.score || detailFirst(a, b) || byDateDesc(a, b));
   return out;
 }
 
@@ -193,7 +208,7 @@ export default function Profile() {
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
       supabase
         .from("unclaimed_reviews")
-        .select("id, coach_name, rating, body, created_at, completeness_score")
+        .select("id, coach_name, rating, body, created_at, completeness_score, is_detailed")
         .eq("linked_profile_id", prof.id)
         .order("created_at", { ascending: false }),
       supabase
@@ -214,7 +229,7 @@ export default function Profile() {
     setOffers((offersRes.data as unknown as OfferRow[]) ?? []);
     const verifiedReviews = (reviewsRes.data as unknown as Review[]) ?? [];
     const unclaimedRows = ((unclaimedRes.data as unknown as Array<{
-      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number;
+      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number; is_detailed: boolean;
     }>) ?? []).map((r) => ({
       id: r.id,
       reviewer_name: r.coach_name,
@@ -222,6 +237,7 @@ export default function Profile() {
       body: r.body,
       created_at: r.created_at,
       completeness_score: r.completeness_score,
+      is_detailed: r.is_detailed,
     } as Review));
     setReviews(verifiedReviews);
     setUnclaimedReviews(unclaimedRows);
@@ -289,6 +305,7 @@ export default function Profile() {
         created_at: r.created_at,
         rating: r.rating,
         score: r.completeness_score ?? 0,
+        is_detailed: !!r.is_detailed,
         data: r,
       }));
     const p: UnifiedReview[] = proofReviews.map((r) => ({
@@ -297,6 +314,7 @@ export default function Profile() {
       created_at: r.created_at,
       rating: r.rating,
       score: r.completeness_score ?? 0,
+      is_detailed: (r.body?.length ?? 0) >= 150,
       data: r,
     }));
     return [...v, ...p];
@@ -847,6 +865,7 @@ export default function Profile() {
                     <p className="font-semibold">{u.data.reviewer_name}</p>
                     <div className="flex items-center gap-2">
                       <StarRating value={u.data.rating} size={14} />
+                      {u.is_detailed && <DetailedReviewBadge />}
                       <ReviewCompletenessShield score={u.score} />
                     </div>
                   </div>
@@ -934,7 +953,10 @@ export default function Profile() {
                     >
                       <div className="mb-2 flex items-center justify-between">
                         <p className="font-semibold">{r.reviewer_name}</p>
-                        <StarRating value={r.rating} size={14} />
+                        <div className="flex items-center gap-2">
+                          {r.is_detailed && <DetailedReviewBadge />}
+                          <StarRating value={r.rating} size={14} />
+                        </div>
                       </div>
                       <ExpandableReviewText text={r.body} className="text-sm text-muted-foreground" />
                       <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">

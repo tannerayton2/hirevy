@@ -70,7 +70,8 @@ function computeTier(purchased: boolean, fileCount: number): Tier {
   return "basic";
 }
 
-const MIN_BODY = 150;
+const MIN_BODY = 60;
+const DETAILED_THRESHOLD = 150;
 
 export default function SubmitReview() {
   usePageMeta(
@@ -587,6 +588,16 @@ export default function SubmitReview() {
               minLength={MIN_BODY}
               maxLength={4000}
             />
+            {body.length >= DETAILED_THRESHOLD ? (
+              <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                <BadgeCheck className="h-3.5 w-3.5 fill-primary/20 text-primary" />
+                ✦ Detailed Review badge earned
+              </p>
+            ) : body.length >= MIN_BODY ? (
+              <p className="mt-2 text-xs text-primary/70">
+                ✦ Reach {DETAILED_THRESHOLD} characters to earn a Detailed Review badge
+              </p>
+            ) : null}
           </Field>
 
           <div className="rounded-md border border-border bg-card/50 p-4">
