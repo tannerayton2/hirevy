@@ -39,13 +39,26 @@ export default function OutboundRedirect() {
         return;
       }
 
+      // Only allow http(s) schemes — reject javascript:, data:, etc.
+      let safeUrl: URL;
+      try {
+        safeUrl = new URL(offer.cta_link);
+      } catch {
+        setError("missing");
+        return;
+      }
+      if (safeUrl.protocol !== "https:" && safeUrl.protocol !== "http:") {
+        setError("missing");
+        return;
+      }
+
       // Fire-and-forget: log the click. Don't block the redirect on it.
       void supabase.rpc("record_offer_click" as never, {
         p_offer_id: offerId,
         p_referrer: referrer,
       } as never);
 
-      window.location.replace(offer.cta_link);
+      window.location.replace(safeUrl.toString());
     })();
     return () => { cancelled = true; };
   }, [offerId, referrer]);
