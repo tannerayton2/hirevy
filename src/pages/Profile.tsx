@@ -80,6 +80,7 @@ interface Review {
   body: string;
   created_at: string;
   completeness_score: number;
+  is_detailed?: boolean;
 }
 
 type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
