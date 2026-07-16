@@ -32,6 +32,7 @@ import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import HowVerificationWorks from "./pages/HowVerificationWorks.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
+import Unsubscribe from "./pages/Unsubscribe.tsx";
 
 const queryClient = new QueryClient();
 
