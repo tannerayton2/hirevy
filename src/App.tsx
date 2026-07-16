@@ -55,6 +55,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/how-verification-works" element={<HowVerificationWorks />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
