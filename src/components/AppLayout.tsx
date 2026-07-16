@@ -11,6 +11,7 @@ import { shareReviewUrl } from "@/lib/shareLinks";
 import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { RightRail } from "@/components/RightRail";
 
 
 function UnreadBadge({ count }: { count: number }) {
@@ -305,9 +306,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <main className={cn(
           "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
           isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
+          !isSubmitReview && "xl:mx-auto xl:max-w-[620px]",
         )}>
           {children}
         </main>
+
+        {/* Desktop right rail — search + top coaches */}
+        {!isSubmitReview && pathname !== "/messages" && (
+          <RightRail className="hidden lg:block" />
+        )}
       </div>
 
       {/* Mobile floating pill nav */}
