@@ -313,7 +313,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Desktop right rail — search + top coaches */}
         {!isSubmitReview && pathname !== "/messages" && (
-          <RightRail className="hidden lg:block" />
+          <RightRail className="hidden lg:block" hideSearch={pathname === "/explore"} />
         )}
       </div>
 
