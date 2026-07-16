@@ -16,7 +16,7 @@ type TopCoach = {
   points: number | null;
 };
 
-export function RightRail({ className }: { className?: string }) {
+export function RightRail({ className, hideSearch = false }: { className?: string; hideSearch?: boolean }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [coaches, setCoaches] = useState<TopCoach[] | null>(null);
@@ -48,23 +48,24 @@ export function RightRail({ className }: { className?: string }) {
   return (
     <aside className={cn("w-80 shrink-0", className)}>
       <div className="sticky top-[72px] m-3 flex flex-col gap-4">
-        {/* Search */}
-        <form
-          onSubmit={onSubmit}
-          className="rounded-2xl border border-white/5 bg-card/60 p-2 shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] backdrop-blur-xl"
-        >
-          <label className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 ring-1 ring-transparent focus-within:ring-primary/40">
-            <Search className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search coaches"
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-              aria-label="Search coaches"
-            />
-          </label>
-        </form>
+        {!hideSearch && (
+          <form
+            onSubmit={onSubmit}
+            className="rounded-2xl border border-white/5 bg-card/60 p-2 shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] backdrop-blur-xl"
+          >
+            <label className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 ring-1 ring-transparent focus-within:ring-primary/40">
+              <Search className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search coaches"
+                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                aria-label="Search coaches"
+              />
+            </label>
+          </form>
+        )}
 
         {/* Top Coaches */}
         <div className="rounded-2xl border border-white/5 bg-card/60 p-4 shadow-[0_10px_40px_-20px_hsl(0_0%_0%/0.6)] backdrop-blur-xl">
