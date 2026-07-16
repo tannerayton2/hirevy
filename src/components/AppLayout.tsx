@@ -11,6 +11,7 @@ import { shareReviewUrl } from "@/lib/shareLinks";
 import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { RightRail } from "@/components/RightRail";
 
 
 function UnreadBadge({ count }: { count: number }) {
