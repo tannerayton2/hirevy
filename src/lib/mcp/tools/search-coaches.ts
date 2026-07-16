@@ -54,7 +54,7 @@ export default defineTool({
           ? Math.round(((r.rating_sum ?? 0) / r.review_count) * 10) / 10
           : null,
       follower_count: r.follower_count,
-      profile_url: `https://hirevy.lovable.app/@${r.username}`,
+      profile_url: `https://aytopus.com/@${r.username}`,
       avatar_url: r.avatar_url,
     }));
     return {
