@@ -31,6 +31,7 @@ import Following from "./pages/Following.tsx";
 import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import HowVerificationWorks from "./pages/HowVerificationWorks.tsx";
+import OAuthConsent from "./pages/OAuthConsent.tsx";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/how-verification-works" element={<HowVerificationWorks />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
