@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://gkayxohjywqyjbisxtit.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "aytopus-mcp",
+      "version": "0.1.0",
+      "title": "Aytopus"
+    },
+    "tools": [
+      {
+        "name": "search_coaches",
+        "title": "Search coaches",
+        "description": "Search Aytopus coaches and service providers by free-text query and/or service category. Returns public profile summaries with rating and review counts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Free-text search matched against username, display name, and bio.",
+              "type": "string",
+              "maxLength": 120
+            },
+            "category": {
+              "description": "Service category filter (e.g. 'Coaching', 'Consulting', 'Fitness').",
+              "type": "string",
+              "maxLength": 60
+            },
+            "limit": {
+              "description": "Max results (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_coach_profile",
+        "title": "Get coach profile",
+        "description": "Fetch the public Aytopus profile of a coach or service provider by their username (without the leading @).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "description": "Aytopus username, no @ prefix."
+            }
+          },
+          "required": [
+            "username"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_coach_reviews",
+        "title": "List coach reviews",
+        "description": "List verified reviews written for an Aytopus coach or service provider, identified by username.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "description": "Aytopus username, no @ prefix."
+            },
+            "limit": {
+              "description": "Max reviews to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "username"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_my_profile",
+        "title": "Get my Aytopus profile",
+        "description": "Return the authenticated Aytopus user's own profile (username, display name, category, review counts, socials).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
