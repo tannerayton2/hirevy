@@ -305,9 +305,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <main className={cn(
           "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
           isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
+          !isSubmitReview && "lg:mx-auto lg:max-w-[640px]",
         )}>
           {children}
         </main>
+
+        {/* Desktop right rail — search + top coaches */}
+        {!isSubmitReview && pathname !== "/messages" && (
+          <RightRail className="hidden lg:block" />
+        )}
       </div>
 
       {/* Mobile floating pill nav */}
