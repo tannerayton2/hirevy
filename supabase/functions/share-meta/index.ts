@@ -6,11 +6,11 @@
 //
 // Behaviour:
 //  - Crawler User-Agent  -> 200 HTML with full per-page OG tags
-//  - Anyone else         -> 302 redirect to the canonical aytopus.lovable.app URL
+//  - Anyone else         -> 302 redirect to the canonical aytopus.com URL
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const SITE_ORIGIN = "https://aytopus.lovable.app";
+const SITE_ORIGIN = "https://aytopus.com";
 const DEFAULT_IMAGE = `${SITE_ORIGIN}/og-default.png`;
 const DEFAULT_TITLE = "Aytopus — Hire by proof, not promises";
 const DEFAULT_DESCRIPTION =

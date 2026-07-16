@@ -248,7 +248,7 @@ export default function Landing() {
       <footer className="hv-l-footer">
         <div className="hv-l-container">
           <div className="hv-l-tagline">Bringing trust back to the info industry.</div>
-          <div>Aytopus © 2026 — aytopus.lovable.app</div>
+          <div>Aytopus © 2026 — aytopus.com</div>
           <div style={{ marginTop: 12, display: "flex", gap: 16, justifyContent: "center" }}>
             <Link to="/terms" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Terms of Service</Link>
             <span style={{ color: "var(--hv-line)" }}>•</span>
