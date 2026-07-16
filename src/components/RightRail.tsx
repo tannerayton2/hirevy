@@ -16,7 +16,7 @@ type TopCoach = {
   points: number | null;
 };
 
-export function RightRail({ className }: { className?: string }) {
+export function RightRail({ className, hideSearch = false }: { className?: string; hideSearch?: boolean }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [coaches, setCoaches] = useState<TopCoach[] | null>(null);
