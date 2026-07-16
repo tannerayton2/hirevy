@@ -44,7 +44,7 @@ var search_coaches_default = defineTool({
       review_count: r.review_count,
       average_rating: r.review_count && r.review_count > 0 ? Math.round((r.rating_sum ?? 0) / r.review_count * 10) / 10 : null,
       follower_count: r.follower_count,
-      profile_url: `https://hirevy.lovable.app/@${r.username}`,
+      profile_url: `https://aytopus.com/@${r.username}`,
       avatar_url: r.avatar_url
     }));
     return {
@@ -84,7 +84,7 @@ var get_coach_profile_default = defineTool2({
     const profile = {
       ...data,
       average_rating: data.review_count && data.review_count > 0 ? Math.round((data.rating_sum ?? 0) / data.review_count * 10) / 10 : null,
-      profile_url: `https://hirevy.lovable.app/@${data.username}`
+      profile_url: `https://aytopus.com/@${data.username}`
     };
     return {
       content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],
@@ -162,7 +162,7 @@ var get_my_profile_default = defineTool4({
     const profile = {
       ...data,
       average_rating: data.review_count && data.review_count > 0 ? Math.round((data.rating_sum ?? 0) / data.review_count * 10) / 10 : null,
-      profile_url: `https://hirevy.lovable.app/@${data.username}`
+      profile_url: `https://aytopus.com/@${data.username}`
     };
     return {
       content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],

@@ -36,7 +36,7 @@ export default defineTool({
         data.review_count && data.review_count > 0
           ? Math.round(((data.rating_sum ?? 0) / data.review_count) * 10) / 10
           : null,
-      profile_url: `https://hirevy.lovable.app/@${data.username}`,
+      profile_url: `https://aytopus.com/@${data.username}`,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],

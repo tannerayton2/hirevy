@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
     const safeOrigin = typeof origin === 'string' && /^https?:\/\//.test(origin)
       ? origin.replace(/\/$/, '')
-      : 'https://aytopus.lovable.app';
+      : 'https://aytopus.com';
     const verifyUrl = `${safeOrigin}/verify-review?token=${encodeURIComponent(review.verify_token)}`;
 
     const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafaf7;padding:32px;color:#111">
