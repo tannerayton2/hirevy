@@ -199,10 +199,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                        onClick={() => { setMenuOpen(false); navigate("/settings/account"); }}
                         className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                       >
-                        <SettingsIcon className="h-4 w-4" /> Settings
+                        <SettingsIcon className="h-4 w-4" /> Account Settings
                       </button>
                       <button
                         type="button"
