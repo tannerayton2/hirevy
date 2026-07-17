@@ -21,6 +21,7 @@ import ReviewSubmit from "./pages/ReviewSubmit.tsx";
 import ProofReviewSubmit from "./pages/ProofReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
+import AccountSettings from "./pages/AccountSettings.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
@@ -69,6 +70,7 @@ const App = () => (
 
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
+            <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
             <Route path="/settings/following" element={<AppLayout><Following /></AppLayout>} />
             <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
             <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />
