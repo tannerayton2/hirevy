@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
-import { ArrowUpRight, ExternalLink, Pencil, Trash2 } from "lucide-react";
-import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
+import { Pencil, Trash2 } from "lucide-react";
+import { StarRating } from "@/components/StarRating";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -35,15 +35,18 @@ export interface OfferCardData {
 }
 
 /**
- * Compact horizontal offer card.
- * Image thumbnail (left, ~120px square) + stacked text column on the right.
- * 2-per-row on desktop grids, 1-per-row on mobile (still horizontal layout).
+ * Compact offer card (Fiverr-style). Renders only:
+ *  - cover image (if present — collapsed if not)
+ *  - title
+ *  - price
+ *  - provider star rating
+ * The entire card navigates to the full offer detail page.
  */
 export function OfferCard({
   offer,
   owner,
   onChanged,
-  referrer = "card",
+  referrer: _referrer = "card",
 }: {
   offer: OfferCardData;
   owner?: boolean;
@@ -54,12 +57,9 @@ export function OfferCard({
   const inactive = offer.is_active === false;
   const detailHref = `/@${offer.provider.username}/${offer.slug}`;
 
-  const isLinkOut = !offer.hosted_on_hirevy && !!offer.cta_link;
-  const ctaLabel = (offer.cta_label || "Book Now").slice(0, 20);
-  const outHref = `/out/${offer.id}?ref=${encodeURIComponent(referrer)}`;
-  const ownerNeedsLink = owner && !offer.hosted_on_hirevy && !offer.cta_link;
-
-  const snippet = (offer.description || "").trim().replace(/\s+/g, " ").slice(0, 90);
+  const avg = offer.provider.review_count > 0
+    ? offer.provider.rating_sum / offer.provider.review_count
+    : 0;
 
   const handleDelete = async () => {
     const { error } = await supabase.from("offers").delete().eq("id", offer.id);
@@ -77,63 +77,56 @@ export function OfferCard({
     nav(detailHref);
   };
 
-  const handleCta = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isLinkOut) {
-      window.open(outHref, "_blank", "noopener,noreferrer");
-    } else {
-      nav(detailHref);
-    }
-  };
-
   return (
     <div
       onClick={goToOffer}
       className={cn(
-        "group relative flex cursor-pointer overflow-hidden rounded-md border border-border bg-card transition-all",
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-card transition-all",
         "hover:-translate-y-0.5 hover:border-primary/50 hover:elev",
         inactive && "opacity-60",
       )}
     >
-      {/* Thumbnail (left) */}
-      <div className="relative h-[140px] w-[120px] shrink-0 overflow-hidden rounded-l-md bg-muted sm:h-[150px] sm:w-[140px]">
-        {offer.cover_url ? (
+      {offer.cover_url && (
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <img
             src={offer.cover_url}
             alt={offer.title}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
-        ) : (
-          <OfferCoverPlaceholder title={offer.title} aspect="" className="h-full" />
-        )}
-        {inactive ? (
-          <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            Inactive
-          </span>
-        ) : offer.free_for_testimonial && (
-          <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-            Free
-          </span>
-        )}
-      </div>
+          {inactive ? (
+            <span className="absolute left-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Inactive
+            </span>
+          ) : offer.free_for_testimonial && (
+            <span className="absolute left-2 top-2 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+              Free
+            </span>
+          )}
+        </div>
+      )}
 
-      {/* Text column (right) */}
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3 sm:p-3.5">
-        {offer.offer_tier && (
-          <span className="inline-flex w-fit items-center rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary">
-            {offer.offer_tier}
+      <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:p-4">
+        {!offer.cover_url && (inactive || offer.free_for_testimonial) && (
+          <span
+            className={cn(
+              "w-fit rounded-[3px] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em]",
+              inactive
+                ? "bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground",
+            )}
+          >
+            {inactive ? "Inactive" : "Free"}
           </span>
         )}
+
         <h3 className="line-clamp-2 font-display text-[15px] font-bold leading-tight text-foreground">
           {offer.title}
         </h3>
-        {snippet && (
-          <p className="line-clamp-1 text-xs text-muted-foreground">
-            {snippet}
-          </p>
-        )}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1.5">
+
+        <StarRating value={avg} count={offer.provider.review_count} showValue size={12} />
+
+        <div className="mt-auto pt-1">
           <span
             className={cn(
               "font-display text-[15px] font-bold text-foreground",
@@ -142,31 +135,10 @@ export function OfferCard({
           >
             {formatOfferPrice(offer)}
           </span>
-
-          <div data-no-nav className="shrink-0">
-            {ownerNeedsLink ? (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
-                className="inline-flex items-center justify-center gap-1 rounded-[3px] border border-dashed border-border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:border-primary hover:text-primary"
-              >
-                + Add link
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleCta}
-                className="inline-flex items-center justify-center gap-1 rounded-[3px] bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {ctaLabel}
-                {isLinkOut && <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />}
-              </button>
-            )}
-          </div>
         </div>
 
         {owner && (
-          <div data-no-nav className="-mx-3 -mb-3 mt-2 flex border-t border-border sm:-mx-3.5 sm:-mb-3.5">
+          <div data-no-nav className="-mx-3 -mb-3 mt-2 flex border-t border-border sm:-mx-4 sm:-mb-4">
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
@@ -202,9 +174,6 @@ export function OfferCard({
           </div>
         )}
       </div>
-
-      {/* Hidden marker so unused icon import doesn't get tree-shaken-warned */}
-      <ExternalLink className="hidden" aria-hidden />
     </div>
   );
 }

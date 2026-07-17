@@ -10,7 +10,7 @@ import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
 import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
-import { OfferCoverPlaceholder } from "@/components/OfferCoverPlaceholder";
+
 
 interface OfferDetail {
   id: string;
@@ -112,12 +112,10 @@ export default function OfferDetail() {
       </Link>
 
       <div className="mt-4 overflow-hidden rounded-md border border-border bg-card">
-        {offer.cover_url ? (
+        {offer.cover_url && (
           <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
             <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover" />
           </div>
-        ) : (
-          <OfferCoverPlaceholder title={offer.title} category={offer.category} aspect="aspect-[16/9]" large />
         )}
         <div className="p-5 md:p-7">
           <div className="flex flex-wrap items-center gap-2">
@@ -190,13 +188,6 @@ export default function OfferDetail() {
             {offer.description.split("\n").map((p, i) => <p key={i}>{p}</p>)}
           </div>
 
-          {offer.tags?.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-1.5">
-              {offer.tags.map((t) => (
-                <span key={t} className="rounded-[3px] bg-secondary px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{t}</span>
-              ))}
-            </div>
-          )}
 
           {/* Big CTA at the bottom for link-out offers */}
           {isLinkOut && (
