@@ -70,6 +70,7 @@ const App = () => (
 
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
+            <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
             <Route path="/settings/following" element={<AppLayout><Following /></AppLayout>} />
             <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
             <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />
