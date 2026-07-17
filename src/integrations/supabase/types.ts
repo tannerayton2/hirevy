@@ -1467,6 +1467,7 @@ export type Database = {
         Returns: string
       }
       tier_for_review_count: { Args: { c: number }; Returns: string }
+      update_my_username: { Args: { p_new_username: string }; Returns: string }
       verify_review: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
