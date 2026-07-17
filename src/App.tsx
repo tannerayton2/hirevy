@@ -21,6 +21,7 @@ import ReviewSubmit from "./pages/ReviewSubmit.tsx";
 import ProofReviewSubmit from "./pages/ProofReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
+import AccountSettings from "./pages/AccountSettings.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
