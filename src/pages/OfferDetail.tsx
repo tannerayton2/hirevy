@@ -188,13 +188,6 @@ export default function OfferDetail() {
             {offer.description.split("\n").map((p, i) => <p key={i}>{p}</p>)}
           </div>
 
-          {offer.tags?.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-1.5">
-              {offer.tags.map((t) => (
-                <span key={t} className="rounded-[3px] bg-secondary px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{t}</span>
-              ))}
-            </div>
-          )}
 
           {/* Big CTA at the bottom for link-out offers */}
           {isLinkOut && (
