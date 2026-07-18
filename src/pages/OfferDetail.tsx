@@ -162,6 +162,38 @@ export default function OfferDetail() {
           </div>
         </div>
       </div>
+
+      <section className="mt-8">
+        <h2 className="font-display text-xl font-semibold">
+          Reviews for this offer <span className="text-muted-foreground">({offerReviews.length})</span>
+        </h2>
+        {offerReviews.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            No reviews tagged to this offer yet.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {offerReviews.map((r) => (
+              <li key={r.id} className="rounded-md border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <Link
+                    to={r.reviewer_username ? `/@${r.reviewer_username}` : "#"}
+                    className="text-sm font-semibold hover:text-primary"
+                  >
+                    {r.reviewer_display_name || r.reviewer_name}
+                    {r.reviewer_username && <span className="ml-1 text-muted-foreground font-normal">@{r.reviewer_username}</span>}
+                  </Link>
+                  <StarRating value={r.rating} size={14} />
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">{r.body}</p>
+                <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
