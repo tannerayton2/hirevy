@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     if ((pendingCount ?? 0) > 3) return json({ error: 'rate_limited' }, 429);
 
 
-    let providerName = review.coach_name || 'the provider';
+    let providerName = 'the provider';
     if (review.provider_id) {
       const { data: provider } = await supabase
         .from('profiles')
@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
         providerName = provider.display_name || (provider.username ? `@${provider.username}` : providerName);
       }
     }
+
 
     const safeOrigin = typeof origin === 'string' && /^https?:\/\//.test(origin)
       ? origin.replace(/\/$/, '')
