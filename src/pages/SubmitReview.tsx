@@ -487,6 +487,31 @@ export default function SubmitReview() {
         </section>
         )}
 
+        {linkedProfileId && offerOptions.length > 0 && (
+          <div className="rounded-md border border-border bg-card p-4">
+            <label className="mb-2 block text-sm font-semibold">
+              Which offer is this review about? <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <Select
+              value={selectedOfferId || "none"}
+              onValueChange={(v) => setSelectedOfferId(v === "none" ? "" : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="General review — not tied to a specific offer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">General review — not tied to a specific offer</SelectItem>
+                {offerOptions.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Tag a specific offer so future buyers can see reviews for that exact program.
+            </p>
+          </div>
+        )}
+
         {!hideSection1 && <div className="h-px w-full bg-border" />}
 
         {/* SECTION 2 */}
