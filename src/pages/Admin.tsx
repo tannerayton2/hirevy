@@ -569,7 +569,7 @@ export default function Admin() {
     | "moderation"
     | "review-queue"
     | "claims"
-    | "profile-requests"
+    
     | "team-messages"
     | "broadcast"
     | "users"
