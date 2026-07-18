@@ -135,12 +135,11 @@ export default function Explore() {
       const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
       const ordered = orderedIds
         .map((id) => byId.get(id))
-        .filter(Boolean)
-        .filter((c) => matchProviderType((c as CoachRow).provider_type)) as CoachRow[];
+        .filter(Boolean) as CoachRow[];
       if (!cancel) { setRecent(ordered.slice(0, 12)); setLoadingRecent(false); }
     })();
     return () => { cancel = true; };
-  }, [activeCategory, subTab, providerType]);
+  }, [activeCategory, subTab]);
 
   // ===== People: search results =====
   useEffect(() => {
