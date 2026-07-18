@@ -104,6 +104,9 @@ interface Review {
   reviewer_username?: string | null;
   reviewer_display_name?: string | null;
   reviewer_avatar_url?: string | null;
+  offer_id?: string | null;
+  offer_title?: string | null;
+  offer_slug?: string | null;
 }
 
 
