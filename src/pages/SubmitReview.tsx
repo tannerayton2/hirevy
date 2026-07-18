@@ -148,35 +148,41 @@ export default function SubmitReview() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  // Resolve prefilled coach handle into a real profile ID
+  useEffect(() => {
+    if (!prefilledCoach) return;
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .eq("username", prefilledCoach.toLowerCase())
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setLinkedProfileId(data.id);
+      setReviewedUsername(data.username);
+      setCoachName(data.display_name || data.username);
+    })();
+    return () => { cancelled = true; };
+  }, [prefilledCoach]);
+
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
     setReviewedUsername(p.username);
-    setIsUnmatched(false);
     setCoachName(p.display_name || p.username);
     setCoachQuery(p.display_name || p.username);
-    setNameLocked(true);
-    setSearchOpen(false);
-    setUnmatchedLink("");
-    setUnmatchedDescription("");
-  };
-
-  const selectUnmatched = () => {
-    setLinkedProfileId(null);
-    setIsUnmatched(true);
-    setCoachName(coachQuery.trim());
     setNameLocked(true);
     setSearchOpen(false);
   };
 
   const clearName = () => {
     setLinkedProfileId(null);
-    setIsUnmatched(false);
+    setReviewedUsername(null);
     setNameLocked(false);
     setCoachName("");
     setCoachQuery("");
-    setUnmatchedLink("");
-    setUnmatchedDescription("");
   };
+
 
 
 
