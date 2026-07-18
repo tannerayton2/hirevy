@@ -783,28 +783,31 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          proof_review_id: string
+          proof_review_id: string | null
           requester_email: string | null
           requester_message: string | null
           requester_user_id: string | null
+          review_id: string | null
           status: string
         }
         Insert: {
           created_at?: string
           id?: string
-          proof_review_id: string
+          proof_review_id?: string | null
           requester_email?: string | null
           requester_message?: string | null
           requester_user_id?: string | null
+          review_id?: string | null
           status?: string
         }
         Update: {
           created_at?: string
           id?: string
-          proof_review_id?: string
+          proof_review_id?: string | null
           requester_email?: string | null
           requester_message?: string | null
           requester_user_id?: string | null
+          review_id?: string | null
           status?: string
         }
         Relationships: [
@@ -813,6 +816,20 @@ export type Database = {
             columns: ["proof_review_id"]
             isOneToOne: false
             referencedRelation: "proof_backed_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proof_access_requests_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "public_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proof_access_requests_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
             referencedColumns: ["id"]
           },
         ]
@@ -1320,14 +1337,20 @@ export type Database = {
       list_provider_reviews: {
         Args: { p_provider: string }
         Returns: {
+          amount_paid_bracket: string
           body: string
           completeness_score: number
           created_at: string
+          evidence_count: number
           id: string
+          instagram_handle: string
           is_detailed: boolean
+          offer_url: string
           provider_id: string
+          purchased: boolean
           rating: number
           reviewer_name: string
+          strength_tier: string
         }[]
       }
       move_to_dlq: {
