@@ -19,6 +19,7 @@ import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
+import { ReviewDetailDialog } from "@/components/reviews/ReviewDetailDialog";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 
