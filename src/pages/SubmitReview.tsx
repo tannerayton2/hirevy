@@ -18,9 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { ReviewValidityBar } from "@/components/reviews/ReviewValidityBar";
+
 import { tierColor, tierLabel } from "@/components/reviews/ReviewCompletenessShield";
-import { TooltipProvider } from "@/components/ui/tooltip";
+
 
 function computeCompletenessScore(opts: {
   body: string;
@@ -767,18 +767,18 @@ function ConfirmModal({
           <DialogDescription className="sr-only">Confirm your review submission</DialogDescription>
         </DialogHeader>
 
-        <TooltipProvider delayDuration={150}>
-          <div className="relative rounded-md border border-border bg-card/60 p-4 pl-5">
-            <ReviewValidityBar score={score} />
-            <div className="flex flex-col items-center gap-3 py-2 text-center">
-              <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
-                {meta.icon} {meta.label}
-              </span>
-              <p className="text-sm text-muted-foreground">{meta.desc}</p>
-              <p className="text-sm text-foreground/90">{meta.motivation}</p>
+        <div className="rounded-md border border-border bg-card/60 p-4">
+          <div className="flex flex-col items-center gap-3 py-2 text-center">
+            <div className="font-display text-5xl font-bold text-foreground">
+              {Math.max(0, Math.min(100, Math.round(score)))}%
             </div>
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", meta.badge)}>
+              {meta.icon} {meta.label}
+            </span>
+            <p className="text-sm text-muted-foreground">{meta.desc}</p>
+            <p className="text-sm text-foreground/90">{meta.motivation}</p>
           </div>
-        </TooltipProvider>
+        </div>
 
         <div className="mt-2 flex flex-col gap-2">
           <Button onClick={onSubmit} disabled={saving} className="h-11 w-full text-sm font-semibold">
