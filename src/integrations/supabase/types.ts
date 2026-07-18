@@ -934,44 +934,62 @@ export type Database = {
       }
       reviews: {
         Row: {
+          amount_paid_bracket: string | null
           body: string
           completeness_score: number
           created_at: string
+          evidence_paths: string[]
           id: string
+          instagram_handle: string | null
           is_detailed: boolean | null
+          offer_url: string | null
           provider_id: string
+          purchased: boolean
           rating: number
           reviewer_email: string
           reviewer_name: string
           status: string
+          strength_tier: string
           verified_at: string | null
           verify_token: string
         }
         Insert: {
+          amount_paid_bracket?: string | null
           body?: string
           completeness_score?: number
           created_at?: string
+          evidence_paths?: string[]
           id?: string
+          instagram_handle?: string | null
           is_detailed?: boolean | null
+          offer_url?: string | null
           provider_id: string
+          purchased?: boolean
           rating: number
           reviewer_email: string
           reviewer_name: string
           status?: string
+          strength_tier?: string
           verified_at?: string | null
           verify_token?: string
         }
         Update: {
+          amount_paid_bracket?: string | null
           body?: string
           completeness_score?: number
           created_at?: string
+          evidence_paths?: string[]
           id?: string
+          instagram_handle?: string | null
           is_detailed?: boolean | null
+          offer_url?: string | null
           provider_id?: string
+          purchased?: boolean
           rating?: number
           reviewer_email?: string
           reviewer_name?: string
           status?: string
+          strength_tier?: string
           verified_at?: string | null
           verify_token?: string
         }
@@ -1035,86 +1053,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      unclaimed_reviews: {
-        Row: {
-          amount_paid_bracket: string | null
-          body: string
-          coach_name: string
-          completeness_score: number
-          created_at: string
-          evidence_paths: string[]
-          id: string
-          instagram_handle: string | null
-          is_detailed: boolean | null
-          linked_profile_id: string | null
-          needs_profile: boolean
-          offer_url: string | null
-          purchased: boolean
-          rating: number
-          reviewer_email: string
-          status: string
-          strength_tier: string
-          unmatched_description: string | null
-          unmatched_link: string | null
-          verified_at: string | null
-          verify_token: string
-        }
-        Insert: {
-          amount_paid_bracket?: string | null
-          body: string
-          coach_name: string
-          completeness_score?: number
-          created_at?: string
-          evidence_paths?: string[]
-          id?: string
-          instagram_handle?: string | null
-          is_detailed?: boolean | null
-          linked_profile_id?: string | null
-          needs_profile?: boolean
-          offer_url?: string | null
-          purchased?: boolean
-          rating: number
-          reviewer_email: string
-          status?: string
-          strength_tier?: string
-          unmatched_description?: string | null
-          unmatched_link?: string | null
-          verified_at?: string | null
-          verify_token?: string
-        }
-        Update: {
-          amount_paid_bracket?: string | null
-          body?: string
-          coach_name?: string
-          completeness_score?: number
-          created_at?: string
-          evidence_paths?: string[]
-          id?: string
-          instagram_handle?: string | null
-          is_detailed?: boolean | null
-          linked_profile_id?: string | null
-          needs_profile?: boolean
-          offer_url?: string | null
-          purchased?: boolean
-          rating?: number
-          reviewer_email?: string
-          status?: string
-          strength_tier?: string
-          unmatched_description?: string | null
-          unmatched_link?: string | null
-          verified_at?: string | null
-          verify_token?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "unclaimed_reviews_linked_profile_id_fkey"
-            columns: ["linked_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_notification_flags: {
         Row: {
@@ -1266,7 +1204,7 @@ export type Database = {
             }[]
           }
       admin_delete_review: {
-        Args: { p_review_id: string; p_review_type: string }
+        Args: { p_review_id: string; p_review_type?: string }
         Returns: undefined
       }
       admin_delete_unclaimed_profile: {
@@ -1335,7 +1273,7 @@ export type Database = {
         Returns: undefined
       }
       admin_verify_review: {
-        Args: { p_review_id: string; p_review_type: string }
+        Args: { p_review_id: string; p_review_type?: string }
         Returns: undefined
       }
       compute_review_score: {
@@ -1421,30 +1359,17 @@ export type Database = {
       }
       submit_public_review: {
         Args: {
+          p_amount_paid_bracket?: string
           p_body: string
+          p_evidence_paths?: string[]
+          p_instagram_handle?: string
+          p_offer_url?: string
           p_provider_id: string
+          p_purchased?: boolean
           p_rating: number
           p_reviewer_email: string
           p_reviewer_name: string
-        }
-        Returns: string
-      }
-      submit_unclaimed_review: {
-        Args: {
-          p_amount_paid_bracket: string
-          p_body: string
-          p_coach_name: string
-          p_evidence_paths: string[]
-          p_instagram_handle: string
-          p_linked_profile_id: string
-          p_needs_profile: boolean
-          p_offer_url: string
-          p_purchased: boolean
-          p_rating: number
-          p_reviewer_email: string
-          p_strength_tier: string
-          p_unmatched_description: string
-          p_unmatched_link: string
+          p_strength_tier?: string
         }
         Returns: string
       }
