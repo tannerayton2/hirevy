@@ -769,19 +769,6 @@ export default function Admin() {
 
               {active === "claims" && <ClaimRequestsPanel />}
 
-              {active === "profile-requests" && (
-                <ProfileRequestsPanel
-                  reloadKey={profileRequestsReloadKey}
-                  onCreateProfile={(row) => {
-                    setCoachPrefill({ fullName: row.coach_name, websiteUrl: row.unmatched_link ?? "" });
-                    setPrefillKey((k) => k + 1);
-                    setPendingReviewId(row.id);
-                    setActive("create-profile");
-                    setTimeout(() => createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-                  }}
-                />
-              )}
-
               {active === "team-messages" && <TeamMessagesPanel />}
 
               {active === "broadcast" && <BroadcastPanel />}
@@ -796,17 +783,13 @@ export default function Admin() {
                     key={prefillKey}
                     initial={coachPrefill}
                     onCreated={async () => {
-                      if (pendingReviewId) {
-                        await supabase.from("unclaimed_reviews").update({ needs_profile: false } as never).eq("id", pendingReviewId);
-                        setPendingReviewId(null);
-                        setCoachPrefill(undefined);
-                        setProfileRequestsReloadKey((k) => k + 1);
-                      }
+                      setCoachPrefill(undefined);
                       void fetchAll();
                     }}
                   />
                 </div>
               )}
+
 
               {active === "manage-profiles" && <ManageUnclaimedProfiles />}
             </div>
