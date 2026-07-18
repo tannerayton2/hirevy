@@ -1079,6 +1079,7 @@ export default function Profile() {
                     offer={{
                       ...o,
                       provider: {
+                        id: profile.id,
                         username: profile.username,
                         display_name: profile.display_name,
                         review_count: profile.review_count,
