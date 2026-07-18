@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { StarRating } from "@/components/StarRating";
@@ -31,6 +32,9 @@ export interface ReviewDetail {
   reviewer_username?: string | null;
   reviewer_display_name?: string | null;
   reviewer_avatar_url?: string | null;
+  offer_id?: string | null;
+  offer_title?: string | null;
+  offer_slug?: string | null;
 }
 
 interface Props {
@@ -38,6 +42,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   review: ReviewDetail | null;
   providerId: string;
+  providerUsername?: string;
   providerDisplayName: string;
   isProviderViewer: boolean;
 }
@@ -50,7 +55,7 @@ const TIER_LABEL: Record<string, string> = {
 };
 
 export function ReviewDetailDialog({
-  open, onOpenChange, review, providerId, providerDisplayName, isProviderViewer,
+  open, onOpenChange, review, providerId, providerUsername, providerDisplayName, isProviderViewer,
 }: Props) {
   const { user } = useAuth();
   const [requesting, setRequesting] = useState(false);
@@ -137,10 +142,23 @@ export function ReviewDetailDialog({
             )}
           </div>
 
+          {/* Offer tag */}
+          {review.offer_id && review.offer_title && review.offer_slug && providerUsername && (
+            <Link
+              to={`/@${providerUsername}/offer/${review.offer_slug}`}
+              onClick={() => onOpenChange(false)}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary/40 bg-primary/[0.08] px-3 py-1 text-xs font-medium text-primary hover:bg-primary/15"
+            >
+              <span className="uppercase tracking-[0.14em] text-[10px] text-primary/80">Review of</span>
+              <span className="truncate">{review.offer_title}</span>
+            </Link>
+          )}
+
           {/* Body */}
           <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/95">
             {review.body}
           </p>
+
 
           {/* Metadata */}
           {(review.amount_paid_bracket || review.instagram_handle || review.offer_url) && (

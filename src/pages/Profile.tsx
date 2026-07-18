@@ -104,6 +104,9 @@ interface Review {
   reviewer_username?: string | null;
   reviewer_display_name?: string | null;
   reviewer_avatar_url?: string | null;
+  offer_id?: string | null;
+  offer_title?: string | null;
+  offer_slug?: string | null;
 }
 
 
@@ -825,6 +828,16 @@ export default function Profile() {
                   </div>
                 </div>
                 <ExpandableReviewText text={pinnedReview.body} className="text-[15px] leading-relaxed text-foreground/95" />
+                {pinnedReview.offer_id && pinnedReview.offer_slug && pinnedReview.offer_title && (
+                  <Link
+                    to={`/@${profile.username}/offer/${pinnedReview.offer_slug}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-3 inline-flex max-w-full items-center gap-1 rounded-full border border-primary/40 bg-primary/[0.08] px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/15"
+                  >
+                    <span className="uppercase tracking-[0.14em] text-[10px] text-primary/80">Review of</span>
+                    <span className="truncate">{pinnedReview.offer_title}</span>
+                  </Link>
+                )}
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                     {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
@@ -881,6 +894,16 @@ export default function Profile() {
                     </div>
                   </div>
                   <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
+                  {u.data.offer_id && u.data.offer_slug && u.data.offer_title && (
+                    <Link
+                      to={`/@${profile.username}/offer/${u.data.offer_slug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-2 inline-flex max-w-full items-center gap-1 rounded-full border border-primary/30 bg-primary/[0.06] px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                    >
+                      <span className="uppercase tracking-[0.14em] text-[9px] text-primary/80">Review of</span>
+                      <span className="truncate">{u.data.offer_title}</span>
+                    </Link>
+                  )}
                   <div className="mt-2 flex items-center justify-between">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                       {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
@@ -1096,6 +1119,7 @@ export default function Profile() {
           onOpenChange={(o) => { if (!o) setDetailReview(null); }}
           review={detailReview}
           providerId={profile.id}
+          providerUsername={profile.username}
           providerDisplayName={providerDisplayName}
           isProviderViewer={isMe}
         />

@@ -97,6 +97,10 @@ export default function SubmitReview() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement | null>(null);
+  type OfferOption = { id: string; title: string };
+  const [offerOptions, setOfferOptions] = useState<OfferOption[]>([]);
+  const [selectedOfferId, setSelectedOfferId] = useState<string>("");
+
 
   const [category, setCategory] = useState<string>(params.get("cat") ?? "");
   const [website, setWebsite] = useState("");
@@ -166,6 +170,24 @@ export default function SubmitReview() {
     return () => { cancelled = true; };
   }, [prefilledCoach]);
 
+  // Load selected coach's offers so the reviewer can (optionally) tag one
+  useEffect(() => {
+    if (!linkedProfileId) { setOfferOptions([]); setSelectedOfferId(""); return; }
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("offers")
+        .select("id, title")
+        .eq("provider_id", linkedProfileId)
+        .eq("is_active", true)
+        .order("priority", { ascending: false })
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      setOfferOptions((data ?? []) as OfferOption[]);
+    })();
+    return () => { cancelled = true; };
+  }, [linkedProfileId]);
+
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
     setReviewedUsername(p.username);
@@ -173,6 +195,7 @@ export default function SubmitReview() {
     setCoachQuery(p.display_name || p.username);
     setNameLocked(true);
     setSearchOpen(false);
+    setSelectedOfferId("");
   };
 
   const clearName = () => {
@@ -181,6 +204,7 @@ export default function SubmitReview() {
     setNameLocked(false);
     setCoachName("");
     setCoachQuery("");
+    setSelectedOfferId("");
   };
 
 
@@ -284,6 +308,7 @@ export default function SubmitReview() {
         p_instagram_handle: instagram.trim() || null,
         p_evidence_paths: paths,
         p_strength_tier: tier,
+        p_offer_id: selectedOfferId || null,
       } as never);
       if (error) throw error;
 
@@ -460,6 +485,31 @@ export default function SubmitReview() {
 
 
         </section>
+        )}
+
+        {linkedProfileId && offerOptions.length > 0 && (
+          <div className="rounded-md border border-border bg-card p-4">
+            <label className="mb-2 block text-sm font-semibold">
+              Which offer is this review about? <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <Select
+              value={selectedOfferId || "none"}
+              onValueChange={(v) => setSelectedOfferId(v === "none" ? "" : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="General review — not tied to a specific offer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">General review — not tied to a specific offer</SelectItem>
+                {offerOptions.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Tag a specific offer so future buyers can see reviews for that exact program.
+            </p>
+          </div>
         )}
 
         {!hideSection1 && <div className="h-px w-full bg-border" />}

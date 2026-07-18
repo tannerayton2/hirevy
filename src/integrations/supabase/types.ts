@@ -959,6 +959,7 @@ export type Database = {
           id: string
           instagram_handle: string | null
           is_detailed: boolean | null
+          offer_id: string | null
           offer_url: string | null
           provider_id: string
           purchased: boolean
@@ -979,6 +980,7 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           is_detailed?: boolean | null
+          offer_id?: string | null
           offer_url?: string | null
           provider_id: string
           purchased?: boolean
@@ -999,6 +1001,7 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           is_detailed?: boolean | null
+          offer_id?: string | null
           offer_url?: string | null
           provider_id?: string
           purchased?: boolean
@@ -1011,6 +1014,13 @@ export type Database = {
           verify_token?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_provider_id_fkey"
             columns: ["provider_id"]
@@ -1345,6 +1355,9 @@ export type Database = {
           id: string
           instagram_handle: string
           is_detailed: boolean
+          offer_id: string
+          offer_slug: string
+          offer_title: string
           offer_url: string
           provider_id: string
           purchased: boolean
@@ -1384,22 +1397,40 @@ export type Database = {
         }
         Returns: undefined
       }
-      submit_public_review: {
-        Args: {
-          p_amount_paid_bracket?: string
-          p_body: string
-          p_evidence_paths?: string[]
-          p_instagram_handle?: string
-          p_offer_url?: string
-          p_provider_id: string
-          p_purchased?: boolean
-          p_rating: number
-          p_reviewer_email: string
-          p_reviewer_name: string
-          p_strength_tier?: string
-        }
-        Returns: string
-      }
+      submit_public_review:
+        | {
+            Args: {
+              p_amount_paid_bracket?: string
+              p_body: string
+              p_evidence_paths?: string[]
+              p_instagram_handle?: string
+              p_offer_url?: string
+              p_provider_id: string
+              p_purchased?: boolean
+              p_rating: number
+              p_reviewer_email: string
+              p_reviewer_name: string
+              p_strength_tier?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_amount_paid_bracket?: string
+              p_body: string
+              p_evidence_paths?: string[]
+              p_instagram_handle?: string
+              p_offer_id?: string
+              p_offer_url?: string
+              p_provider_id: string
+              p_purchased?: boolean
+              p_rating: number
+              p_reviewer_email: string
+              p_reviewer_name: string
+              p_strength_tier?: string
+            }
+            Returns: string
+          }
       tier_for_review_count: { Args: { c: number }; Returns: string }
       update_my_username: { Args: { p_new_username: string }; Returns: string }
       verify_review: { Args: { p_token: string }; Returns: boolean }
