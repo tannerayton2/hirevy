@@ -193,9 +193,31 @@ export default function SubmitReview() {
 
   const tier = useMemo(() => computeTier(purchased, files.length), [purchased, files.length]);
 
+  const ALLOWED_MIME = new Set([
+    "image/jpeg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ]);
+  const ALLOWED_EXT = /\.(jpe?g|png|gif|webp|heic|heif|pdf|docx?|)$/i;
+  const MAX_BYTES = 15 * 1024 * 1024;
+
   const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(e.target.files ?? []);
-    const next = [...files, ...incoming].slice(0, 3);
+    const accepted: File[] = [];
+    for (const f of incoming) {
+      const okType = ALLOWED_MIME.has(f.type) || (f.type.startsWith("image/")) || ALLOWED_EXT.test(f.name);
+      if (!okType) {
+        toast({ title: "Unsupported file type", description: `${f.name} — allowed: images, PDF, DOC, DOCX`, variant: "destructive" });
+        continue;
+      }
+      if (f.size > MAX_BYTES) {
+        toast({ title: "File too large", description: `${f.name} exceeds 15 MB`, variant: "destructive" });
+        continue;
+      }
+      accepted.push(f);
+    }
+    const next = [...files, ...accepted].slice(0, 3);
     setFiles(next);
     e.target.value = "";
   };
