@@ -1072,6 +1072,17 @@ export default function Profile() {
           }
         }}
       />
+
+      {profile && (
+        <ReviewDetailDialog
+          open={!!detailReview}
+          onOpenChange={(o) => { if (!o) setDetailReview(null); }}
+          review={detailReview}
+          providerId={profile.id}
+          providerDisplayName={providerDisplayName}
+          isProviderViewer={isMe}
+        />
+      )}
     </div>
     </TooltipProvider>
   );
