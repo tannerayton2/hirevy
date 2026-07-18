@@ -701,14 +701,14 @@ const TIER_META: Record<Tier, { label: string; desc: string; icon: React.ReactNo
     desc: "Comment only, no purchase confirmation",
     icon: <Check className="h-3.5 w-3.5" />,
     badge: "bg-muted text-muted-foreground",
-    motivation: "Adding purchase confirmation or evidence makes your review more trustworthy to buyers.",
+    motivation: "Confirm your purchase to reach Verified.",
   },
   verified: {
     label: "Verified",
     desc: "Purchase confirmed via checkbox",
     icon: <BadgeCheck className="h-3.5 w-3.5" />,
     badge: "bg-primary/15 text-primary ring-1 ring-primary/30",
-    motivation: "Great — purchase confirmed. Adding evidence would make this a top-tier review.",
+    motivation: "Upload a photo or file as proof to reach Evidenced — the highest trust level.",
   },
   evidenced: {
     label: "Evidenced",
