@@ -547,8 +547,8 @@ function RecentlyReviewed({
       {coaches.length === 0 ? (
         <div className="flex w-full justify-center">
           <div className="flex w-[320px] flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
-            <p className="text-sm font-semibold text-foreground">No active coaches or providers here yet.</p>
-            <p className="text-xs text-muted-foreground">Browse a category below or switch between Coaches and Service Providers to discover who's available to hire.</p>
+            <p className="text-sm font-semibold text-foreground">No active people here yet.</p>
+            <p className="text-xs text-muted-foreground">Browse a category below to discover who's available to hire.</p>
           </div>
         </div>
       ) : (
