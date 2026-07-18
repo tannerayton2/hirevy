@@ -306,7 +306,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <main className={cn(
           "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
           isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
-          !isSubmitReview && "xl:mx-auto xl:max-w-[620px]",
+          !isSubmitReview && pathname !== "/messages" && "xl:mx-auto xl:max-w-[620px]",
         )}>
           {children}
         </main>
