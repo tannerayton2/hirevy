@@ -170,6 +170,24 @@ export default function SubmitReview() {
     return () => { cancelled = true; };
   }, [prefilledCoach]);
 
+  // Load selected coach's offers so the reviewer can (optionally) tag one
+  useEffect(() => {
+    if (!linkedProfileId) { setOfferOptions([]); setSelectedOfferId(""); return; }
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("offers")
+        .select("id, title")
+        .eq("provider_id", linkedProfileId)
+        .eq("is_active", true)
+        .order("priority", { ascending: false })
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      setOfferOptions((data ?? []) as OfferOption[]);
+    })();
+    return () => { cancelled = true; };
+  }, [linkedProfileId]);
+
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
     setReviewedUsername(p.username);
@@ -177,6 +195,7 @@ export default function SubmitReview() {
     setCoachQuery(p.display_name || p.username);
     setNameLocked(true);
     setSearchOpen(false);
+    setSelectedOfferId("");
   };
 
   const clearName = () => {
@@ -185,6 +204,7 @@ export default function SubmitReview() {
     setNameLocked(false);
     setCoachName("");
     setCoachQuery("");
+    setSelectedOfferId("");
   };
 
 
