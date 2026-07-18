@@ -21,7 +21,6 @@ export default function VerifyReview() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
-      <Logo />
       <div className="mt-16 rounded-md border border-border bg-card p-8 text-center">
         {state === "loading" && (
           <>
