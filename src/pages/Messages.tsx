@@ -1051,7 +1051,7 @@ export default function Messages() {
               <Button type="button" size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Attach image" className="shrink-0 text-muted-foreground hover:text-foreground">
                 <ImagePlus className="h-5 w-5" />
               </Button>
-              <VoiceRecorder onComplete={sendVoice} disabled={sending} />
+              <div className="shrink-0"><VoiceRecorder onComplete={sendVoice} disabled={sending} /></div>
               <Input
                 value={body}
                 onChange={onBodyChange}
@@ -1059,7 +1059,7 @@ export default function Messages() {
                 onBlur={onComposerBlur}
                 placeholder="Write a message…"
                 maxLength={4000}
-                className="h-10 flex-1 rounded-full border-border bg-secondary px-4"
+                className="h-10 min-w-0 flex-1 rounded-full border-border bg-secondary px-4 text-foreground placeholder:text-muted-foreground"
               />
               <Button
                 type="submit"
