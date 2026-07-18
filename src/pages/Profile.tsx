@@ -20,6 +20,7 @@ import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonia
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
 import { ReviewDetailDialog } from "@/components/reviews/ReviewDetailDialog";
+import { ReviewerIdentity } from "@/components/reviews/ReviewerIdentity";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 
@@ -99,6 +100,10 @@ interface Review {
   instagram_handle?: string | null;
   strength_tier?: string | null;
   evidence_count?: number | null;
+  reviewer_user_id?: string | null;
+  reviewer_username?: string | null;
+  reviewer_display_name?: string | null;
+  reviewer_avatar_url?: string | null;
 }
 
 
@@ -802,11 +807,17 @@ export default function Profile() {
                 className="relative mb-4 cursor-pointer rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-colors hover:bg-primary/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
                       <Star className="h-3 w-3 fill-current" /> Featured
                     </span>
-                    <p className="font-semibold">{pinnedReview.reviewer_name}</p>
+                    <ReviewerIdentity
+                      reviewerName={pinnedReview.reviewer_name}
+                      userId={pinnedReview.reviewer_user_id}
+                      username={pinnedReview.reviewer_username}
+                      displayName={pinnedReview.reviewer_display_name}
+                      avatarUrl={pinnedReview.reviewer_avatar_url}
+                    />
                   </div>
                   <div className="flex items-center gap-2">
                     <StarRating value={pinnedReview.rating} size={16} />
@@ -855,9 +866,15 @@ export default function Profile() {
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(u.data); } }}
                   className="relative cursor-pointer rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="font-semibold">{u.data.reviewer_name}</p>
-                    <div className="flex items-center gap-2">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <ReviewerIdentity
+                      reviewerName={u.data.reviewer_name}
+                      userId={u.data.reviewer_user_id}
+                      username={u.data.reviewer_username}
+                      displayName={u.data.reviewer_display_name}
+                      avatarUrl={u.data.reviewer_avatar_url}
+                    />
+                    <div className="flex shrink-0 items-center gap-2">
                       <StarRating value={u.data.rating} size={14} />
                       {u.is_detailed && <DetailedReviewBadge />}
                       <ReviewCompletenessShield score={u.score} />

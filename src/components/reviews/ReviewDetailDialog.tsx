@@ -11,6 +11,7 @@ import { ProviderReply } from "./ProviderReply";
 import { amountLabel } from "@/lib/proofReviews";
 import { BadgeCheck, FileLock2, ShieldCheck, Instagram, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ReviewerIdentity } from "./ReviewerIdentity";
 
 export interface ReviewDetail {
   id: string;
@@ -26,6 +27,10 @@ export interface ReviewDetail {
   instagram_handle?: string | null;
   strength_tier?: string | null;
   evidence_count?: number | null;
+  reviewer_user_id?: string | null;
+  reviewer_username?: string | null;
+  reviewer_display_name?: string | null;
+  reviewer_avatar_url?: string | null;
 }
 
 interface Props {
@@ -90,16 +95,24 @@ export function ReviewDetailDialog({
 
         <div className="space-y-4">
           {/* Header: reviewer + rating */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold text-foreground">{review.reviewer_name}</p>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <ReviewerIdentity
+                reviewerName={review.reviewer_name}
+                userId={review.reviewer_user_id}
+                username={review.reviewer_username}
+                displayName={review.reviewer_display_name}
+                avatarUrl={review.reviewer_avatar_url}
+                size="md"
+                onNavigate={() => onOpenChange(false)}
+              />
+              <p className="pl-12 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
                 {new Date(review.created_at).toLocaleDateString(undefined, {
                   year: "numeric", month: "short", day: "numeric",
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <StarRating value={review.rating} size={16} />
               <ReviewCompletenessShield score={review.completeness_score ?? 0} />
             </div>
