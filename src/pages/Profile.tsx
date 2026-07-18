@@ -19,6 +19,7 @@ import { ProviderReply } from "@/components/reviews/ProviderReply";
 import { ImportedTestimonialCard } from "@/components/reviews/ImportedTestimonialCard";
 import { ReviewCompletenessShield } from "@/components/reviews/ReviewCompletenessShield";
 import { ExpandableReviewText } from "@/components/reviews/ExpandableReviewText";
+import { ReviewDetailDialog } from "@/components/reviews/ReviewDetailDialog";
 import { ImportedTestimonialModal } from "@/components/ImportedTestimonialModal";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
 
@@ -92,7 +93,14 @@ interface Review {
   created_at: string;
   completeness_score: number;
   is_detailed?: boolean;
+  purchased?: boolean | null;
+  amount_paid_bracket?: string | null;
+  offer_url?: string | null;
+  instagram_handle?: string | null;
+  strength_tier?: string | null;
+  evidence_count?: number | null;
 }
+
 
 type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
 
@@ -148,6 +156,7 @@ export default function Profile() {
   const [responseMs, setResponseMs] = useState<number | null>(null);
   const [importedModalOpen, setImportedModalOpen] = useState(false);
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
+  const [detailReview, setDetailReview] = useState<Review | null>(null);
   
   const [tierModalOpen, setTierModalOpen] = useState(false);
   const [congrats, setCongrats] = useState<
@@ -785,7 +794,13 @@ export default function Profile() {
             )}
 
             {pinnedReview && (
-              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+              <article
+                role="button"
+                tabIndex={0}
+                onClick={() => setDetailReview(pinnedReview)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(pinnedReview); } }}
+                className="relative mb-4 cursor-pointer rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-colors hover:bg-primary/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
@@ -804,20 +819,23 @@ export default function Profile() {
                     {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                   </p>
                   {isMe && (
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(pinnedReview.id)}>
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); togglePinReview(pinnedReview.id); }}>
                       <PinOff className="mr-1 h-3 w-3" /> Unpin
                     </Button>
                   )}
                 </div>
-                <ProviderReply
-                  reviewId={pinnedReview.id}
-                  reviewType="verified"
-                  providerId={profile.id}
-                  providerDisplayName={providerDisplayName}
-                  isProviderViewer={isMe}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ProviderReply
+                    reviewId={pinnedReview.id}
+                    reviewType="verified"
+                    providerId={profile.id}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
+                </div>
               </article>
             )}
+
 
             {visibleReviews.length === 0 && !pinnedReview ? (
               <Empty msg="No reviews yet — message this provider to learn more or hire them directly." />
@@ -829,7 +847,14 @@ export default function Profile() {
               const shown = showWall ? visibleReviews.slice(0, 3) : visibleReviews;
               const hidden = showWall ? visibleReviews.slice(3) : [];
               const renderReview = (u: typeof visibleReviews[number]) => u.kind === "verified" ? (
-                <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
+                <article
+                  key={u.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDetailReview(u.data)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(u.data); } }}
+                  className="relative cursor-pointer rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="font-semibold">{u.data.reviewer_name}</p>
                     <div className="flex items-center gap-2">
@@ -844,18 +869,20 @@ export default function Profile() {
                       {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                     {isMe && (
-                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); togglePinReview(u.id); }}>
                         <Pin className="mr-1 h-3 w-3" /> Pin this review
                       </Button>
                     )}
                   </div>
-                  <ProviderReply
-                    reviewId={u.id}
-                    reviewType="verified"
-                    providerId={profile.id}
-                    providerDisplayName={providerDisplayName}
-                    isProviderViewer={isMe}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ProviderReply
+                      reviewId={u.id}
+                      reviewType="verified"
+                      providerId={profile.id}
+                      providerDisplayName={providerDisplayName}
+                      isProviderViewer={isMe}
+                    />
+                  </div>
                 </article>
               ) : (
                 <ProofReviewCard
@@ -1045,6 +1072,17 @@ export default function Profile() {
           }
         }}
       />
+
+      {profile && (
+        <ReviewDetailDialog
+          open={!!detailReview}
+          onOpenChange={(o) => { if (!o) setDetailReview(null); }}
+          review={detailReview}
+          providerId={profile.id}
+          providerDisplayName={providerDisplayName}
+          isProviderViewer={isMe}
+        />
+      )}
     </div>
     </TooltipProvider>
   );
