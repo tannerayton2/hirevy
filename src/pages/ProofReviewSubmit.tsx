@@ -263,7 +263,6 @@ export default function ProofReviewSubmit() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
-      <Logo />
       <Link
         to={`/@${provider.username}`}
         className="mt-6 flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
