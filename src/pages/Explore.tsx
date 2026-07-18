@@ -570,6 +570,8 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={72} />
       <p className="line-clamp-1 w-full text-sm font-bold">{name}</p>
+      <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
+      <RoleBadge provider_type={coach.provider_type} />
       {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
       <p className="text-[11px] text-muted-foreground">
         {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
