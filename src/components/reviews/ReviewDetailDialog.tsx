@@ -11,6 +11,7 @@ import { ProviderReply } from "./ProviderReply";
 import { amountLabel } from "@/lib/proofReviews";
 import { BadgeCheck, FileLock2, ShieldCheck, Instagram, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ReviewerIdentity } from "./ReviewerIdentity";
 
 export interface ReviewDetail {
   id: string;
