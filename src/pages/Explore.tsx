@@ -59,8 +59,6 @@ export default function Explore() {
 
   const tabParam = params.get("tab");
   const subTab: "people" | "offers" = tabParam === "offers" ? "offers" : "people";
-  const typeParam = params.get("ptype");
-  const providerType: ProviderType = typeParam === "service_provider" ? "service_provider" : "coach";
 
   const initialQ = params.get("q") ?? "";
   const initialCat = params.get("cat") ?? "";
@@ -106,9 +104,8 @@ export default function Explore() {
     setParams(next, { replace: true });
   };
 
-  // Provider-type matcher (untyped profiles appear in both)
-  const matchProviderType = (pt: ProviderType | null | undefined) =>
-    pt == null || pt === providerType;
+  // All people are shown in a single list; provider type is only used for display badges.
+  const matchProviderType = (_pt: ProviderType | null | undefined) => true;
 
   // ===== People: recently reviewed =====
   useEffect(() => {
