@@ -285,7 +285,6 @@ export default function Explore() {
   };
 
   const setSubTab = (t: "people" | "offers") => writeUrl({ tab: t === "people" ? null : "offers" });
-  const setProviderType = (t: ProviderType) => writeUrl({ ptype: t === "coach" ? null : "service_provider" });
 
   const showingResults = submitted.trim().length > 0 || !!activeCategory;
   const reviewLink = activeCategory ? `/submit-review?cat=${encodeURIComponent(activeCategory)}` : "/submit-review";
