@@ -910,53 +910,8 @@ export default function Profile() {
               );
             })()}
 
-            {/* Pre-claim / unclaimed reviews — visually distinct */}
-            {unclaimedReviews.length > 0 && (
-              <div className="mt-8">
-                <div className="mb-3 flex items-end justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Reviews submitted before this profile was claimed
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground/80">
-                      Left by clients when {providerDisplayName} wasn't yet on Aytopus. Not counted toward verified stats.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setReportOpen(true)}
-                    className="shrink-0 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                  >
-                    <Flag className="mr-1 inline h-3 w-3" /> Report
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {unclaimedReviews.map((r) => (
-                    <article
-                      key={r.id}
-                      className="relative rounded-md border border-dashed border-amber-500/40 bg-amber-500/[0.04] p-4"
-                    >
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="font-semibold">{r.reviewer_name}</p>
-                        <div className="flex items-center gap-2">
-                          {r.is_detailed && <DetailedReviewBadge />}
-                          <StarRating value={r.rating} size={14} />
-                        </div>
-                      </div>
-                      <ExpandableReviewText text={r.body} className="text-sm text-muted-foreground" />
-                      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                        <span>
-                          {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                        </span>
-                        <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-amber-600">
-                          Pre-claim
-                        </span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
+
+
             </>)}
 
 
