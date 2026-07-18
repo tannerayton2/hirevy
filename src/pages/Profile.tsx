@@ -720,21 +720,6 @@ export default function Profile() {
         {/* Reviews (verified + proof-backed merged) */}
         {activeTab === "reviews" && (
           <div>
-            {(!isMe && user && user.id !== profile.id) || !user ? (
-              <div className="mb-4 flex justify-end">
-                {!isMe && user && user.id !== profile.id && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/r/${profile.username}/proof`}>Leave a review</Link>
-                  </Button>
-                )}
-                {!user && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/auth?redirect=/r/${profile.username}/proof`}>Sign in to leave a review</Link>
-                  </Button>
-                )}
-              </div>
-            ) : null}
-
             {/* Sub-pill toggle: Verified | Imported — centered */}
             <div className="mb-6 mt-2 flex justify-center">
               <div className="inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
