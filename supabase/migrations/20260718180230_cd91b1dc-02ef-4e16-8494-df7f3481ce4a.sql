@@ -1,0 +1,1 @@
+GRANT SELECT (id, coach_name, instagram_handle, offer_url, rating, body, purchased, amount_paid_bracket, strength_tier, linked_profile_id, needs_profile, status, verified_at, created_at, completeness_score, is_detailed, evidence_paths, unmatched_link, unmatched_description) ON public.unclaimed_reviews TO anon, authenticated;
