@@ -527,19 +527,12 @@ function TopTab({ active, onClick, label }: { active: boolean; onClick: () => vo
   );
 }
 
-function ProviderPill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function RoleBadge({ provider_type }: { provider_type: ProviderType | null | undefined }) {
+  if (provider_type !== "coach" && provider_type !== "service_provider") return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] transition-colors",
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {label}
-    </button>
+    <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+      {provider_type === "coach" ? "Coach" : "Service Provider"}
+    </span>
   );
 }
 
