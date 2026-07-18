@@ -225,7 +225,7 @@ export default function Explore() {
             .limit(20);
           if (activeCategory) req = req.eq("service_category", activeCategory);
           const { data } = await req;
-          const rows = ((data as LivePerson[] | null) ?? []).filter((c) => matchProviderType(c.provider_type));
+          const rows = (data as LivePerson[] | null) ?? [];
           if (!cancel) {
             setLivePeople(rows.slice(0, 6));
             setLiveOffers([]);
@@ -242,8 +242,7 @@ export default function Explore() {
           if (freeOnly) req = req.eq("free_for_testimonial", true);
           if (activeCategory) req = req.eq("category", activeCategory);
           const { data } = await req;
-          const rows = ((data as unknown as LiveOffer[] | null) ?? [])
-            .filter((o) => matchProviderType(o.provider?.provider_type ?? null));
+          const rows = (data as unknown as LiveOffer[] | null) ?? [];
           if (!cancel) {
             setLiveOffers(rows.slice(0, 6));
             setLivePeople([]);
@@ -253,7 +252,7 @@ export default function Explore() {
       })();
     }, 220);
     return () => { cancel = true; clearTimeout(t); };
-  }, [query, subTab, activeCategory, providerType, freeOnly]);
+  }, [query, subTab, activeCategory, freeOnly]);
 
   // Close dropdown when clicking outside the search box
   useEffect(() => {
