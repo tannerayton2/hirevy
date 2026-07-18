@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/Logo";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export default function VerifyReview() {
