@@ -99,12 +99,25 @@ export function ReviewDetailDialog({
             <div>
               <p className="font-semibold text-foreground">{review.reviewer_name}</p>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+          {/* Header: reviewer + rating */}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <ReviewerIdentity
+                reviewerName={review.reviewer_name}
+                userId={review.reviewer_user_id}
+                username={review.reviewer_username}
+                displayName={review.reviewer_display_name}
+                avatarUrl={review.reviewer_avatar_url}
+                size="md"
+                onNavigate={() => onOpenChange(false)}
+              />
+              <p className="pl-12 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
                 {new Date(review.created_at).toLocaleDateString(undefined, {
                   year: "numeric", month: "short", day: "numeric",
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <StarRating value={review.rating} size={16} />
               <ReviewCompletenessShield score={review.completeness_score ?? 0} />
             </div>
