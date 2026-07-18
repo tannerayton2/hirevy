@@ -847,7 +847,14 @@ export default function Profile() {
               const shown = showWall ? visibleReviews.slice(0, 3) : visibleReviews;
               const hidden = showWall ? visibleReviews.slice(3) : [];
               const renderReview = (u: typeof visibleReviews[number]) => u.kind === "verified" ? (
-                <article key={u.id} className="relative rounded-md border border-border bg-card p-4">
+                <article
+                  key={u.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDetailReview(u.data)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(u.data); } }}
+                  className="relative cursor-pointer rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="font-semibold">{u.data.reviewer_name}</p>
                     <div className="flex items-center gap-2">
@@ -862,18 +869,20 @@ export default function Profile() {
                       {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                     {isMe && (
-                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(u.id)}>
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); togglePinReview(u.id); }}>
                         <Pin className="mr-1 h-3 w-3" /> Pin this review
                       </Button>
                     )}
                   </div>
-                  <ProviderReply
-                    reviewId={u.id}
-                    reviewType="verified"
-                    providerId={profile.id}
-                    providerDisplayName={providerDisplayName}
-                    isProviderViewer={isMe}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ProviderReply
+                      reviewId={u.id}
+                      reviewType="verified"
+                      providerId={profile.id}
+                      providerDisplayName={providerDisplayName}
+                      isProviderViewer={isMe}
+                    />
+                  </div>
                 </article>
               ) : (
                 <ProofReviewCard
