@@ -92,7 +92,14 @@ interface Review {
   created_at: string;
   completeness_score: number;
   is_detailed?: boolean;
+  purchased?: boolean | null;
+  amount_paid_bracket?: string | null;
+  offer_url?: string | null;
+  instagram_handle?: string | null;
+  strength_tier?: string | null;
+  evidence_count?: number | null;
 }
+
 
 type SortKey = "newest" | "oldest" | "highest" | "lowest" | "complete" | "complete_asc";
 
