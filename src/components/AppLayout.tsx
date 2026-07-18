@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Eye, Share2 } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -175,13 +175,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
                     >
                       <nav className="flex flex-col gap-0.5 p-4 pt-12">
-                        <button
-                          type="button"
-                          onClick={() => { setMenuOpen(false); navigate(profilePath); }}
-                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                        >
-                          <Eye className="h-4 w-4" /> View Profile
-                        </button>
                         <button
                           type="button"
                           onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
