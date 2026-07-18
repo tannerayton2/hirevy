@@ -203,14 +203,9 @@ export default function Profile() {
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
-    const [offersRes, reviewsRes, unclaimedRes, proofRes, importedRes, followRes] = await Promise.all([
+    const [offersRes, reviewsRes, proofRes, importedRes, followRes] = await Promise.all([
       offersQuery,
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
-      supabase
-        .from("unclaimed_reviews")
-        .select("id, coach_name, rating, body, created_at, completeness_score, is_detailed")
-        .eq("linked_profile_id", prof.id)
-        .order("created_at", { ascending: false }),
       supabase
         .from("proof_backed_reviews")
         .select("id, provider_id, reviewer_name, rating, body, engagement_type, engagement_started_month, engagement_started_year, engagement_ended_month, engagement_ended_year, engagement_ongoing, amount_paid_bracket, proof_file_count, is_disputed, created_at")
@@ -228,23 +223,12 @@ export default function Profile() {
 
     setOffers((offersRes.data as unknown as OfferRow[]) ?? []);
     const verifiedReviews = (reviewsRes.data as unknown as Review[]) ?? [];
-    const unclaimedRows = ((unclaimedRes.data as unknown as Array<{
-      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number; is_detailed: boolean;
-    }>) ?? []).map((r) => ({
-      id: r.id,
-      reviewer_name: r.coach_name,
-      rating: r.rating,
-      body: r.body,
-      created_at: r.created_at,
-      completeness_score: r.completeness_score,
-      is_detailed: r.is_detailed,
-    } as Review));
     setReviews(verifiedReviews);
-    setUnclaimedReviews(unclaimedRows);
     setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setImported((importedRes.data as unknown as ImportedTestimonial[]) ?? []);
     setFollowing(!!followRes.data);
     setLoading(false);
+
 
     // Fetch response time async (doesn't block render)
     void fetchAvgFirstResponseMs(prof.id).then(setResponseMs);
