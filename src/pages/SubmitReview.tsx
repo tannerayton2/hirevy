@@ -229,13 +229,14 @@ export default function SubmitReview() {
   const removeFile = (i: number) => setFiles(files.filter((_, idx) => idx !== i));
 
   const validate = () => {
-    if (!coachName.trim()) { toast({ title: "Coach name required", variant: "destructive" }); return false; }
+    if (!linkedProfileId) { toast({ title: "Select the coach from the search results", variant: "destructive" }); return false; }
     if (rating < 0.5) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
     if (body.trim().length < MIN_BODY) { toast({ title: `Review must be at least ${MIN_BODY} characters`, variant: "destructive" }); return false; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast({ title: "Enter a valid email", variant: "destructive" }); return false; }
     if (purchased && amount === "other" && (!(Number(customAmount) > 0) || !customAmount.trim())) { toast({ title: "Enter a valid amount", variant: "destructive" }); return false; }
     return true;
   };
+
 
   const onClickSubmit = (e: React.FormEvent) => {
     e.preventDefault();
