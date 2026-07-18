@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Logo } from "@/components/Logo";
 import { toast } from "@/hooks/use-toast";
-import { Star, Upload, X, FileText, Image as ImageIcon, ShieldCheck } from "lucide-react";
+import { Star, Upload, X, FileText, Image as ImageIcon, ShieldCheck, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   AMOUNT_BRACKETS, ENGAGEMENT_TYPES, MONTHS, PROOF_ALLOWED_MIME,
