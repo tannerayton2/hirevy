@@ -84,10 +84,6 @@ export default function Explore() {
     id: string;
     slug: string;
     title: string;
-    price_cents: number | null;
-    price_max_cents: number | null;
-    pricing_model: string | null;
-    free_for_testimonial: boolean;
     provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
   };
   const [liveOpen, setLiveOpen] = useState(false);
