@@ -637,7 +637,7 @@ function EmptyCategoryState() {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-lg font-semibold">No one in this category yet.</p>
-      <p className="mt-2 text-sm text-muted-foreground">Try another category, switch between Coaches and Service Providers, or check the Offers tab to see what's available to hire.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Try another category, or check the Offers tab to see what's available to hire.</p>
     </div>
   );
 }
