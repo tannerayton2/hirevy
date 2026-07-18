@@ -621,7 +621,7 @@ export default function Admin() {
     { key: "moderation", label: "Moderation", icon: Flag },
     { key: "review-queue", label: "Review Moderation", icon: Star },
     { key: "claims", label: "Claim Requests", icon: UserPlus },
-    { key: "profile-requests", label: "Profile Requests", icon: FileWarning },
+    
     { key: "team-messages", label: "Team Messages", icon: MessageSquare },
     { key: "broadcast", label: "Broadcast", icon: Radio },
     { key: "users", label: "User Management", icon: Users },
