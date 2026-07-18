@@ -128,16 +128,6 @@ export function ExploreFilterPanel({ filters, onChange, onClose }: Props) {
               onChange={(e) => set("priceMax", e.target.value === "" ? null : Math.max(0, Number(e.target.value)))}
             />
           </div>
-          <div className="mt-3 flex items-center justify-between">
-            <Label htmlFor="includeContact" className="text-sm text-muted-foreground">
-              Include "Pricing on request" offers
-            </Label>
-            <Switch
-              id="includeContact"
-              checked={filters.includeContactPricing}
-              onCheckedChange={(v) => set("includeContactPricing", v)}
-            />
-          </div>
         </Section>
 
         <Separator />

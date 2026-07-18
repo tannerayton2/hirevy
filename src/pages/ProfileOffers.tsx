@@ -33,9 +33,9 @@ export default function ProfileOffers() {
     const isOwner = user?.id === prof.id;
     let q = supabase
       .from("offers")
-      .select(`id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, is_pinned,
+      .select(`id, slug, title, description, cover_url, category, is_active, is_pinned,
                cta_link, cta_label, hosted_on_hirevy, offer_tier,
-               provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum )`)
+               provider:profiles!offers_provider_id_fkey ( id, username, display_name, review_count, rating_sum )`)
       .eq("provider_id", prof.id)
       .order("created_at", { ascending: false });
     if (!isOwner) q = q.eq("is_active", true);

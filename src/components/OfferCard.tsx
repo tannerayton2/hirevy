@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { formatOfferPrice, isContactPricing, type PricingModel } from "@/lib/pricing";
-import { Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -16,17 +15,16 @@ export interface OfferCardData {
   title: string;
   description?: string | null;
   cover_url: string | null;
-  price_cents: number | null;
-  price_max_cents?: number | null;
-  pricing_model?: PricingModel | string | null;
-  free_for_testimonial: boolean;
   category: string;
   is_active?: boolean;
   cta_link?: string | null;
   cta_label?: string | null;
   hosted_on_hirevy?: boolean;
   offer_tier?: string | null;
+  /** @deprecated retained for query compatibility; not rendered. */
+  free_for_testimonial?: boolean;
   provider: {
+    id?: string;
     username: string;
     display_name: string | null;
     review_count: number;
@@ -34,14 +32,6 @@ export interface OfferCardData {
   };
 }
 
-/**
- * Compact offer card (Fiverr-style). Renders only:
- *  - cover image (if present — collapsed if not)
- *  - title
- *  - price
- *  - provider star rating
- * The entire card navigates to the full offer detail page.
- */
 export function OfferCard({
   offer,
   owner,
@@ -61,6 +51,8 @@ export function OfferCard({
     ? offer.provider.rating_sum / offer.provider.review_count
     : 0;
 
+  const hasSalesUrl = !!offer.cta_link && offer.cta_link.trim().length > 0;
+
   const handleDelete = async () => {
     const { error } = await supabase.from("offers").delete().eq("id", offer.id);
     if (error) {
@@ -75,6 +67,17 @@ export function OfferCard({
     const target = e.target as HTMLElement;
     if (target.closest("[data-no-nav]")) return;
     nav(detailHref);
+  };
+
+  const handleCta = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasSalesUrl) {
+      window.open(offer.cta_link!, "_blank", "noopener,noreferrer");
+    } else if (offer.provider.id) {
+      nav(`/messages?to=${offer.provider.id}`);
+    } else {
+      nav(detailHref);
+    }
   };
 
   return (
@@ -94,29 +97,18 @@ export function OfferCard({
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
-          {inactive ? (
+          {inactive && (
             <span className="absolute left-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
               Inactive
-            </span>
-          ) : offer.free_for_testimonial && (
-            <span className="absolute left-2 top-2 rounded-[3px] bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-              Free
             </span>
           )}
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:p-4">
-        {!offer.cover_url && (inactive || offer.free_for_testimonial) && (
-          <span
-            className={cn(
-              "w-fit rounded-[3px] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em]",
-              inactive
-                ? "bg-muted text-muted-foreground"
-                : "bg-primary text-primary-foreground",
-            )}
-          >
-            {inactive ? "Inactive" : "Free"}
+        {!offer.cover_url && inactive && (
+          <span className="w-fit rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            Inactive
           </span>
         )}
 
@@ -126,15 +118,22 @@ export function OfferCard({
 
         <StarRating value={avg} count={offer.provider.review_count} showValue size={12} />
 
-        <div className="mt-auto pt-1">
-          <span
+        <div className="mt-auto pt-2" data-no-nav>
+          <button
+            type="button"
+            onClick={handleCta}
             className={cn(
-              "font-display text-[15px] font-bold text-foreground",
-              isContactPricing(offer) && "text-[13px] italic text-foreground/80",
+              "inline-flex w-full items-center justify-center gap-1.5 rounded-[3px] border border-primary/40 bg-primary/10 px-2.5 py-1.5",
+              "text-[11px] font-bold uppercase tracking-[0.14em] text-primary transition-colors",
+              "hover:bg-primary hover:text-primary-foreground",
             )}
           >
-            {formatOfferPrice(offer)}
-          </span>
+            {hasSalesUrl ? (
+              <>Visit Sales Page <ArrowUpRight className="h-3 w-3" /></>
+            ) : (
+              <>Contact for details <MessageSquare className="h-3 w-3" /></>
+            )}
+          </button>
         </div>
 
         {owner && (

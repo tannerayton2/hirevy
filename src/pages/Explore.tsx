@@ -9,7 +9,7 @@ import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
-import { formatOfferPrice } from "@/lib/pricing";
+
 
 const BROWSE_CATEGORIES = [
   "Business Coaching", "Sales", "Copywriting", "Fitness",
@@ -84,10 +84,6 @@ export default function Explore() {
     id: string;
     slug: string;
     title: string;
-    price_cents: number | null;
-    price_max_cents: number | null;
-    pricing_model: string | null;
-    free_for_testimonial: boolean;
     provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
   };
   const [liveOpen, setLiveOpen] = useState(false);
@@ -171,8 +167,8 @@ export default function Explore() {
     void (async () => {
       let req = supabase
         .from("offers")
-        .select(`id, slug, title, description, cover_url, price_cents, price_max_cents, pricing_model, free_for_testimonial, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier,
-                 provider:profiles!offers_provider_id_fkey ( username, display_name, review_count, rating_sum, provider_type )`)
+        .select(`id, slug, title, description, cover_url, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier,
+                 provider:profiles!offers_provider_id_fkey ( id, username, display_name, review_count, rating_sum, provider_type )`)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(120);
@@ -231,7 +227,7 @@ export default function Explore() {
         } else {
           let req = supabase
             .from("offers")
-            .select(`id, slug, title, price_cents, price_max_cents, pricing_model, free_for_testimonial,
+            .select(`id, slug, title,
                      provider:profiles!offers_provider_id_fkey ( username, display_name, provider_type )`)
             .eq("is_active", true)
             .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
@@ -346,7 +342,6 @@ export default function Explore() {
                 })}
 
                 {subTab === "offers" && liveOffers.map((o) => {
-                  const price = formatOfferPrice(o);
                   const providerName = o.provider?.display_name || o.provider?.username || "";
                   const href = o.provider?.username ? `/@${o.provider.username}/${o.slug}` : "#";
                   return (
@@ -361,13 +356,6 @@ export default function Explore() {
                         <p className="truncate text-sm font-semibold">{o.title}</p>
                         <p className="truncate text-xs text-muted-foreground">{providerName}</p>
                       </div>
-                      {o.free_for_testimonial ? (
-                        <span className="shrink-0 rounded-[3px] bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-                          Free
-                        </span>
-                      ) : price ? (
-                        <span className="shrink-0 text-xs font-semibold text-foreground/90">{price}</span>
-                      ) : null}
                     </button>
                   );
                 })}
