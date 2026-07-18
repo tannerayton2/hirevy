@@ -54,7 +54,7 @@ const TIER_LABEL: Record<string, string> = {
 };
 
 export function ReviewDetailDialog({
-  open, onOpenChange, review, providerId, providerDisplayName, isProviderViewer,
+  open, onOpenChange, review, providerId, providerUsername, providerDisplayName, isProviderViewer,
 }: Props) {
   const { user } = useAuth();
   const [requesting, setRequesting] = useState(false);
