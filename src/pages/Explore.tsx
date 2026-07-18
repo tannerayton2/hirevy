@@ -157,14 +157,14 @@ export default function Explore() {
       }
       if (activeCategory) req = req.eq("service_category", activeCategory);
       const { data } = await req;
-      const rows = ((data as CoachRow[] | null) ?? []).filter((c) => matchProviderType(c.provider_type));
+      const rows = (data as CoachRow[] | null) ?? [];
       if (!cancel) {
         setResults(rows.slice(0, 50));
         setLoadingResults(false);
       }
     })();
     return () => { cancel = true; };
-  }, [submitted, activeCategory, subTab, providerType]);
+  }, [submitted, activeCategory, subTab]);
 
   // ===== Offers tab =====
   useEffect(() => {
