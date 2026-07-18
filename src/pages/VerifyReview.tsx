@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/Logo";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export default function VerifyReview() {
@@ -22,7 +21,6 @@ export default function VerifyReview() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
-      <Logo />
       <div className="mt-16 rounded-md border border-border bg-card p-8 text-center">
         {state === "loading" && (
           <>
