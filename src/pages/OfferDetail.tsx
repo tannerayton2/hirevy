@@ -34,6 +34,11 @@ export default function OfferDetail() {
   const nav = useNavigate();
   const [offer, setOffer] = useState<OfferDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [offerReviews, setOfferReviews] = useState<Array<{
+    id: string; rating: number; body: string; created_at: string;
+    reviewer_name: string;
+    reviewer_username: string | null; reviewer_display_name: string | null;
+  }>>([]);
 
   useEffect(() => {
     let cancel = false;
