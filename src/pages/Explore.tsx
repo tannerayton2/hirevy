@@ -9,7 +9,7 @@ import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
 import { OfferCard, type OfferCardData } from "@/components/OfferCard";
-import { formatOfferPrice } from "@/lib/pricing";
+
 
 const BROWSE_CATEGORIES = [
   "Business Coaching", "Sales", "Copywriting", "Fitness",
