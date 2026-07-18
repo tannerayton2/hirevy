@@ -95,11 +95,6 @@ export function ReviewDetailDialog({
 
         <div className="space-y-4">
           {/* Header: reviewer + rating */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold text-foreground">{review.reviewer_name}</p>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
-          {/* Header: reviewer + rating */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 space-y-1">
               <ReviewerIdentity
