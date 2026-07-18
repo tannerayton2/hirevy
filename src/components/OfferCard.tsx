@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
