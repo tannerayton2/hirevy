@@ -177,13 +177,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       <nav className="flex flex-col gap-0.5 p-4 pt-12">
                         <button
                           type="button"
-                          onClick={() => { setMenuOpen(false); navigate(profilePath); }}
-                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                        >
-                          <Eye className="h-4 w-4" /> View Profile
-                        </button>
-                        <button
-                          type="button"
                           onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
                           className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                         >
