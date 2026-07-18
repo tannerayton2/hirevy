@@ -272,29 +272,27 @@ export default function SubmitReview() {
         ? `${body.trim()}\n\n---\n${extras.join("\n")}`
         : body.trim();
 
-      const { data: newId, error } = await supabase.rpc("submit_unclaimed_review", {
-        p_coach_name: coachName.trim().slice(0, 120),
-        p_instagram_handle: instagram.trim() || null,
-        p_offer_url: offerUrl.trim() || null,
+      const { data: newId, error } = await supabase.rpc("submit_public_review", {
+        p_provider_id: linkedProfileId!,
+        p_reviewer_name: email.trim().split("@")[0] || "Reviewer",
+        p_reviewer_email: email.trim(),
         p_rating: rating,
         p_body: composedBody,
         p_purchased: purchased,
         p_amount_paid_bracket: purchased && amount ? (amount === "other" ? `$${customAmount}` : amount) : null,
+        p_offer_url: offerUrl.trim() || null,
+        p_instagram_handle: instagram.trim() || null,
         p_evidence_paths: paths,
         p_strength_tier: tier,
-        p_reviewer_email: email.trim(),
-        p_unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
-        p_unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
-        p_needs_profile: isUnmatched && !linkedProfileId,
-        p_linked_profile_id: linkedProfileId,
-      });
+      } as never);
       if (error) throw error;
 
       try {
         await supabase.functions.invoke("send-review-verification", {
-          body: { review_id: newId, review_type: "unclaimed", origin: window.location.origin },
+          body: { review_id: newId, review_type: "public", origin: window.location.origin },
         });
       } catch { /* non-fatal */ }
+
 
       toast({ title: "Check your email", description: "Confirm your review via the link we just sent." });
       setConfirmOpen(false);
