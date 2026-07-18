@@ -1082,6 +1082,7 @@ export default function Profile() {
                         id: profile.id,
                         username: profile.username,
                         display_name: profile.display_name,
+                        avatar_url: profile.avatar_url,
                         review_count: profile.review_count,
                         rating_sum: profile.rating_sum,
                       },

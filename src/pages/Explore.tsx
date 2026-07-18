@@ -84,7 +84,7 @@ export default function Explore() {
     id: string;
     slug: string;
     title: string;
-    provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
+    provider: { username: string; display_name: string | null; avatar_url: string | null; provider_type: ProviderType | null } | null;
   };
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveLoading, setLiveLoading] = useState(false);
@@ -168,7 +168,7 @@ export default function Explore() {
       let req = supabase
         .from("offers")
         .select(`id, slug, title, description, cover_url, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier,
-                 provider:profiles!offers_provider_id_fkey ( id, username, display_name, review_count, rating_sum, provider_type )`)
+                 provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum, provider_type )`)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(120);
@@ -228,7 +228,7 @@ export default function Explore() {
           let req = supabase
             .from("offers")
             .select(`id, slug, title,
-                     provider:profiles!offers_provider_id_fkey ( username, display_name, provider_type )`)
+                     provider:profiles!offers_provider_id_fkey ( username, display_name, avatar_url, provider_type )`)
             .eq("is_active", true)
             .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
             .limit(20);
