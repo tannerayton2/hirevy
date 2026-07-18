@@ -7,9 +7,11 @@ interface StarRatingProps {
   className?: string;
   showValue?: boolean;
   count?: number;
+  valueClassName?: string;
+  countClassName?: string;
 }
 
-export function StarRating({ value, size = 14, className, showValue = false, count }: StarRatingProps) {
+export function StarRating({ value, size = 14, className, showValue = false, count, valueClassName, countClassName }: StarRatingProps) {
   const rounded = Math.round(value * 2) / 2;
   return (
     <span className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground", className)}>
@@ -41,9 +43,9 @@ export function StarRating({ value, size = 14, className, showValue = false, cou
         })}
       </span>
       {showValue && (
-        <span className="font-medium text-foreground">
+        <span className={cn("font-medium text-foreground", valueClassName)}>
           {value > 0 ? value.toFixed(1) : "—"}
-          {typeof count === "number" && <span className="text-muted-foreground"> ({count})</span>}
+          {typeof count === "number" && <span className={cn("text-muted-foreground", countClassName)}> ({count})</span>}
         </span>
       )}
     </span>

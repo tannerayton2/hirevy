@@ -85,103 +85,108 @@ export function OfferCard({
     <div
       onClick={goToOffer}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-card transition-all",
-        "hover:-translate-y-0.5 hover:border-primary/50 hover:elev",
+        "group relative flex cursor-pointer flex-col overflow-hidden",
         inactive && "opacity-60",
       )}
+      style={{
+        backgroundColor: "#141414",
+        border: "0.5px solid #2a2a2a",
+        borderRadius: "12px",
+      }}
     >
-      {offer.cover_url && (
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-          <img
-            src={offer.cover_url}
-            alt={offer.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-          />
-          {inactive && (
-            <span className="absolute left-2 top-2 rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Inactive
-            </span>
-          )}
-        </div>
+      {inactive && !offer.cover_url && (
+        <span
+          className="absolute left-3 top-3 rounded-[3px] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em]"
+          style={{ backgroundColor: "#1a1a1a", color: "#8a8a82" }}
+        >
+          Inactive
+        </span>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
-        {!offer.cover_url && inactive && (
-          <span className="mb-2 w-fit rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            Inactive
-          </span>
-        )}
-
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-[15px] font-bold leading-tight text-foreground">
-            {offer.title}
-          </h3>
+      <div className="flex min-w-0 flex-1 flex-col p-[18px]">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3
+              className="line-clamp-2 font-display text-[20px] font-medium leading-tight"
+              style={{ color: "#f0ede6" }}
+            >
+              {offer.title}
+            </h3>
+          </div>
           {offer.category && (
-            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-primary">
+            <span
+              className="shrink-0 whitespace-nowrap rounded-[6px] font-medium"
+              style={{
+                backgroundColor: "#1e1a10",
+                color: "#c9a24a",
+                fontSize: "11px",
+                padding: "3px 10px",
+              }}
+            >
               {offer.category}
             </span>
           )}
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="flex items-center gap-[10px]">
           <Link
             to={`/@${offer.provider.username}`}
             data-no-nav
             onClick={(e) => e.stopPropagation()}
-            className="flex min-w-0 flex-1 items-center gap-2"
+            className="flex min-w-0 flex-1 items-center gap-[10px]"
           >
             {offer.provider.avatar_url ? (
               <img
                 src={offer.provider.avatar_url}
                 alt={offer.provider.display_name || offer.provider.username}
-                className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-border"
+                className="h-[38px] w-[38px] shrink-0 rounded-full object-cover"
+                style={{ backgroundColor: "#1a1a1a" }}
               />
             ) : (
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">
+              <div
+                className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: "#1a1a1a", color: "#8a8a82" }}
+              >
+                <span className="text-[12px] font-bold uppercase">
                   {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
                 </span>
               </div>
             )}
-            <div className="flex min-w-0 flex-col leading-none">
-              <span className="truncate text-[11px] font-semibold text-foreground">
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span
+                className="truncate text-[14px] font-medium"
+                style={{ color: "#f0ede6" }}
+              >
                 {offer.provider.display_name || offer.provider.username}
               </span>
-              <span className="truncate text-[10px] text-muted-foreground">
+              <span
+                className="truncate text-[12px]"
+                style={{ color: "#8a8a82" }}
+              >
                 @{offer.provider.username}
               </span>
             </div>
           </Link>
 
-          <StarRating value={avg} count={offer.provider.review_count} showValue size={12} className="shrink-0" />
-        </div>
-
-        <div className="mt-auto" data-no-nav>
-          <button
-            type="button"
-            onClick={handleCta}
-            className={cn(
-              "inline-flex w-full items-center justify-center gap-1.5 bg-primary px-2.5 py-2.5",
-              "text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-colors",
-              "hover:bg-primary/90",
-              "-mx-3 -mb-3 sm:-mx-4 sm:-mb-4",
-            )}
-          >
-            {hasSalesUrl ? (
-              <>Visit Sales Page <ArrowUpRight className="h-3 w-3" /></>
-            ) : (
-              <>Contact for details <MessageSquare className="h-3 w-3" /></>
-            )}
-          </button>
+          <div className="ml-auto shrink-0">
+            <StarRating
+              value={avg}
+              count={offer.provider.review_count}
+              showValue
+              size={12}
+              valueClassName="text-[#8a8a82]"
+              countClassName="text-[#8a8a82]"
+            />
+          </div>
         </div>
 
         {owner && (
-          <div data-no-nav className="-mx-3 -mb-3 mt-2 flex border-t border-border sm:-mx-4 sm:-mb-4">
+          <div data-no-nav className="mt-4 flex gap-2">
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
-              className="flex flex-1 items-center justify-center gap-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-secondary hover:text-foreground"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
+              style={{ backgroundColor: "#1e1a10", color: "#c9a24a" }}
             >
               <Pencil className="h-3 w-3" /> Edit
             </button>
@@ -190,7 +195,8 @@ export function OfferCard({
                 <button
                   type="button"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex flex-1 items-center justify-center gap-1.5 border-l border-border py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
+                  style={{ backgroundColor: "#2a0f0f", color: "#e08e8e" }}
                 >
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
@@ -213,7 +219,28 @@ export function OfferCard({
           </div>
         )}
       </div>
+
+      <div data-no-nav>
+        <button
+          type="button"
+          onClick={handleCta}
+          className="inline-flex w-full items-center justify-center gap-1.5 transition-colors hover:brightness-110"
+          style={{
+            backgroundColor: "#c9a24a",
+            color: "#1a1508",
+            padding: "14px",
+            fontSize: "12px",
+            letterSpacing: "0.06em",
+            fontWeight: 500,
+          }}
+        >
+          {hasSalesUrl ? (
+            <>VISIT SALES PAGE <ArrowUpRight className="h-3 w-3" /></>
+          ) : (
+            <>CONTACT FOR DETAILS <MessageSquare className="h-3 w-3" /></>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
-
