@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         templateName: 'review-verification',
         recipientEmail: review.reviewer_email,
-        idempotencyKey: `review-verify-${rType}-${review.id}`,
+        idempotencyKey: `review-verify-${review.id}`,
         templateData: { providerName, verifyUrl },
       }),
     });
