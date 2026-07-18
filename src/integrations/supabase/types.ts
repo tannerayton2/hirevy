@@ -1316,42 +1316,24 @@ export type Database = {
         Returns: undefined
       }
       admin_stats: { Args: never; Returns: Json }
-      admin_update_unclaimed_profile:
-        | {
-            Args: {
-              p_avatar_url: string
-              p_bio: string
-              p_display_name: string
-              p_instagram_url: string
-              p_linkedin_url: string
-              p_profile_id: string
-              p_service_category: string
-              p_tiktok_url: string
-              p_twitter_url: string
-              p_username: string
-              p_website_url: string
-              p_youtube_url: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_avatar_url: string
-              p_bio: string
-              p_display_name: string
-              p_instagram_url: string
-              p_keywords?: string[]
-              p_linkedin_url: string
-              p_profile_id: string
-              p_service_category: string
-              p_tiktok_url: string
-              p_twitter_url: string
-              p_username: string
-              p_website_url: string
-              p_youtube_url: string
-            }
-            Returns: undefined
-          }
+      admin_update_unclaimed_profile: {
+        Args: {
+          p_avatar_url: string
+          p_bio: string
+          p_display_name: string
+          p_instagram_url: string
+          p_keywords?: string[]
+          p_linkedin_url: string
+          p_profile_id: string
+          p_service_category: string
+          p_tiktok_url: string
+          p_twitter_url: string
+          p_username: string
+          p_website_url: string
+          p_youtube_url: string
+        }
+        Returns: undefined
+      }
       admin_verify_review: {
         Args: { p_review_id: string; p_review_type: string }
         Returns: undefined
