@@ -159,97 +159,114 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {/* Right: menu / auth */}
             <div className="flex items-center">
               {user ? (
-                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                  <SheetTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Open profile menu"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                isOwnProfile ? (
+                  <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                    <SheetTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open profile menu"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </button>
+                    </SheetTrigger>
+                    <SheetContent
+                      side="right"
+                      className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
                     >
-                      <MoreVertical className="h-5 w-5" />
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="right"
-                    className="w-[60vw] max-w-sm border-l border-border bg-background p-0"
+                      <nav className="flex flex-col gap-0.5 p-4 pt-12">
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate(profilePath); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Eye className="h-4 w-4" /> View Profile
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <SettingsIcon className="h-4 w-4" /> Edit Profile
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); void shareProfile(); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Share2 className="h-4 w-4" /> Share Profile
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); void copyReviewLink(); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <LinkIcon className="h-4 w-4" /> Copy Review Link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/settings/following"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <UserCheck className="h-4 w-4" /> Following
+                        </button>
+                        <div className="my-2 h-px bg-border" role="separator" />
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/settings/account"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <SettingsIcon className="h-4 w-4" /> Account Settings
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <MessageCircle className="h-4 w-4" /> Send us a message
+                        </button>
+                        <div className="mt-2 mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Legal</div>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/terms"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <FileText className="h-4 w-4" /> Terms of Service
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/privacy"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Shield className="h-4 w-4" /> Privacy Policy
+                        </button>
+                        <div className="my-2 h-px bg-border" role="separator" />
+                        <button
+                          type="button"
+                          onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                        >
+                          <LogOut className="h-4 w-4" /> Log Out
+                        </button>
+                      </nav>
+                    </SheetContent>
+                  </Sheet>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate(profilePath)}
+                    aria-label="View your profile"
+                    className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-1 ring-border transition-colors hover:ring-primary"
                   >
-                    <nav className="flex flex-col gap-0.5 p-4 pt-12">
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate(profilePath); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <Eye className="h-4 w-4" /> View Profile
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/settings/profile"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <SettingsIcon className="h-4 w-4" /> Edit Profile
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); void shareProfile(); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <Share2 className="h-4 w-4" /> Share Profile
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); void copyReviewLink(); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <LinkIcon className="h-4 w-4" /> Copy Review Link
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/settings/following"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <UserCheck className="h-4 w-4" /> Following
-                      </button>
-                      <div className="my-2 h-px bg-border" role="separator" />
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/settings/account"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <SettingsIcon className="h-4 w-4" /> Account Settings
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/messages?team=1"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <MessageCircle className="h-4 w-4" /> Send us a message
-                      </button>
-                      <div className="mt-2 mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Legal</div>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/terms"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <FileText className="h-4 w-4" /> Terms of Service
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMenuOpen(false); navigate("/privacy"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                      >
-                        <Shield className="h-4 w-4" /> Privacy Policy
-                      </button>
-                      <div className="my-2 h-px bg-border" role="separator" />
-                      <button
-                        type="button"
-                        onClick={async () => { setMenuOpen(false); await signOut(); navigate("/"); }}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-                      >
-                        <LogOut className="h-4 w-4" /> Log Out
-                      </button>
-                    </nav>
-                  </SheetContent>
-                </Sheet>
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+                        {(profile?.username ?? "?").slice(0, 1)}
+                      </span>
+                    )}
+                  </button>
+                )
               ) : (
                 <Button asChild size="sm" variant="default">
                   <NavLink to="/auth"><LogIn className="mr-1.5 h-3.5 w-3.5" /> Sign in</NavLink>
