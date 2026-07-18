@@ -618,7 +618,7 @@ export default function SubmitReview() {
             )}
           </div>
 
-          <Field label="Upload evidence (optional)" hint={user ? `${files.length}/3` : "Sign in to attach"}>
+          <Field label="Upload evidence — photos, PDFs, or documents (contracts, invoices, receipts)" hint={user ? `${files.length}/3` : "Sign in to attach"}>
             <label className={cn(
               "flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors",
               user ? "cursor-pointer hover:border-primary/40" : "cursor-not-allowed opacity-60",
@@ -626,12 +626,12 @@ export default function SubmitReview() {
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
                 {user
-                  ? "Add receipts, screenshots of results, or proof of purchase"
-                  : "Sign in to attach receipts or screenshots as evidence"}
+                  ? "Photos, PDFs, or Word documents (contracts, invoices, receipts). Stored privately."
+                  : "Sign in to attach photos, PDFs, or documents as evidence"}
               </span>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,application/pdf,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 multiple
                 className="hidden"
                 onChange={onPickFiles}
