@@ -156,6 +156,7 @@ export default function Profile() {
   const [responseMs, setResponseMs] = useState<number | null>(null);
   const [importedModalOpen, setImportedModalOpen] = useState(false);
   const [importedEditing, setImportedEditing] = useState<ImportedTestimonial | null>(null);
+  const [detailReview, setDetailReview] = useState<Review | null>(null);
   
   const [tierModalOpen, setTierModalOpen] = useState(false);
   const [congrats, setCongrats] = useState<
