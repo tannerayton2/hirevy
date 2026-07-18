@@ -393,7 +393,6 @@ export default function Explore() {
         <TopTab active={subTab === "offers"} onClick={() => setSubTab("offers")} label="Offers" />
       </div>
 
-
       {/* Category pills */}
       <div className="mt-6">
         <BrowseByCategory active={activeCategory} onPick={toggleCategory} />
