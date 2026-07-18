@@ -442,14 +442,12 @@ export default function SubmitReview() {
                               </div>
                             </button>
                           ))}
-                          <button
-                            type="button"
-                            onClick={selectUnmatched}
-                            className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-left text-sm font-medium text-primary hover:bg-accent"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Review "{coachQuery.trim()}"
-                          </button>
+                          {searchResults.length === 0 && !searching && (
+                            <div className="px-3 py-2.5 text-xs text-muted-foreground">
+                              No matching coaches found. Make sure you're using their exact name or @handle.
+                            </div>
+                          )}
+
                         </>
                       )}
                     </div>
