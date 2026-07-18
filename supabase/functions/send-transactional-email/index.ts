@@ -49,24 +49,31 @@ Deno.serve(async (req) => {
     )
   }
 
-  // Restrict to trusted server-side callers only (service_role JWT).
+  // Restrict to trusted server-side callers only (service_role).
   // Anon/user JWTs are rejected to prevent open-relay abuse where anyone
   // could send Aytopus-branded emails to arbitrary recipients.
+  // Accept either (a) a JWT whose role claim is 'service_role', or
+  // (b) a bearer token that matches SUPABASE_SERVICE_ROLE_KEY exactly
+  // (covers non-JWT secret-key formats from the signing-keys system).
   const authHeader = req.headers.get('Authorization') || ''
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-  let callerRole: string | null = null
-  try {
-    const parts = token.split('.')
-    if (parts.length === 3) {
-      const payload = JSON.parse(
-        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
-      )
-      callerRole = typeof payload?.role === 'string' ? payload.role : null
+  let authorized = false
+  if (token && token === supabaseServiceKey) {
+    authorized = true
+  } else if (token) {
+    try {
+      const parts = token.split('.')
+      if (parts.length === 3) {
+        const payload = JSON.parse(
+          atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+        )
+        if (payload?.role === 'service_role') authorized = true
+      }
+    } catch {
+      // fall through
     }
-  } catch {
-    callerRole = null
   }
-  if (callerRole !== 'service_role') {
+  if (!authorized) {
     return new Response(
       JSON.stringify({ error: 'Forbidden' }),
       {
