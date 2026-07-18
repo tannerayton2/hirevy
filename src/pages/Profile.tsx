@@ -99,6 +99,10 @@ interface Review {
   instagram_handle?: string | null;
   strength_tier?: string | null;
   evidence_count?: number | null;
+  reviewer_user_id?: string | null;
+  reviewer_username?: string | null;
+  reviewer_display_name?: string | null;
+  reviewer_avatar_url?: string | null;
 }
 
 
