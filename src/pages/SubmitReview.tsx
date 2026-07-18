@@ -457,71 +457,8 @@ export default function SubmitReview() {
             </div>
           </Field>
 
-          {isUnmatched && nameLocked && (
-            <>
-              <Field label="Their website or social link (optional)">
-                <Input
-                  type="url"
-                  value={unmatchedLink}
-                  onChange={(e) => setUnmatchedLink(e.target.value)}
-                  placeholder="https://instagram.com/theirhandle"
-                />
-              </Field>
-              <Field label="Anything to help us find them? (optional)">
-                <Textarea
-                  value={unmatchedDescription}
-                  onChange={(e) => setUnmatchedDescription(e.target.value)}
-                  placeholder="e.g. Business coach on YouTube, runs a program called X."
-                  rows={3}
-                  maxLength={500}
-                />
-              </Field>
-            </>
-          )}
 
-          {!linkedProfileId && (
-            <>
-          <Field label="Their primary category">
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-10"><SelectValue placeholder="Select a category (optional)" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
 
-          {!showMoreProfile ? (
-            <button
-              type="button"
-              onClick={() => setShowMoreProfile(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:text-primary/80"
-            >
-              <ChevronDown className="h-3.5 w-3.5" /> Add more profile info (optional)
-            </button>
-          ) : (
-            <div className="space-y-5">
-              <Field label="Their website URL">
-                <Input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://theirwebsite.com" />
-              </Field>
-              <Field label="Their Instagram handle">
-                <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@theirhandle" />
-              </Field>
-              <Field label="Their Twitter/X handle">
-                <Input value={twitter} onChange={(e) => setTwitter(e.target.value)} placeholder="@theirhandle" />
-              </Field>
-              <Field label="Their YouTube channel URL">
-                <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="https://youtube.com/@theirchannel" />
-              </Field>
-              <Field label="Their LinkedIn URL">
-                <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/theirprofile" />
-              </Field>
-              <Field label="Link to the specific offer or program you purchased">
-                <Input type="url" value={offerUrl} onChange={(e) => setOfferUrl(e.target.value)} placeholder="https://theirwebsite.com/offer — the exact program you bought" />
-              </Field>
-            </div>
-          )}
-            </>
-          )}
         </section>
         )}
 
