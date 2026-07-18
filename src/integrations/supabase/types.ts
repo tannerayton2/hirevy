@@ -1349,7 +1349,11 @@ export type Database = {
           provider_id: string
           purchased: boolean
           rating: number
+          reviewer_avatar_url: string
+          reviewer_display_name: string
           reviewer_name: string
+          reviewer_user_id: string
+          reviewer_username: string
           strength_tier: string
         }[]
       }
