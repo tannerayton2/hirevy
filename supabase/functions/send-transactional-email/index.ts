@@ -49,6 +49,33 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Restrict to trusted server-side callers only (service_role JWT).
+  // Anon/user JWTs are rejected to prevent open-relay abuse where anyone
+  // could send Aytopus-branded emails to arbitrary recipients.
+  const authHeader = req.headers.get('Authorization') || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  let callerRole: string | null = null
+  try {
+    const parts = token.split('.')
+    if (parts.length === 3) {
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+      )
+      callerRole = typeof payload?.role === 'string' ? payload.role : null
+    }
+  } catch {
+    callerRole = null
+  }
+  if (callerRole !== 'service_role') {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
   // Parse request body
   let templateName: string
   let recipientEmail: string
