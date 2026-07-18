@@ -96,7 +96,10 @@ export default function SubmitReview() {
   const [searchResults, setSearchResults] = useState<ProfileHit[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searching, setSearching] = useState(false);
-  const searchBoxRef = useRef<HTMLDivElement | null>(null);
+  type OfferOption = { id: string; title: string };
+  const [offerOptions, setOfferOptions] = useState<OfferOption[]>([]);
+  const [selectedOfferId, setSelectedOfferId] = useState<string>("");
+
 
   const [category, setCategory] = useState<string>(params.get("cat") ?? "");
   const [website, setWebsite] = useState("");
