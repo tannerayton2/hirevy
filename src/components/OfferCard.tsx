@@ -106,56 +106,66 @@ export function OfferCard({
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
         {!offer.cover_url && inactive && (
-          <span className="w-fit rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="mb-2 w-fit rounded-[3px] bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             Inactive
           </span>
         )}
 
-        <h3 className="line-clamp-2 font-display text-[15px] font-bold leading-tight text-foreground">
-          {offer.title}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-[15px] font-bold leading-tight text-foreground">
+            {offer.title}
+          </h3>
+          {offer.category && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-primary">
+              {offer.category}
+            </span>
+          )}
+        </div>
 
-        <Link
-          to={`/@${offer.provider.username}`}
-          data-no-nav
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-2"
-        >
-          {offer.provider.avatar_url ? (
-            <img
-              src={offer.provider.avatar_url}
-              alt={offer.provider.display_name || offer.provider.username}
-              className="h-6 w-6 rounded-full object-cover ring-1 ring-border"
-            />
-          ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted ring-1 ring-border">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
+        <div className="mt-3 flex items-center gap-2">
+          <Link
+            to={`/@${offer.provider.username}`}
+            data-no-nav
+            onClick={(e) => e.stopPropagation()}
+            className="flex min-w-0 flex-1 items-center gap-2"
+          >
+            {offer.provider.avatar_url ? (
+              <img
+                src={offer.provider.avatar_url}
+                alt={offer.provider.display_name || offer.provider.username}
+                className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-border"
+              />
+            ) : (
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
+                </span>
+              </div>
+            )}
+            <div className="flex min-w-0 flex-col leading-none">
+              <span className="truncate text-[11px] font-semibold text-foreground">
+                {offer.provider.display_name || offer.provider.username}
+              </span>
+              <span className="truncate text-[10px] text-muted-foreground">
+                @{offer.provider.username}
               </span>
             </div>
-          )}
-          <div className="flex min-w-0 flex-col leading-none">
-            <span className="truncate text-[11px] font-semibold text-foreground">
-              {offer.provider.display_name || offer.provider.username}
-            </span>
-            <span className="truncate text-[10px] text-muted-foreground">
-              @{offer.provider.username}
-            </span>
-          </div>
-        </Link>
+          </Link>
 
-        <StarRating value={avg} count={offer.provider.review_count} showValue size={12} />
+          <StarRating value={avg} count={offer.provider.review_count} showValue size={12} className="shrink-0" />
+        </div>
 
-        <div className="mt-auto pt-2" data-no-nav>
+        <div className="mt-auto" data-no-nav>
           <button
             type="button"
             onClick={handleCta}
             className={cn(
-              "inline-flex w-full items-center justify-center gap-1.5 rounded-[3px] bg-primary px-2.5 py-1.5",
+              "inline-flex w-full items-center justify-center gap-1.5 bg-primary px-2.5 py-2.5",
               "text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-colors",
               "hover:bg-primary/90",
+              "-mx-3 -mb-3 sm:-mx-4 sm:-mb-4",
             )}
           >
             {hasSalesUrl ? (
@@ -206,3 +216,4 @@ export function OfferCard({
     </div>
   );
 }
+
