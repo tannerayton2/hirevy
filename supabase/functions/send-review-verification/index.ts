@@ -87,22 +87,30 @@ Deno.serve(async (req) => {
       : 'https://aytopus.com';
     const verifyUrl = `${safeOrigin}/verify-review?token=${encodeURIComponent(review.verify_token)}`;
 
-    // Send via Lovable's built-in transactional email (routes through notify.aytopus.com)
-    const { data: sendData, error: sendError } = await supabase.functions.invoke(
-      'send-transactional-email',
-      {
-        body: {
-          templateName: 'review-verification',
-          recipientEmail: review.reviewer_email,
-          idempotencyKey: `review-verify-${rType}-${review.id}`,
-          templateData: { providerName, verifyUrl },
-        },
+    // Send via Lovable's built-in transactional email (routes through notify.aytopus.com).
+    // Call directly with the service_role key so the downstream open-relay guard
+    // (which requires a service_role JWT) accepts the request.
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const sendResp = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
       },
-    );
+      body: JSON.stringify({
+        templateName: 'review-verification',
+        recipientEmail: review.reviewer_email,
+        idempotencyKey: `review-verify-${rType}-${review.id}`,
+        templateData: { providerName, verifyUrl },
+      }),
+    });
 
-    if (sendError) {
-      console.error('send-transactional-email failed', sendError);
-      return json({ error: 'send_failed' }, 502);
+    const sendData = await sendResp.json().catch(() => ({}));
+    if (!sendResp.ok) {
+      console.error('send-transactional-email failed', sendResp.status, sendData);
+      return json({ error: 'send_failed', status: sendResp.status, detail: sendData }, 502);
     }
 
     return json({ ok: true, result: sendData });
