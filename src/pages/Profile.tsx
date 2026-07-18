@@ -1119,6 +1119,7 @@ export default function Profile() {
           onOpenChange={(o) => { if (!o) setDetailReview(null); }}
           review={detailReview}
           providerId={profile.id}
+          providerUsername={profile.username}
           providerDisplayName={providerDisplayName}
           isProviderViewer={isMe}
         />
