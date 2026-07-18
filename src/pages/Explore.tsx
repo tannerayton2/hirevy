@@ -342,7 +342,6 @@ export default function Explore() {
                 })}
 
                 {subTab === "offers" && liveOffers.map((o) => {
-                  const price = formatOfferPrice(o);
                   const providerName = o.provider?.display_name || o.provider?.username || "";
                   const href = o.provider?.username ? `/@${o.provider.username}/${o.slug}` : "#";
                   return (
@@ -357,13 +356,6 @@ export default function Explore() {
                         <p className="truncate text-sm font-semibold">{o.title}</p>
                         <p className="truncate text-xs text-muted-foreground">{providerName}</p>
                       </div>
-                      {o.free_for_testimonial ? (
-                        <span className="shrink-0 rounded-[3px] bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-                          Free
-                        </span>
-                      ) : price ? (
-                        <span className="shrink-0 text-xs font-semibold text-foreground/90">{price}</span>
-                      ) : null}
                     </button>
                   );
                 })}
