@@ -91,6 +91,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   };
 
+  const shareProfile = async () => {
+    if (!profile?.username) return;
+    const url = shareProfileUrl(profile.username);
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({ title: `@${profile.username} on Aytopus`, url });
+        return;
+      }
+    } catch { /* fall through to clipboard */ }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Profile link copied", description: url });
+    } catch {
+      toast({ title: "Copy failed", description: url, variant: "destructive" });
+    }
+  };
+
   const mobileCols =
     items.length === 5 ? "grid-cols-5" :
     items.length === 4 ? "grid-cols-4" :
