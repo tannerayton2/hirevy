@@ -84,7 +84,7 @@ export default function Explore() {
     id: string;
     slug: string;
     title: string;
-    provider: { username: string; display_name: string | null; provider_type: ProviderType | null } | null;
+    provider: { username: string; display_name: string | null; avatar_url: string | null; provider_type: ProviderType | null } | null;
   };
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveLoading, setLiveLoading] = useState(false);
