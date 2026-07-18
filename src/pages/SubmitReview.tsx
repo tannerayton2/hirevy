@@ -314,8 +314,8 @@ export default function SubmitReview() {
   const resetForm = () => {
     setSubmitted(false);
     setReviewedUsername(null);
-    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setIsUnmatched(false); setNameLocked(false);
-    setUnmatchedLink(""); setUnmatchedDescription("");
+    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setNameLocked(false);
+
     setCategory(""); setWebsite(""); setInstagram(""); setTwitter(""); setYoutube(""); setLinkedin(""); setOfferUrl("");
     setShowMoreProfile(false);
     setRating(0); setHoverRating(0); setBody(""); setPurchased(false); setAmount(""); setFiles([]); setEmail("");
