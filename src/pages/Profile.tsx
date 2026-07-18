@@ -794,7 +794,13 @@ export default function Profile() {
             )}
 
             {pinnedReview && (
-              <article className="relative mb-4 rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]">
+              <article
+                role="button"
+                tabIndex={0}
+                onClick={() => setDetailReview(pinnedReview)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(pinnedReview); } }}
+                className="relative mb-4 cursor-pointer rounded-md border-2 border-primary/60 bg-primary/[0.04] p-5 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-colors hover:bg-primary/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
@@ -813,20 +819,23 @@ export default function Profile() {
                     {new Date(pinnedReview.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                   </p>
                   {isMe && (
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => togglePinReview(pinnedReview.id)}>
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); togglePinReview(pinnedReview.id); }}>
                       <PinOff className="mr-1 h-3 w-3" /> Unpin
                     </Button>
                   )}
                 </div>
-                <ProviderReply
-                  reviewId={pinnedReview.id}
-                  reviewType="verified"
-                  providerId={profile.id}
-                  providerDisplayName={providerDisplayName}
-                  isProviderViewer={isMe}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ProviderReply
+                    reviewId={pinnedReview.id}
+                    reviewType="verified"
+                    providerId={profile.id}
+                    providerDisplayName={providerDisplayName}
+                    isProviderViewer={isMe}
+                  />
+                </div>
               </article>
             )}
+
 
             {visibleReviews.length === 0 && !pinnedReview ? (
               <Empty msg="No reviews yet — message this provider to learn more or hire them directly." />
