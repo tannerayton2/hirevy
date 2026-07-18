@@ -396,13 +396,6 @@ export default function Explore() {
         <TopTab active={subTab === "offers"} onClick={() => setSubTab("offers")} label="Offers" />
       </div>
 
-      {/* Provider type toggle */}
-      <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center">
-        <div className="inline-flex rounded-full border border-border bg-card p-1">
-          <ProviderPill active={providerType === "coach"} onClick={() => setProviderType("coach")} label="Coaches" />
-          <ProviderPill active={providerType === "service_provider"} onClick={() => setProviderType("service_provider")} label="Service Providers" />
-        </div>
-      </div>
 
       {/* Category pills */}
       <div className="mt-6">
