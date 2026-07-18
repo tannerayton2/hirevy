@@ -59,8 +59,6 @@ export default function Explore() {
 
   const tabParam = params.get("tab");
   const subTab: "people" | "offers" = tabParam === "offers" ? "offers" : "people";
-  const typeParam = params.get("ptype");
-  const providerType: ProviderType = typeParam === "service_provider" ? "service_provider" : "coach";
 
   const initialQ = params.get("q") ?? "";
   const initialCat = params.get("cat") ?? "";
@@ -106,10 +104,6 @@ export default function Explore() {
     setParams(next, { replace: true });
   };
 
-  // Provider-type matcher (untyped profiles appear in both)
-  const matchProviderType = (pt: ProviderType | null | undefined) =>
-    pt == null || pt === providerType;
-
   // ===== People: recently reviewed =====
   useEffect(() => {
     if (subTab !== "people") return;
@@ -138,12 +132,11 @@ export default function Explore() {
       const byId = new Map((profs ?? []).map((p) => [p.id, p as CoachRow]));
       const ordered = orderedIds
         .map((id) => byId.get(id))
-        .filter(Boolean)
-        .filter((c) => matchProviderType((c as CoachRow).provider_type)) as CoachRow[];
+        .filter(Boolean) as CoachRow[];
       if (!cancel) { setRecent(ordered.slice(0, 12)); setLoadingRecent(false); }
     })();
     return () => { cancel = true; };
-  }, [activeCategory, subTab, providerType]);
+  }, [activeCategory, subTab]);
 
   // ===== People: search results =====
   useEffect(() => {
@@ -161,14 +154,14 @@ export default function Explore() {
       }
       if (activeCategory) req = req.eq("service_category", activeCategory);
       const { data } = await req;
-      const rows = ((data as CoachRow[] | null) ?? []).filter((c) => matchProviderType(c.provider_type));
+      const rows = (data as CoachRow[] | null) ?? [];
       if (!cancel) {
         setResults(rows.slice(0, 50));
         setLoadingResults(false);
       }
     })();
     return () => { cancel = true; };
-  }, [submitted, activeCategory, subTab, providerType]);
+  }, [submitted, activeCategory, subTab]);
 
   // ===== Offers tab =====
   useEffect(() => {
@@ -187,8 +180,7 @@ export default function Explore() {
       if (activeCategory) req = req.eq("category", activeCategory);
       const { data } = await req;
       const q = submitted.trim().toLowerCase();
-      const rows = ((data as unknown as (OfferCardData & { provider: { provider_type: ProviderType | null } })[]) ?? [])
-        .filter((o) => matchProviderType(o.provider?.provider_type))
+      const rows = ((data as unknown as OfferCardData[]) ?? [])
         .filter((o) => {
           if (!q) return true;
           return (
@@ -204,7 +196,7 @@ export default function Explore() {
       }
     })();
     return () => { cancel = true; };
-  }, [subTab, submitted, activeCategory, providerType, freeOnly]);
+  }, [subTab, submitted, activeCategory, freeOnly]);
 
   // ===== Live dropdown: debounced fetch on each keystroke =====
   useEffect(() => {
@@ -230,7 +222,7 @@ export default function Explore() {
             .limit(20);
           if (activeCategory) req = req.eq("service_category", activeCategory);
           const { data } = await req;
-          const rows = ((data as LivePerson[] | null) ?? []).filter((c) => matchProviderType(c.provider_type));
+          const rows = (data as LivePerson[] | null) ?? [];
           if (!cancel) {
             setLivePeople(rows.slice(0, 6));
             setLiveOffers([]);
@@ -247,8 +239,7 @@ export default function Explore() {
           if (freeOnly) req = req.eq("free_for_testimonial", true);
           if (activeCategory) req = req.eq("category", activeCategory);
           const { data } = await req;
-          const rows = ((data as unknown as LiveOffer[] | null) ?? [])
-            .filter((o) => matchProviderType(o.provider?.provider_type ?? null));
+          const rows = (data as unknown as LiveOffer[] | null) ?? [];
           if (!cancel) {
             setLiveOffers(rows.slice(0, 6));
             setLivePeople([]);
@@ -258,7 +249,7 @@ export default function Explore() {
       })();
     }, 220);
     return () => { cancel = true; clearTimeout(t); };
-  }, [query, subTab, activeCategory, providerType, freeOnly]);
+  }, [query, subTab, activeCategory, freeOnly]);
 
   // Close dropdown when clicking outside the search box
   useEffect(() => {
@@ -291,7 +282,6 @@ export default function Explore() {
   };
 
   const setSubTab = (t: "people" | "offers") => writeUrl({ tab: t === "people" ? null : "offers" });
-  const setProviderType = (t: ProviderType) => writeUrl({ ptype: t === "coach" ? null : "service_provider" });
 
   const showingResults = submitted.trim().length > 0 || !!activeCategory;
   const reviewLink = activeCategory ? `/submit-review?cat=${encodeURIComponent(activeCategory)}` : "/submit-review";
@@ -401,14 +391,6 @@ export default function Explore() {
       <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center gap-1 border-b border-border">
         <TopTab active={subTab === "people"} onClick={() => setSubTab("people")} label="People" />
         <TopTab active={subTab === "offers"} onClick={() => setSubTab("offers")} label="Offers" />
-      </div>
-
-      {/* Provider type toggle */}
-      <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center">
-        <div className="inline-flex rounded-full border border-border bg-card p-1">
-          <ProviderPill active={providerType === "coach"} onClick={() => setProviderType("coach")} label="Coaches" />
-          <ProviderPill active={providerType === "service_provider"} onClick={() => setProviderType("service_provider")} label="Service Providers" />
-        </div>
       </div>
 
       {/* Category pills */}
@@ -541,19 +523,12 @@ function TopTab({ active, onClick, label }: { active: boolean; onClick: () => vo
   );
 }
 
-function ProviderPill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function RoleBadge({ provider_type }: { provider_type: ProviderType | null | undefined }) {
+  if (provider_type !== "coach" && provider_type !== "service_provider") return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] transition-colors",
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {label}
-    </button>
+    <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+      {provider_type === "coach" ? "Coach" : "Service Provider"}
+    </span>
   );
 }
 
@@ -568,8 +543,8 @@ function RecentlyReviewed({
       {coaches.length === 0 ? (
         <div className="flex w-full justify-center">
           <div className="flex w-[320px] flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
-            <p className="text-sm font-semibold text-foreground">No active coaches or providers here yet.</p>
-            <p className="text-xs text-muted-foreground">Browse a category below or switch between Coaches and Service Providers to discover who's available to hire.</p>
+            <p className="text-sm font-semibold text-foreground">No active people here yet.</p>
+            <p className="text-xs text-muted-foreground">Browse a category below to discover who's available to hire.</p>
           </div>
         </div>
       ) : (
@@ -591,6 +566,8 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={72} />
       <p className="line-clamp-1 w-full text-sm font-bold">{name}</p>
+      <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
+      <RoleBadge provider_type={coach.provider_type} />
       {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
       <p className="text-[11px] text-muted-foreground">
         {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
@@ -639,9 +616,11 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
       <CoachAvatar name={name} url={coach.avatar_url} size={64} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-bold">{name}</p>
-        {tier !== "unranked" && (
-          <div className="mt-1"><TierBadge tier={tier} size="xs" /></div>
-        )}
+        <p className="truncate text-xs text-muted-foreground">@{coach.username}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <RoleBadge provider_type={coach.provider_type} />
+          {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
+        </div>
         <p className="mt-1 text-xs text-muted-foreground">
           {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
         </p>
@@ -654,7 +633,7 @@ function EmptyCategoryState() {
   return (
     <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-lg font-semibold">No one in this category yet.</p>
-      <p className="mt-2 text-sm text-muted-foreground">Try another category, switch between Coaches and Service Providers, or check the Offers tab to see what's available to hire.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Try another category, or check the Offers tab to see what's available to hire.</p>
     </div>
   );
 }
