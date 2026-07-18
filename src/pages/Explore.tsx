@@ -183,8 +183,7 @@ export default function Explore() {
       if (activeCategory) req = req.eq("category", activeCategory);
       const { data } = await req;
       const q = submitted.trim().toLowerCase();
-      const rows = ((data as unknown as (OfferCardData & { provider: { provider_type: ProviderType | null } })[]) ?? [])
-        .filter((o) => matchProviderType(o.provider?.provider_type))
+      const rows = ((data as unknown as OfferCardData[]) ?? [])
         .filter((o) => {
           if (!q) return true;
           return (
@@ -200,7 +199,7 @@ export default function Explore() {
       }
     })();
     return () => { cancel = true; };
-  }, [subTab, submitted, activeCategory, providerType, freeOnly]);
+  }, [subTab, submitted, activeCategory, freeOnly]);
 
   // ===== Live dropdown: debounced fetch on each keystroke =====
   useEffect(() => {
