@@ -308,6 +308,7 @@ export default function SubmitReview() {
         p_instagram_handle: instagram.trim() || null,
         p_evidence_paths: paths,
         p_strength_tier: tier,
+        p_offer_id: selectedOfferId || null,
       } as never);
       if (error) throw error;
 
