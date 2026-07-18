@@ -138,7 +138,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileFull | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [unclaimedReviews, setUnclaimedReviews] = useState<Review[]>([]);
+  
   const [proofReviews, setProofReviews] = useState<ProofReview[]>([]);
   const [imported, setImported] = useState<ImportedTestimonial[]>([]);
   const [reviewsSort, setReviewsSort] = useState<SortKey>("newest");
@@ -203,14 +203,9 @@ export default function Profile() {
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
-    const [offersRes, reviewsRes, unclaimedRes, proofRes, importedRes, followRes] = await Promise.all([
+    const [offersRes, reviewsRes, proofRes, importedRes, followRes] = await Promise.all([
       offersQuery,
       supabase.rpc("list_provider_reviews", { p_provider: prof.id }),
-      supabase
-        .from("unclaimed_reviews")
-        .select("id, coach_name, rating, body, created_at, completeness_score, is_detailed")
-        .eq("linked_profile_id", prof.id)
-        .order("created_at", { ascending: false }),
       supabase
         .from("proof_backed_reviews")
         .select("id, provider_id, reviewer_name, rating, body, engagement_type, engagement_started_month, engagement_started_year, engagement_ended_month, engagement_ended_year, engagement_ongoing, amount_paid_bracket, proof_file_count, is_disputed, created_at")
@@ -228,23 +223,12 @@ export default function Profile() {
 
     setOffers((offersRes.data as unknown as OfferRow[]) ?? []);
     const verifiedReviews = (reviewsRes.data as unknown as Review[]) ?? [];
-    const unclaimedRows = ((unclaimedRes.data as unknown as Array<{
-      id: string; coach_name: string; rating: number; body: string; created_at: string; completeness_score: number; is_detailed: boolean;
-    }>) ?? []).map((r) => ({
-      id: r.id,
-      reviewer_name: r.coach_name,
-      rating: r.rating,
-      body: r.body,
-      created_at: r.created_at,
-      completeness_score: r.completeness_score,
-      is_detailed: r.is_detailed,
-    } as Review));
     setReviews(verifiedReviews);
-    setUnclaimedReviews(unclaimedRows);
     setProofReviews((proofRes.data as unknown as ProofReview[]) ?? []);
     setImported((importedRes.data as unknown as ImportedTestimonial[]) ?? []);
     setFollowing(!!followRes.data);
     setLoading(false);
+
 
     // Fetch response time async (doesn't block render)
     void fetchAvgFirstResponseMs(prof.id).then(setResponseMs);
@@ -414,7 +398,7 @@ export default function Profile() {
 
   const providerDisplayName = profile.display_name || profile.username;
   const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" });
-  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0 || unclaimedReviews.length > 0;
+  const hasAnyContent = offers.length > 0 || reviews.length > 0 || proofReviews.length > 0;
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -910,53 +894,8 @@ export default function Profile() {
               );
             })()}
 
-            {/* Pre-claim / unclaimed reviews — visually distinct */}
-            {unclaimedReviews.length > 0 && (
-              <div className="mt-8">
-                <div className="mb-3 flex items-end justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Reviews submitted before this profile was claimed
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground/80">
-                      Left by clients when {providerDisplayName} wasn't yet on Aytopus. Not counted toward verified stats.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setReportOpen(true)}
-                    className="shrink-0 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                  >
-                    <Flag className="mr-1 inline h-3 w-3" /> Report
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {unclaimedReviews.map((r) => (
-                    <article
-                      key={r.id}
-                      className="relative rounded-md border border-dashed border-amber-500/40 bg-amber-500/[0.04] p-4"
-                    >
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="font-semibold">{r.reviewer_name}</p>
-                        <div className="flex items-center gap-2">
-                          {r.is_detailed && <DetailedReviewBadge />}
-                          <StarRating value={r.rating} size={14} />
-                        </div>
-                      </div>
-                      <ExpandableReviewText text={r.body} className="text-sm text-muted-foreground" />
-                      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                        <span>
-                          {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                        </span>
-                        <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-amber-600">
-                          Pre-claim
-                        </span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
+
+
             </>)}
 
 

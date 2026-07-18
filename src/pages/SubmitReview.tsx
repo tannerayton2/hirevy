@@ -89,10 +89,8 @@ export default function SubmitReview() {
   const [coachName, setCoachName] = useState(prefilledCoach);
   const [coachQuery, setCoachQuery] = useState(prefilledCoach);
   const [linkedProfileId, setLinkedProfileId] = useState<string | null>(null);
-  const [isUnmatched, setIsUnmatched] = useState(false);
   const [nameLocked, setNameLocked] = useState(hideSection1);
-  const [unmatchedLink, setUnmatchedLink] = useState("");
-  const [unmatchedDescription, setUnmatchedDescription] = useState("");
+
 
   type ProfileHit = { id: string; username: string; display_name: string | null; avatar_url: string | null };
   const [searchResults, setSearchResults] = useState<ProfileHit[]>([]);
@@ -150,35 +148,41 @@ export default function SubmitReview() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  // Resolve prefilled coach handle into a real profile ID
+  useEffect(() => {
+    if (!prefilledCoach) return;
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .eq("username", prefilledCoach.toLowerCase())
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setLinkedProfileId(data.id);
+      setReviewedUsername(data.username);
+      setCoachName(data.display_name || data.username);
+    })();
+    return () => { cancelled = true; };
+  }, [prefilledCoach]);
+
   const selectExisting = (p: ProfileHit) => {
     setLinkedProfileId(p.id);
     setReviewedUsername(p.username);
-    setIsUnmatched(false);
     setCoachName(p.display_name || p.username);
     setCoachQuery(p.display_name || p.username);
-    setNameLocked(true);
-    setSearchOpen(false);
-    setUnmatchedLink("");
-    setUnmatchedDescription("");
-  };
-
-  const selectUnmatched = () => {
-    setLinkedProfileId(null);
-    setIsUnmatched(true);
-    setCoachName(coachQuery.trim());
     setNameLocked(true);
     setSearchOpen(false);
   };
 
   const clearName = () => {
     setLinkedProfileId(null);
-    setIsUnmatched(false);
+    setReviewedUsername(null);
     setNameLocked(false);
     setCoachName("");
     setCoachQuery("");
-    setUnmatchedLink("");
-    setUnmatchedDescription("");
   };
+
 
 
 
@@ -225,13 +229,14 @@ export default function SubmitReview() {
   const removeFile = (i: number) => setFiles(files.filter((_, idx) => idx !== i));
 
   const validate = () => {
-    if (!coachName.trim()) { toast({ title: "Coach name required", variant: "destructive" }); return false; }
+    if (!linkedProfileId) { toast({ title: "Select the coach from the search results", variant: "destructive" }); return false; }
     if (rating < 0.5) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
     if (body.trim().length < MIN_BODY) { toast({ title: `Review must be at least ${MIN_BODY} characters`, variant: "destructive" }); return false; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast({ title: "Enter a valid email", variant: "destructive" }); return false; }
     if (purchased && amount === "other" && (!(Number(customAmount) > 0) || !customAmount.trim())) { toast({ title: "Enter a valid amount", variant: "destructive" }); return false; }
     return true;
   };
+
 
   const onClickSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,29 +272,27 @@ export default function SubmitReview() {
         ? `${body.trim()}\n\n---\n${extras.join("\n")}`
         : body.trim();
 
-      const { data: newId, error } = await supabase.rpc("submit_unclaimed_review", {
-        p_coach_name: coachName.trim().slice(0, 120),
-        p_instagram_handle: instagram.trim() || null,
-        p_offer_url: offerUrl.trim() || null,
+      const { data: newId, error } = await supabase.rpc("submit_public_review", {
+        p_provider_id: linkedProfileId!,
+        p_reviewer_name: email.trim().split("@")[0] || "Reviewer",
+        p_reviewer_email: email.trim(),
         p_rating: rating,
         p_body: composedBody,
         p_purchased: purchased,
         p_amount_paid_bracket: purchased && amount ? (amount === "other" ? `$${customAmount}` : amount) : null,
+        p_offer_url: offerUrl.trim() || null,
+        p_instagram_handle: instagram.trim() || null,
         p_evidence_paths: paths,
         p_strength_tier: tier,
-        p_reviewer_email: email.trim(),
-        p_unmatched_link: isUnmatched && unmatchedLink.trim() ? unmatchedLink.trim() : null,
-        p_unmatched_description: isUnmatched && unmatchedDescription.trim() ? unmatchedDescription.trim() : null,
-        p_needs_profile: isUnmatched && !linkedProfileId,
-        p_linked_profile_id: linkedProfileId,
-      });
+      } as never);
       if (error) throw error;
 
       try {
         await supabase.functions.invoke("send-review-verification", {
-          body: { review_id: newId, review_type: "unclaimed", origin: window.location.origin },
+          body: { review_id: newId, review_type: "public", origin: window.location.origin },
         });
       } catch { /* non-fatal */ }
+
 
       toast({ title: "Check your email", description: "Confirm your review via the link we just sent." });
       setConfirmOpen(false);
@@ -311,8 +314,8 @@ export default function SubmitReview() {
   const resetForm = () => {
     setSubmitted(false);
     setReviewedUsername(null);
-    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setIsUnmatched(false); setNameLocked(false);
-    setUnmatchedLink(""); setUnmatchedDescription("");
+    setCoachName(""); setCoachQuery(""); setLinkedProfileId(null); setNameLocked(false);
+
     setCategory(""); setWebsite(""); setInstagram(""); setTwitter(""); setYoutube(""); setLinkedin(""); setOfferUrl("");
     setShowMoreProfile(false);
     setRating(0); setHoverRating(0); setBody(""); setPurchased(false); setAmount(""); setFiles([]); setEmail("");
@@ -439,14 +442,12 @@ export default function SubmitReview() {
                               </div>
                             </button>
                           ))}
-                          <button
-                            type="button"
-                            onClick={selectUnmatched}
-                            className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-left text-sm font-medium text-primary hover:bg-accent"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Review "{coachQuery.trim()}"
-                          </button>
+                          {searchResults.length === 0 && !searching && (
+                            <div className="px-3 py-2.5 text-xs text-muted-foreground">
+                              No matching coaches found. Make sure you're using their exact name or @handle.
+                            </div>
+                          )}
+
                         </>
                       )}
                     </div>
@@ -456,71 +457,8 @@ export default function SubmitReview() {
             </div>
           </Field>
 
-          {isUnmatched && nameLocked && (
-            <>
-              <Field label="Their website or social link (optional)">
-                <Input
-                  type="url"
-                  value={unmatchedLink}
-                  onChange={(e) => setUnmatchedLink(e.target.value)}
-                  placeholder="https://instagram.com/theirhandle"
-                />
-              </Field>
-              <Field label="Anything to help us find them? (optional)">
-                <Textarea
-                  value={unmatchedDescription}
-                  onChange={(e) => setUnmatchedDescription(e.target.value)}
-                  placeholder="e.g. Business coach on YouTube, runs a program called X."
-                  rows={3}
-                  maxLength={500}
-                />
-              </Field>
-            </>
-          )}
 
-          {!linkedProfileId && (
-            <>
-          <Field label="Their primary category">
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-10"><SelectValue placeholder="Select a category (optional)" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
 
-          {!showMoreProfile ? (
-            <button
-              type="button"
-              onClick={() => setShowMoreProfile(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:text-primary/80"
-            >
-              <ChevronDown className="h-3.5 w-3.5" /> Add more profile info (optional)
-            </button>
-          ) : (
-            <div className="space-y-5">
-              <Field label="Their website URL">
-                <Input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://theirwebsite.com" />
-              </Field>
-              <Field label="Their Instagram handle">
-                <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@theirhandle" />
-              </Field>
-              <Field label="Their Twitter/X handle">
-                <Input value={twitter} onChange={(e) => setTwitter(e.target.value)} placeholder="@theirhandle" />
-              </Field>
-              <Field label="Their YouTube channel URL">
-                <Input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="https://youtube.com/@theirchannel" />
-              </Field>
-              <Field label="Their LinkedIn URL">
-                <Input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/theirprofile" />
-              </Field>
-              <Field label="Link to the specific offer or program you purchased">
-                <Input type="url" value={offerUrl} onChange={(e) => setOfferUrl(e.target.value)} placeholder="https://theirwebsite.com/offer — the exact program you bought" />
-              </Field>
-            </div>
-          )}
-            </>
-          )}
         </section>
         )}
 
