@@ -114,6 +114,7 @@ export default function SubmitReview() {
   const [body, setBody] = useState("");
   const [purchased, setPurchased] = useState(false);
   const [amount, setAmount] = useState<string>("");
+  const [customAmount, setCustomAmount] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -184,11 +185,11 @@ export default function SubmitReview() {
   const completenessScore = useMemo(
     () => computeCompletenessScore({
       body, purchased,
-      amountFilled: !!(purchased && amount),
+      amountFilled: !!(purchased && amount && (amount !== "other" || Number(customAmount) > 0)),
       offerFilled: !!offerUrl.trim(),
       photoCount: files.length,
     }),
-    [body, purchased, amount, offerUrl, files.length],
+    [body, purchased, amount, customAmount, offerUrl, files.length],
   );
 
   const tier = useMemo(() => computeTier(purchased, files.length), [purchased, files.length]);
@@ -228,6 +229,7 @@ export default function SubmitReview() {
     if (rating < 0.5) { toast({ title: "Pick a star rating", variant: "destructive" }); return false; }
     if (body.trim().length < MIN_BODY) { toast({ title: `Review must be at least ${MIN_BODY} characters`, variant: "destructive" }); return false; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast({ title: "Enter a valid email", variant: "destructive" }); return false; }
+    if (purchased && amount === "other" && (!(Number(customAmount) > 0) || !customAmount.trim())) { toast({ title: "Enter a valid amount", variant: "destructive" }); return false; }
     return true;
   };
 
@@ -272,7 +274,7 @@ export default function SubmitReview() {
         p_rating: rating,
         p_body: composedBody,
         p_purchased: purchased,
-        p_amount_paid_bracket: purchased && amount ? amount : null,
+        p_amount_paid_bracket: purchased && amount ? (amount === "other" ? `$${customAmount}` : amount) : null,
         p_evidence_paths: paths,
         p_strength_tier: tier,
         p_reviewer_email: email.trim(),
@@ -628,14 +630,26 @@ export default function SubmitReview() {
               <span className="text-sm">I purchased from this coach or bought their program</span>
             </label>
             {purchased && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-3">
                 <p className="mb-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground">Approximate amount paid</p>
                 <Select value={amount} onValueChange={setAmount}>
                   <SelectTrigger className="h-10"><SelectValue placeholder="Select bracket (optional)" /></SelectTrigger>
                   <SelectContent>
                     {AMOUNT_BRACKETS.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                    <SelectItem value="other">Other amount</SelectItem>
                   </SelectContent>
                 </Select>
+                {amount === "other" && (
+                  <Input
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    placeholder="Enter amount in USD"
+                    className="h-10"
+                  />
+                )}
               </div>
             )}
           </div>
