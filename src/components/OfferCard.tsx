@@ -117,6 +117,35 @@ export function OfferCard({
           {offer.title}
         </h3>
 
+        <Link
+          to={`/@${offer.provider.username}`}
+          data-no-nav
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-2"
+        >
+          {offer.provider.avatar_url ? (
+            <img
+              src={offer.provider.avatar_url}
+              alt={offer.provider.display_name || offer.provider.username}
+              className="h-6 w-6 rounded-full object-cover ring-1 ring-border"
+            />
+          ) : (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
+              </span>
+            </div>
+          )}
+          <div className="flex min-w-0 flex-col leading-none">
+            <span className="truncate text-[11px] font-semibold text-foreground">
+              {offer.provider.display_name || offer.provider.username}
+            </span>
+            <span className="truncate text-[10px] text-muted-foreground">
+              @{offer.provider.username}
+            </span>
+          </div>
+        </Link>
+
         <StarRating value={avg} count={offer.provider.review_count} showValue size={12} />
 
         <div className="mt-auto pt-2" data-no-nav>
@@ -124,9 +153,9 @@ export function OfferCard({
             type="button"
             onClick={handleCta}
             className={cn(
-              "inline-flex w-full items-center justify-center gap-1.5 rounded-[3px] border border-primary/40 bg-primary/10 px-2.5 py-1.5",
-              "text-[11px] font-bold uppercase tracking-[0.14em] text-primary transition-colors",
-              "hover:bg-primary hover:text-primary-foreground",
+              "inline-flex w-full items-center justify-center gap-1.5 rounded-[3px] bg-primary px-2.5 py-1.5",
+              "text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-colors",
+              "hover:bg-primary/90",
             )}
           >
             {hasSalesUrl ? (
