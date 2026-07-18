@@ -561,8 +561,8 @@ export default function Admin() {
   const [error, setError] = useState<string | null>(null);
   const [coachPrefill, setCoachPrefill] = useState<CoachPrefill | undefined>(undefined);
   const [prefillKey, setPrefillKey] = useState(0);
-  const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
-  const [profileRequestsReloadKey, setProfileRequestsReloadKey] = useState(0);
+
+
   const createFormRef = useRef<HTMLDivElement | null>(null);
   type SectionKey =
     | "dashboard"
