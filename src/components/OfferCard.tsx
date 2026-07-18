@@ -114,7 +114,7 @@ export function OfferCard({
         </h3>
         {offer.category && (
           <span
-            className="shrink-0 whitespace-nowrap rounded-[6px] fonte font-medium normal-case"
+            className="shrink-0 whitespace-nowrap rounded-[6px] font-medium normal-case"
             style={{
               backgroundColor: "#1e1a10",
               color: "#c9a24a",
