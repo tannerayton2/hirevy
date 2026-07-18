@@ -264,7 +264,14 @@ export default function ProofReviewSubmit() {
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
       <Logo />
-      <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Proof-Backed Review</p>
+      <Link
+        to={`/@${provider.username}`}
+        className="mt-6 flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to profile
+      </Link>
+      <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Proof-Backed Review</p>
       <h1 className="mt-2 font-display text-3xl font-bold leading-tight">
         Review {provider.display_name || `@${provider.username}`}
       </h1>
