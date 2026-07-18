@@ -866,9 +866,15 @@ export default function Profile() {
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(u.data); } }}
                   className="relative cursor-pointer rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="font-semibold">{u.data.reviewer_name}</p>
-                    <div className="flex items-center gap-2">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <ReviewerIdentity
+                      reviewerName={u.data.reviewer_name}
+                      userId={u.data.reviewer_user_id}
+                      username={u.data.reviewer_username}
+                      displayName={u.data.reviewer_display_name}
+                      avatarUrl={u.data.reviewer_avatar_url}
+                    />
+                    <div className="flex shrink-0 items-center gap-2">
                       <StarRating value={u.data.rating} size={14} />
                       {u.is_detailed && <DetailedReviewBadge />}
                       <ReviewCompletenessShield score={u.score} />
