@@ -104,9 +104,6 @@ export default function Explore() {
     setParams(next, { replace: true });
   };
 
-  // All people are shown in a single list; provider type is only used for display badges.
-  const matchProviderType = (_pt: ProviderType | null | undefined) => true;
-
   // ===== People: recently reviewed =====
   useEffect(() => {
     if (subTab !== "people") return;
