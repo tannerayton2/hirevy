@@ -85,13 +85,14 @@ export function OfferCard({
     <div
       onClick={goToOffer}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden",
+        "group relative flex cursor-pointer flex-col",
         inactive && "opacity-60",
       )}
       style={{
         backgroundColor: "#141414",
         border: "0.5px solid #2a2a2a",
         borderRadius: "12px",
+        padding: "18px",
       }}
     >
       {inactive && !offer.cover_url && (
@@ -103,123 +104,85 @@ export function OfferCard({
         </span>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col p-[18px]">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3
-              className="line-clamp-2 font-display text-[20px] font-medium leading-tight"
-              style={{ color: "#f0ede6" }}
-            >
-              {offer.title}
-            </h3>
-          </div>
-          {offer.category && (
-            <span
-              className="shrink-0 whitespace-nowrap rounded-[6px] font-medium"
-              style={{
-                backgroundColor: "#1e1a10",
-                color: "#c9a24a",
-                fontSize: "11px",
-                padding: "3px 10px",
-              }}
-            >
-              {offer.category}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-[10px]">
-          <Link
-            to={`/@${offer.provider.username}`}
-            data-no-nav
-            onClick={(e) => e.stopPropagation()}
-            className="flex min-w-0 flex-1 items-center gap-[10px]"
+      {/* Row 1: title + category */}
+      <div className="mb-[10px] flex items-start justify-between" style={{ gap: "10px" }}>
+        <h3
+          className="min-w-0 flex-1 font-display text-[20px] font-medium line-clamp-2"
+          style={{ color: "#f0ede6", lineHeight: 1.2 }}
+        >
+          {offer.title}
+        </h3>
+        {offer.category && (
+          <span
+            className="shrink-0 whitespace-nowrap rounded-[6px] fonte font-medium normal-case"
+            style={{
+              backgroundColor: "#1e1a10",
+              color: "#c9a24a",
+              fontSize: "11px",
+              padding: "3px 10px",
+              marginLeft: "10px",
+            }}
           >
-            {offer.provider.avatar_url ? (
-              <img
-                src={offer.provider.avatar_url}
-                alt={offer.provider.display_name || offer.provider.username}
-                className="h-[38px] w-[38px] shrink-0 rounded-full object-cover"
-                style={{ backgroundColor: "#1a1a1a" }}
-              />
-            ) : (
-              <div
-                className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: "#1a1a1a", color: "#8a8a82" }}
-              >
-                <span className="text-[12px] font-bold uppercase">
-                  {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
-                </span>
-              </div>
-            )}
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span
-                className="truncate text-[14px] font-medium"
-                style={{ color: "#f0ede6" }}
-              >
-                {offer.provider.display_name || offer.provider.username}
-              </span>
-              <span
-                className="truncate text-[12px]"
-                style={{ color: "#8a8a82" }}
-              >
-                @{offer.provider.username}
-              </span>
-            </div>
-          </Link>
-
-          <div className="ml-auto shrink-0">
-            <StarRating
-              value={avg}
-              count={offer.provider.review_count}
-              showValue
-              size={12}
-              valueClassName="text-[#8a8a82]"
-              countClassName="text-[#8a8a82]"
-            />
-          </div>
-        </div>
-
-        {owner && (
-          <div data-no-nav className="mt-4 flex gap-2">
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
-              style={{ backgroundColor: "#1e1a10", color: "#c9a24a" }}
-            >
-              <Pencil className="h-3 w-3" /> Edit
-            </button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
-                  style={{ backgroundColor: "#2a0f0f", color: "#e08e8e" }}
-                >
-                  <Trash2 className="h-3 w-3" /> Delete
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    "{offer.title}" will be removed permanently. This can't be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+            {offer.category}
+          </span>
         )}
       </div>
 
+      {/* Row 2: coach identity + rating */}
+      <div className="mb-[16px] flex items-center justify-between">
+        <Link
+          to={`/@${offer.provider.username}`}
+          data-no-nav
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center"
+          style={{ gap: "8px" }}
+        >
+          {offer.provider.avatar_url ? (
+            <img
+              src={offer.provider.avatar_url}
+              alt={offer.provider.display_name || offer.provider.username}
+              className="h-[26px] w-[26px] shrink-0 rounded-full object-cover"
+              style={{ backgroundColor: "#1a1a1a" }}
+            />
+          ) : (
+            <div
+              className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: "#1a1a1a", color: "#8a8a82" }}
+            >
+              <span className="text-[10px] font-bold uppercase">
+                {(offer.provider.display_name || offer.provider.username).slice(0, 1)}
+              </span>
+            </div>
+          )}
+          <div className="flex flex-col">
+            <span
+              className="truncate text-[13px] font-medium"
+              style={{ color: "#d8d4cc" }}
+            >
+              {offer.provider.display_name || offer.provider.username}
+            </span>
+            <span
+              className="truncate text-[12px]"
+              style={{ color: "#8a8a82" }}
+            >
+              @{offer.provider.username}
+            </span>
+          </div>
+        </Link>
+
+        <div data-no-nav className="shrink-0">
+          <StarRating
+            value={avg}
+            count={offer.provider.review_count}
+            showValue
+            size={12}
+            valueClassName="text-[#8a8a82]"
+            countClassName="text-[#8a8a82]"
+          />
+        </div>
+      </div>
+
+      {/* Row 3: CTA button */}
       <div data-no-nav>
         <button
           type="button"
@@ -228,7 +191,8 @@ export function OfferCard({
           style={{
             backgroundColor: "#c9a24a",
             color: "#1a1508",
-            padding: "14px",
+            padding: "11px",
+            borderRadius: "8px",
             fontSize: "12px",
             letterSpacing: "0.06em",
             fontWeight: 500,
@@ -241,6 +205,46 @@ export function OfferCard({
           )}
         </button>
       </div>
+
+      {/* Owner actions */}
+      {owner && (
+        <div data-no-nav className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); nav(`/settings/offers/${offer.id}`); }}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
+            style={{ backgroundColor: "#1e1a10", color: "#c9a24a" }}
+          >
+            <Pencil className="h-3 w-3" /> Edit
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:brightness-110"
+                style={{ backgroundColor: "#2a0f0f", color: "#e08e8e" }}
+              >
+                <Trash2 className="h-3 w-3" /> Delete
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this offer?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{offer.title}" will be removed permanently. This can't be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </div>
   );
 }
