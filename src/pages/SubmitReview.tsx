@@ -89,10 +89,8 @@ export default function SubmitReview() {
   const [coachName, setCoachName] = useState(prefilledCoach);
   const [coachQuery, setCoachQuery] = useState(prefilledCoach);
   const [linkedProfileId, setLinkedProfileId] = useState<string | null>(null);
-  const [isUnmatched, setIsUnmatched] = useState(false);
   const [nameLocked, setNameLocked] = useState(hideSection1);
-  const [unmatchedLink, setUnmatchedLink] = useState("");
-  const [unmatchedDescription, setUnmatchedDescription] = useState("");
+
 
   type ProfileHit = { id: string; username: string; display_name: string | null; avatar_url: string | null };
   const [searchResults, setSearchResults] = useState<ProfileHit[]>([]);
