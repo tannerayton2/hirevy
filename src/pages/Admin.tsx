@@ -1860,83 +1860,8 @@ function ManageUnclaimedProfiles() {
   );
 }
 
-// ---------------- Profile Requests ----------------
 
-type ProfileRequestRow = {
-  id: string;
-  coach_name: string;
-  unmatched_link: string | null;
-  unmatched_description: string | null;
-  rating: number;
-  body: string;
-  created_at: string;
-};
 
-function ProfileRequestsPanel({
-  reloadKey,
-  onCreateProfile,
-}: {
-  reloadKey: number;
-  onCreateProfile: (row: ProfileRequestRow) => void;
-}) {
-  const [rows, setRows] = useState<ProfileRequestRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setErr(null);
-    const { data, error } = await supabase
-      .from("unclaimed_reviews")
-      .select("id, coach_name, unmatched_link, unmatched_description, rating, body, created_at")
-      .eq("needs_profile" as never, true as never)
-      .order("created_at", { ascending: false });
-    if (error) setErr(error.message);
-    else setRows((data ?? []) as ProfileRequestRow[]);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { void load(); }, [load, reloadKey]);
-
-  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (err) return <div className="text-sm text-destructive">{err}</div>;
-  if (rows.length === 0) return <EmptyState icon={UserPlus} message="No profile requests pending." />;
-
-  return (
-    <div className="space-y-2">
-      {rows.map((r) => (
-        <div key={r.id} className="rounded-md border border-border bg-card/60 p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-sm font-semibold">{r.coach_name}</p>
-              <p className="text-xs text-primary">★ {Number(r.rating).toFixed(1)}</p>
-              {r.unmatched_link && (
-                <p className="text-xs text-muted-foreground">
-                  Link:{" "}
-                  <a href={r.unmatched_link} target="_blank" rel="noreferrer" className="underline hover:text-primary">
-                    {r.unmatched_link}
-                  </a>
-                </p>
-              )}
-              {r.unmatched_description && (
-                <p className="text-xs text-muted-foreground">Note: {r.unmatched_description}</p>
-              )}
-              <p className="line-clamp-2 text-xs text-muted-foreground/90">{r.body}</p>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{fmt(r.created_at)}</p>
-            </div>
-            <Button
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => onCreateProfile(r)}
-            >
-              <UserPlus className="h-3.5 w-3.5" /> Create Profile
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ---------------- Admin Broadcast ----------------
 
