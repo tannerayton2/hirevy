@@ -228,7 +228,7 @@ export default function Explore() {
           let req = supabase
             .from("offers")
             .select(`id, slug, title,
-                     provider:profiles!offers_provider_id_fkey ( username, display_name, provider_type )`)
+                     provider:profiles!offers_provider_id_fkey ( username, display_name, avatar_url, provider_type )`)
             .eq("is_active", true)
             .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
             .limit(20);
