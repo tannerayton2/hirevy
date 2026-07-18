@@ -884,6 +884,16 @@ export default function Profile() {
                     </div>
                   </div>
                   <ExpandableReviewText text={u.data.body} className="text-sm text-muted-foreground" />
+                  {u.data.offer_id && u.data.offer_slug && u.data.offer_title && (
+                    <Link
+                      to={`/@${profile.username}/offer/${u.data.offer_slug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-2 inline-flex max-w-full items-center gap-1 rounded-full border border-primary/30 bg-primary/[0.06] px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                    >
+                      <span className="uppercase tracking-[0.14em] text-[9px] text-primary/80">Review of</span>
+                      <span className="truncate">{u.data.offer_title}</span>
+                    </Link>
+                  )}
                   <div className="mt-2 flex items-center justify-between">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                       {new Date(u.data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
