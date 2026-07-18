@@ -27,6 +27,7 @@ export interface OfferCardData {
     id?: string;
     username: string;
     display_name: string | null;
+    avatar_url: string | null;
     review_count: number;
     rating_sum: number;
   };
