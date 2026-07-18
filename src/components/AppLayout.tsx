@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Eye, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUnreadDocumentTitle } from "@/hooks/useUnreadThreads";
 import { isAdminUsername } from "@/lib/admin";
-import { shareReviewUrl } from "@/lib/shareLinks";
+import { shareReviewUrl, shareProfileUrl } from "@/lib/shareLinks";
 import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
 import { NotificationsBell } from "@/components/NotificationsBell";
