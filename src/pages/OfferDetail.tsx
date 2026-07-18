@@ -51,7 +51,27 @@ export default function OfferDetail() {
         .eq("provider_id", (prof as { id: string }).id)
         .eq("slug", slug)
         .maybeSingle();
-      if (!cancel) { setOffer(data as unknown as OfferDetail); setLoading(false); }
+      if (!cancel && data) {
+        setOffer(data as unknown as OfferDetail);
+        const providerId = (data as { provider_id: string }).provider_id;
+        const offerId = (data as { id: string }).id;
+        const { data: revs } = await supabase.rpc("list_provider_reviews", { p_provider: providerId });
+        if (!cancel) {
+          const filtered = ((revs ?? []) as Array<Record<string, unknown>>)
+            .filter((r) => r.offer_id === offerId)
+            .map((r) => ({
+              id: r.id as string,
+              rating: Number(r.rating),
+              body: (r.body as string) ?? "",
+              created_at: r.created_at as string,
+              reviewer_name: (r.reviewer_name as string) ?? "Reviewer",
+              reviewer_username: (r.reviewer_username as string) ?? null,
+              reviewer_display_name: (r.reviewer_display_name as string) ?? null,
+            }));
+          setOfferReviews(filtered);
+        }
+      }
+      if (!cancel) setLoading(false);
     };
     void run();
     return () => { cancel = true; };
