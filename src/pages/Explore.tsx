@@ -283,10 +283,8 @@ export default function Explore() {
   const showingResults = submitted.trim().length > 0 || !!activeCategory;
   const reviewLink = activeCategory ? `/submit-review?cat=${encodeURIComponent(activeCategory)}` : "/submit-review";
 
-  const providerTypeLabel = (pt: ProviderType | null | undefined) =>
-    pt === "service_provider" ? "Service Provider" : "Coach";
-
   const showDropdown = liveOpen && query.trim().length > 0;
+
 
   return (
     <div className="relative px-4 py-6 md:px-8 md:py-8">
