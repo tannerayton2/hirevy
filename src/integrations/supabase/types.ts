@@ -1380,6 +1380,8 @@ export type Database = {
         Returns: number
       }
       points_for_rating: { Args: { r: number }; Returns: number }
+      profile_id_by_email: { Args: { p_email: string }; Returns: string }
+      profile_is_banned: { Args: { uid: string }; Returns: boolean }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
