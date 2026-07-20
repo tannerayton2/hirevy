@@ -461,7 +461,17 @@ export default function Profile() {
         </div>
 
         {/* Name */}
-        <h1 className="mt-4 text-center font-display text-2xl font-bold leading-tight md:text-3xl">{providerDisplayName}</h1>
+        <h1 className="mt-4 flex items-center justify-center text-center font-display text-2xl font-bold leading-tight md:text-3xl">
+          <span>{providerDisplayName}</span>
+          <button
+            type="button"
+            onClick={() => setTierModalOpen(true)}
+            className="inline-flex items-center rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="View verification tiers"
+          >
+            <TierGem tier={tier} />
+          </button>
+        </h1>
 
         {/* Handle */}
         <p className="mt-1 text-center text-sm text-muted-foreground">
@@ -473,17 +483,6 @@ export default function Profile() {
           )}
         </p>
 
-        {/* Tier badge */}
-        <div className="mt-3 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setTierModalOpen(true)}
-            className="rounded-[3px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label="View verification tiers"
-          >
-            <TierBadge tier={tier} size="md" />
-          </button>
-        </div>
 
 
         {/* Owner-only points progress */}
