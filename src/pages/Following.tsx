@@ -139,9 +139,12 @@ function PersonRow({ p, action }: { p: ProfileRow; action: React.ReactNode }) {
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="truncate font-semibold">{name}</p>
-            <TierBadge tier={tier} size="sm" />
+            <p className="flex min-w-0 items-center truncate font-semibold">
+              <span className="truncate">{name}</span>
+              <TierGem tier={tier} />
+            </p>
           </div>
+
           <p className="text-xs text-muted-foreground">@{p.username}</p>
         </div>
       </Link>
