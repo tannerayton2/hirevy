@@ -47,7 +47,7 @@ export default function OfferDetail() {
       if (!prof || cancel) { setLoading(false); return; }
       const { data } = await supabase
         .from("offers")
-        .select(`*, provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum )`)
+        .select(`*, provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum, points )`)
         .eq("provider_id", (prof as { id: string }).id)
         .eq("slug", slug)
         .maybeSingle();
