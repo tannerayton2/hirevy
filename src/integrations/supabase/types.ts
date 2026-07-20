@@ -1380,6 +1380,8 @@ export type Database = {
         Returns: number
       }
       points_for_rating: { Args: { r: number }; Returns: number }
+      profile_id_by_email: { Args: { p_email: string }; Returns: string }
+      profile_is_banned: { Args: { uid: string }; Returns: boolean }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -1397,40 +1399,23 @@ export type Database = {
         }
         Returns: undefined
       }
-      submit_public_review:
-        | {
-            Args: {
-              p_amount_paid_bracket?: string
-              p_body: string
-              p_evidence_paths?: string[]
-              p_instagram_handle?: string
-              p_offer_url?: string
-              p_provider_id: string
-              p_purchased?: boolean
-              p_rating: number
-              p_reviewer_email: string
-              p_reviewer_name: string
-              p_strength_tier?: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_amount_paid_bracket?: string
-              p_body: string
-              p_evidence_paths?: string[]
-              p_instagram_handle?: string
-              p_offer_id?: string
-              p_offer_url?: string
-              p_provider_id: string
-              p_purchased?: boolean
-              p_rating: number
-              p_reviewer_email: string
-              p_reviewer_name: string
-              p_strength_tier?: string
-            }
-            Returns: string
-          }
+      submit_public_review: {
+        Args: {
+          p_amount_paid_bracket?: string
+          p_body: string
+          p_evidence_paths?: string[]
+          p_instagram_handle?: string
+          p_offer_id?: string
+          p_offer_url?: string
+          p_provider_id: string
+          p_purchased?: boolean
+          p_rating: number
+          p_reviewer_email: string
+          p_reviewer_name: string
+          p_strength_tier?: string
+        }
+        Returns: string
+      }
       tier_for_review_count: { Args: { c: number }; Returns: string }
       update_my_username: { Args: { p_new_username: string }; Returns: string }
       verify_review: { Args: { p_token: string }; Returns: boolean }

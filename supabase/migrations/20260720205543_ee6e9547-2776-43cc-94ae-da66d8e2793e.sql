@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.submit_public_review(uuid, text, text, numeric, text, boolean, text, text, text, text[], text);
