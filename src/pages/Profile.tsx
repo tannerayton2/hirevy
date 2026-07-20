@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
 import { TierBadge } from "@/components/TierBadge";
+import { TierGem } from "@/components/TierGem";
 import { StarRating } from "@/components/StarRating";
 import { tierForPoints, TIER_RANK, TIER_REQUIREMENT, TIER_LABEL as TIER_LABEL_MAP, nextTier, pointsToNextTier, tierProgress } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
