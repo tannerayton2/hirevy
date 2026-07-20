@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TierBadge } from "@/components/TierBadge";
+import { TierGem } from "@/components/TierGem";
 import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
@@ -168,7 +169,7 @@ export default function Explore() {
       let req = supabase
         .from("offers")
         .select(`id, slug, title, description, cover_url, category, is_active, cta_link, cta_label, hosted_on_hirevy, offer_tier,
-                 provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum, provider_type )`)
+                 provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum, provider_type, points )`)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(120);
@@ -553,10 +554,13 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
       className="flex w-[180px] shrink-0 flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition-colors hover:border-primary/40"
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={72} />
-      <p className="line-clamp-1 w-full text-sm font-bold">{name}</p>
+      <p className="line-clamp-1 flex w-full items-center justify-center text-sm font-bold">
+        <span className="truncate">{name}</span>
+        <TierGem tier={tier} />
+      </p>
       <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
       <RoleBadge provider_type={coach.provider_type} />
-      {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
+
       <p className="text-[11px] text-muted-foreground">
         {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
       </p>
@@ -603,12 +607,15 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={64} />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-bold">{name}</p>
+        <p className="flex min-w-0 items-center truncate font-bold">
+          <span className="truncate">{name}</span>
+          <TierGem tier={tier} />
+        </p>
         <p className="truncate text-xs text-muted-foreground">@{coach.username}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <RoleBadge provider_type={coach.provider_type} />
-          {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
         </div>
+
         <p className="mt-1 text-xs text-muted-foreground">
           {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
         </p>

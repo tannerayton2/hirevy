@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
+import { TierGem } from "@/components/TierGem";
+import { tierForPoints } from "@/lib/tiers";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -30,8 +32,10 @@ export interface OfferCardData {
     avatar_url: string | null;
     review_count: number;
     rating_sum: number;
+    points?: number | null;
   };
 }
+
 
 export function OfferCard({
   offer,
@@ -156,11 +160,13 @@ export function OfferCard({
           )}
           <div className="flex flex-col">
             <span
-              className="truncate text-[13px] font-medium"
+              className="flex items-center truncate text-[13px] font-medium"
               style={{ color: "#d8d4cc" }}
             >
-              {offer.provider.display_name || offer.provider.username}
+              <span className="truncate">{offer.provider.display_name || offer.provider.username}</span>
+              <TierGem tier={tierForPoints(offer.provider.points ?? 0)} size={13} />
             </span>
+
             <span
               className="truncate text-[12px]"
               style={{ color: "#8a8a82" }}

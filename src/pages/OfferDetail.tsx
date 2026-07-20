@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { TierBadge } from "@/components/TierBadge";
+import { TierGem } from "@/components/TierGem";
 import { StarRating } from "@/components/StarRating";
 import { tierForReviewCount } from "@/lib/tiers";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export default function OfferDetail() {
       if (!prof || cancel) { setLoading(false); return; }
       const { data } = await supabase
         .from("offers")
-        .select(`*, provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum )`)
+        .select(`*, provider:profiles!offers_provider_id_fkey ( id, username, display_name, avatar_url, review_count, rating_sum, points )`)
         .eq("provider_id", (prof as { id: string }).id)
         .eq("slug", slug)
         .maybeSingle();
@@ -119,10 +119,11 @@ export default function OfferDetail() {
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link to={`/@${offer.provider.username}`} className="flex items-center gap-2 text-sm font-semibold hover:text-primary">
-              {offer.provider.display_name || `@${offer.provider.username}`}
+              <span>{offer.provider.display_name || `@${offer.provider.username}`}</span>
+              <TierGem tier={tier} />
             </Link>
-            <TierBadge tier={tier} size="sm" />
             <StarRating value={avg} count={offer.provider.review_count} showValue size={13} />
+
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-y border-border py-4">
