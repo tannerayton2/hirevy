@@ -554,10 +554,13 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
       className="flex w-[180px] shrink-0 flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition-colors hover:border-primary/40"
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={72} />
-      <p className="line-clamp-1 w-full text-sm font-bold">{name}</p>
+      <p className="line-clamp-1 flex w-full items-center justify-center text-sm font-bold">
+        <span className="truncate">{name}</span>
+        <TierGem tier={tier} />
+      </p>
       <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
       <RoleBadge provider_type={coach.provider_type} />
-      {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
+
       <p className="text-[11px] text-muted-foreground">
         {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
       </p>
