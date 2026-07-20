@@ -335,7 +335,7 @@ export default function Explore() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold">{name}</p>
                         <p className="truncate text-xs text-muted-foreground">
-                          @{p.username} · {providerTypeLabel(p.provider_type)}
+                          @{p.username}
                         </p>
                       </div>
                     </button>
@@ -503,14 +503,6 @@ function TopTab({ active, onClick, label }: { active: boolean; onClick: () => vo
   );
 }
 
-function RoleBadge({ provider_type }: { provider_type: ProviderType | null | undefined }) {
-  if (provider_type !== "coach" && provider_type !== "service_provider") return null;
-  return (
-    <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
-      {provider_type === "coach" ? "Coach" : "Service Provider"}
-    </span>
-  );
-}
 
 function RecentlyReviewed({
   coaches,
@@ -550,7 +542,6 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
         <TierGem tier={tier} />
       </p>
       <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
-      <RoleBadge provider_type={coach.provider_type} />
 
       <p className="text-[11px] text-muted-foreground">
         {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
@@ -603,9 +594,7 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
           <TierGem tier={tier} />
         </p>
         <p className="truncate text-xs text-muted-foreground">@{coach.username}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <RoleBadge provider_type={coach.provider_type} />
-        </div>
+
 
         <p className="mt-1 text-xs text-muted-foreground">
           {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
