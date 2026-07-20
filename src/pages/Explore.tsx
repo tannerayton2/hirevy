@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TierBadge } from "@/components/TierBadge";
+import { TierGem } from "@/components/TierGem";
 import { tierForPoints } from "@/lib/tiers";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { cn } from "@/lib/utils";
