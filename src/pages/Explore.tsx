@@ -607,12 +607,15 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
     >
       <CoachAvatar name={name} url={coach.avatar_url} size={64} />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-bold">{name}</p>
+        <p className="flex min-w-0 items-center truncate font-bold">
+          <span className="truncate">{name}</span>
+          <TierGem tier={tier} />
+        </p>
         <p className="truncate text-xs text-muted-foreground">@{coach.username}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <RoleBadge provider_type={coach.provider_type} />
-          {tier !== "unranked" && <TierBadge tier={tier} size="xs" />}
         </div>
+
         <p className="mt-1 text-xs text-muted-foreground">
           {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
         </p>
