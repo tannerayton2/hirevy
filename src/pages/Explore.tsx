@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Plus, ArrowRight } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -482,15 +482,6 @@ export default function Explore() {
         </div>
       )}
 
-      {/* Floating "Review a Coach" FAB — hidden on mobile */}
-      <Link
-        to={reviewLink}
-        className="hidden sm:inline-flex fixed bottom-24 right-5 z-30 items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.55)] transition-transform hover:scale-[1.03] md:bottom-8"
-        aria-label="Review a Coach"
-      >
-        <Plus className="h-4 w-4" />
-        <span className="hidden sm:inline">Review a Coach</span>
-      </Link>
     </div>
   );
 }
