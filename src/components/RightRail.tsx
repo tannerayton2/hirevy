@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Search, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { TierBadge } from "@/components/TierBadge";
+import { TierGem } from "@/components/TierGem";
 import { tierForPoints } from "@/lib/tiers";
 import { cn } from "@/lib/utils";
 
@@ -110,12 +110,13 @@ export function RightRail({ className, hideSearch = false }: { className?: strin
                       )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5">
+                      <span className="flex items-center gap-0">
                         <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary">
                           {c.display_name ?? c.username}
                         </span>
-                        {tier !== "unranked" && <TierBadge tier={tier} size="xs" showLabel={false} />}
+                        <TierGem tier={tier} size={13} />
                       </span>
+
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                         {avg !== null ? (
                           <>

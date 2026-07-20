@@ -119,10 +119,11 @@ export default function OfferDetail() {
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link to={`/@${offer.provider.username}`} className="flex items-center gap-2 text-sm font-semibold hover:text-primary">
-              {offer.provider.display_name || `@${offer.provider.username}`}
+              <span>{offer.provider.display_name || `@${offer.provider.username}`}</span>
+              <TierGem tier={tier} />
             </Link>
-            <TierBadge tier={tier} size="sm" />
             <StarRating value={avg} count={offer.provider.review_count} showValue size={13} />
+
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-y border-border py-4">
