@@ -1,0 +1,1 @@
+REVOKE SELECT (proof_file_paths) ON public.proof_backed_reviews FROM anon, authenticated;
