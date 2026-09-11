@@ -42,7 +42,7 @@ export default function Landing() {
         <div className="hv-l-nav-inner">
           <Link to="/" aria-label="Aytopus home" className="hv-l-brand hv-l-fade hv-l-fade-1">
             <Logo />
-            <span className="hv-l-wordmark">Aytopus</span>
+            <span className="hv-l-wordmark">AYTOPUS</span>
           </Link>
           <div className="hv-l-nav-center hv-l-fade hv-l-fade-1">
             <Link to="/explore" className="hv-l-nav-link">Browse</Link>
@@ -206,7 +206,7 @@ export default function Landing() {
       <footer className="hv-l-footer">
         <div className="hv-l-container">
           <div className="hv-l-tagline">Bringing trust back to the info industry.</div>
-          <div>Aytopus © 2026 — aytopus.com</div>
+          <div>AYTOPUS © 2026 — aytopus.com</div>
           <div style={{ marginTop: 12, display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
             <Link to="/terms" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Terms of Service</Link>
             <span style={{ color: "var(--hv-line)" }}>•</span>
