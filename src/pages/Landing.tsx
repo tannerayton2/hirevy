@@ -97,8 +97,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* FOUNDING PROVIDERS */}
-      <FoundingProviders />
+      
 
       {/* HOW IT WORKS — compact */}
       <section className="hv-l-how hv-l-container" id="how">
