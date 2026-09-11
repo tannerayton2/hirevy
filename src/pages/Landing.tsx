@@ -21,8 +21,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   usePageMeta(
-    "Aytopus — Hire by proof, not promises",
-    "Coaches and service providers ranked by what verified clients actually said.",
+"Aytopus – Help us bring trust back to the info industry",    "Coaches and service providers ranked by what verified clients actually said.",
   );
 
   const handleSearch = (e: React.FormEvent) => {
