@@ -60,8 +60,8 @@ export default function Landing() {
       {/* HERO */}
       <section className="hv-l-hero hv-l-container">
         <h1 className="hv-l-fade hv-l-fade-2">
-          Hire by <span className="hv-l-italic">proof</span>, not promises.
-        </h1>
+  Help us bring trust back to the info industry.
+</h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
           Coaches and providers ranked by what verified clients actually said.
         </p>
