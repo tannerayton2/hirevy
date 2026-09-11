@@ -12,7 +12,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SITE_ORIGIN = "https://aytopus.com";
 const DEFAULT_IMAGE = `${SITE_ORIGIN}/og-default.png`;
-const DEFAULT_TITLE = "Aytopus — Hire by proof, not promises";
+const DEFAULT_TITLE = "Aytopus – Help us bring trust back to the info industry";
 const DEFAULT_DESCRIPTION =
   "Verified reviews for coaches, consultants, and service providers. Browse providers ranked by what their clients actually said.";
 
