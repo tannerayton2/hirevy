@@ -199,7 +199,7 @@ export default function Landing() {
         <p className="hv-l-final-sub">Open the network. See live offers. Hire someone whose work is already verified.</p>
 
         <div className="hv-l-cta-row" style={{ marginBottom: 0 }}>
-          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open Aytopus →</Link>
+          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open AYTOPUS →</Link>
         </div>
       </section>
 
