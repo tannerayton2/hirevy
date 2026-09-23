@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2 } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+      <header className="sticky top-[env(safe-area-inset-top)] z-40 border-b border-border bg-background/85 backdrop-blur">
         {isSubmitReview ? (
           <div className="relative mx-auto flex h-14 max-w-7xl items-center px-4">
             <button
@@ -210,6 +210,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                           className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                         >
                           <SettingsIcon className="h-4 w-4" /> Account Settings
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/settings/notifications"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Bell className="h-4 w-4" /> Notifications
                         </button>
                         <button
                           type="button"
@@ -333,7 +340,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Main */}
         <main className={cn(
           "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
-          isSubmitReview ? "pb-8" : "pb-24 md:pb-8",
+          isSubmitReview ? "pb-8" : "pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8",
           !isSubmitReview && pathname !== "/messages" && "xl:mx-auto xl:max-w-[620px]",
         )}>
           {children}
@@ -348,8 +355,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile floating pill nav */}
       <nav
         aria-label="Primary"
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
         className={cn(
-          "fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
+          "fixed inset-x-0 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
           (inOpenConversation || isSubmitReview) && "hidden",
         )}
       >

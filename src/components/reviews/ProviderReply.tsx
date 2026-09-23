@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { MessageSquare, Pencil, Trash2 } from "lucide-react";
 
 interface Reply {
@@ -52,7 +53,7 @@ export function ProviderReply({ reviewId, reviewType, providerId, providerDispla
         .update({ body })
         .eq("id", reply.id);
       if (error) {
-        toast({ title: "Could not update reply", description: error.message, variant: "destructive" });
+        toast({ title: "Could not update reply", description: friendlyErrorMessage(error), variant: "destructive" });
       } else {
         setReply({ ...reply, body, updated_at: new Date().toISOString() });
         setComposing(false);
@@ -64,7 +65,7 @@ export function ProviderReply({ reviewId, reviewType, providerId, providerDispla
         .select("id, body, created_at, updated_at, provider_id")
         .single();
       if (error) {
-        toast({ title: "Could not post reply", description: error.message, variant: "destructive" });
+        toast({ title: "Could not post reply", description: friendlyErrorMessage(error), variant: "destructive" });
       } else {
         setReply(data as Reply);
         setComposing(false);
@@ -78,7 +79,7 @@ export function ProviderReply({ reviewId, reviewType, providerId, providerDispla
     if (!confirm("Delete your reply?")) return;
     const { error } = await supabase.from("review_replies").delete().eq("id", reply.id);
     if (error) {
-      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      toast({ title: "Could not delete", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setReply(null);

@@ -14,6 +14,7 @@ import { Logo } from "@/components/Logo";
 import { toast } from "@/hooks/use-toast";
 import { Star, Upload, X, FileText, Image as ImageIcon, ShieldCheck, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   AMOUNT_BRACKETS, ENGAGEMENT_TYPES, MONTHS, PROOF_ALLOWED_MIME,
   PROOF_BUCKET, PROOF_MAX_BYTES, PROOF_MAX_FILES, PROOF_MIN_FILES,
@@ -154,7 +155,7 @@ export default function ProofReviewSubmit() {
         if (uploadedPaths.length > 0) {
           await supabase.storage.from(PROOF_BUCKET).remove(uploadedPaths);
         }
-        toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+        toast({ title: "Upload failed", description: friendlyErrorMessage(upErr), variant: "destructive" });
         setBusy(false);
         return;
       }
@@ -192,7 +193,7 @@ export default function ProofReviewSubmit() {
         title: "Could not submit",
         description: dup
           ? "You've already submitted a proof-backed review for this provider."
-          : error.message,
+          : friendlyErrorMessage(error),
         variant: "destructive",
       });
       setBusy(false);

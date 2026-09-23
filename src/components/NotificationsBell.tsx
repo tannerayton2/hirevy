@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { fireLocalNotification } from "@/lib/localNotifications";
+import { isNotificationTypeEnabled } from "@/lib/notificationPreferences";
 
 interface Notification {
   id: string;
@@ -62,6 +64,12 @@ export function NotificationsBell() {
     const ch = supabase
       .channel(`notifications-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => void load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
+        const n = payload.new as Notification;
+        void isNotificationTypeEnabled(n.type).then((enabled) => {
+          if (enabled) void fireLocalNotification("Aytopus", n.message);
+        });
+      })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
   }, [user, load]);

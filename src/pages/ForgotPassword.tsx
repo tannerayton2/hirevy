@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
+import { webOrigin } from "@/lib/platform";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -16,11 +18,11 @@ export default function ForgotPassword() {
     e.preventDefault();
     setBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${webOrigin}/reset-password`,
     });
     setBusy(false);
     if (error) {
-      toast({ title: "Couldn't send reset link", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't send reset link", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setSent(true);

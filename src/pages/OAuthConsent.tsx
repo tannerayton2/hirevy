@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 type AuthorizationDetails = {
   client?: { name?: string; logo_uri?: string | null } | null;
@@ -58,7 +59,7 @@ export default function OAuthConsent() {
       const { data, error } = await oauth.getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (error) {
-        setError(error.message);
+        setError(friendlyErrorMessage(error.message));
         return;
       }
       const immediate = data?.redirect_url ?? data?.redirect_to;
@@ -82,7 +83,7 @@ export default function OAuthConsent() {
       : await oauth.denyAuthorization(authorizationId);
     if (error) {
       setBusy(false);
-      setError(error.message);
+      setError(friendlyErrorMessage(error.message));
       return;
     }
     const target = data?.redirect_url ?? data?.redirect_to;

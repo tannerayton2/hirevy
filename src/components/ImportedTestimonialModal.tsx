@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { Upload, X } from "lucide-react";
 import {
   CAPTION_MAX,
@@ -138,8 +139,7 @@ export function ImportedTestimonialModal({ open, onOpenChange, providerId, initi
       await onSaved();
       onOpenChange(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      toast({ title: "Couldn't save", description: msg, variant: "destructive" });
+      toast({ title: "Couldn't save", description: friendlyErrorMessage(err), variant: "destructive" });
     } finally {
       setBusy(false);
     }

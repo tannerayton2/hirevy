@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
 import { ShieldAlert } from "lucide-react";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 type TabKey = "reviews" | "offers";
 type ReviewSubTab = "verified" | "imported";
@@ -390,7 +391,7 @@ export default function Profile() {
     if (!profile || !isMe) return;
     const next = profile.pinned_review_id === reviewId ? null : reviewId;
     const { error } = await supabase.from("profiles").update({ pinned_review_id: next }).eq("id", profile.id);
-    if (error) { toast({ title: "Could not update", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Could not update", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setProfile({ ...profile, pinned_review_id: next });
     toast({ title: next ? "Review pinned" : "Review unpinned" });
   };
@@ -1014,7 +1015,7 @@ export default function Profile() {
                             .delete()
                             .eq("id", item.id);
                           if (error) {
-                            toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+                            toast({ title: "Couldn't delete", description: friendlyErrorMessage(error), variant: "destructive" });
                             return;
                           }
                           toast({ title: "Deleted" });

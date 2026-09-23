@@ -10,11 +10,14 @@ import { StarRating } from "@/components/StarRating";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { webOrigin } from "@/lib/platform";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 export default function ReviewSubmit() {
   const { username = "" } = useParams();
   const nav = useNavigate();
   const [provider, setProvider] = useState<{ id: string; display_name: string | null; username: string } | null>(null);
+  const [providerLoading, setProviderLoading] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [rating, setRating] = useState(0);
@@ -30,7 +33,10 @@ export default function ReviewSubmit() {
       .select("id, display_name, username")
       .eq("username", username)
       .maybeSingle()
-      .then(({ data }) => setProvider(data as typeof provider));
+      .then(({ data }) => {
+        setProvider(data as typeof provider);
+        setProviderLoading(false);
+      });
   }, [username]);
 
   const submit = async (e: React.FormEvent) => {
@@ -51,14 +57,14 @@ export default function ReviewSubmit() {
       setBusy(false);
       const msg = /already reviewed|duplicate|unique/i.test(error.message)
         ? "You've already left a review for this provider."
-        : error.message;
+        : friendlyErrorMessage(error);
       toast({ title: "Could not submit", description: msg, variant: "destructive" });
       return;
     }
     const reviewId = data as string | null;
     try {
       const { error: fnError } = await supabase.functions.invoke("send-review-verification", {
-        body: { review_id: reviewId, origin: window.location.origin },
+        body: { review_id: reviewId, origin: webOrigin },
       });
       if (fnError) setEmailDelayed(true);
     } catch {
@@ -68,7 +74,16 @@ export default function ReviewSubmit() {
     setDone(true);
   };
 
-  if (provider === null) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  if (providerLoading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  if (!provider) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-4 py-10 text-center">
+        <Logo />
+        <h1 className="mt-6 font-display text-2xl font-bold">Reviewer not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">This review link isn't valid, or the account no longer exists.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">

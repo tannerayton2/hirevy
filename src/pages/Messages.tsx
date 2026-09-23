@@ -15,6 +15,7 @@ import { VoiceRecorder } from "@/components/messages/VoiceRecorder";
 import { VoiceNotePlayer } from "@/components/messages/VoiceNotePlayer";
 import { ReactionPicker } from "@/components/messages/ReactionPicker";
 import { TeamChatPane } from "@/components/messages/TeamChatPane";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 interface ThreadRow { id: string; user_a: string; user_b: string; last_message_at: string }
 interface OtherProfile { id: string; username: string; display_name: string | null; avatar_url: string | null }
@@ -85,6 +86,7 @@ export default function Messages() {
   const draftToId = params.get("to");
   const teamMode = params.get("team") === "1";
   const [threads, setThreads] = useState<(ThreadRow & { other: OtherProfile | null; lastMsg: Msg | null })[]>([]);
+  const [threadsLoading, setThreadsLoading] = useState(true);
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeQuery, setComposeQuery] = useState("");
   const [composeResults, setComposeResults] = useState<OtherProfile[]>([]);
@@ -220,6 +222,7 @@ export default function Messages() {
   useEffect(() => {
     if (!user) return;
     void (async () => {
+      setThreadsLoading(true);
       const { data: ts } = await supabase
         .from("message_threads")
         .select("id, user_a, user_b, last_message_at")
@@ -251,6 +254,7 @@ export default function Messages() {
         lastMsg: lastMsgMap.get(t.id) ?? null,
       }));
       setThreads(decorated);
+      setThreadsLoading(false);
       void recomputeUnreadThreads(decorated);
     })();
   }, [user, recomputeUnreadThreads]);
@@ -435,7 +439,7 @@ export default function Messages() {
     if (!draftToId) return null;
     const { data, error } = await supabase.rpc("get_or_create_thread", { other_user: draftToId });
     if (error) {
-      toast({ title: "Couldn't start conversation", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't start conversation", description: friendlyErrorMessage(error), variant: "destructive" });
       return null;
     }
     return data as unknown as string;
@@ -470,7 +474,7 @@ export default function Messages() {
       setBody(""); clearPending(); setReplyTo(null);
       if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
-      toast({ title: "Couldn't send", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+      toast({ title: "Couldn't send", description: friendlyErrorMessage(err), variant: "destructive" });
     } finally { setSending(false); }
   };
 
@@ -499,7 +503,7 @@ export default function Messages() {
       setReplyTo(null);
       if (!activeId) setParams({ t: threadId }, { replace: true });
     } catch (err) {
-      toast({ title: "Couldn't send voice note", description: err instanceof Error ? err.message : "Unknown", variant: "destructive" });
+      toast({ title: "Couldn't send voice note", description: friendlyErrorMessage(err), variant: "destructive" });
     } finally { setSending(false); }
   };
 
@@ -685,7 +689,11 @@ export default function Messages() {
             </div>
           </button>
         </div>
-        {threads.length === 0 ? (
+        {threadsLoading ? (
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center text-sm text-muted-foreground">
+            Loading conversations…
+          </div>
+        ) : threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
               <MessageSquare className="h-8 w-8 text-muted-foreground" />
@@ -814,8 +822,8 @@ export default function Messages() {
                 // composer always sits flush above the iOS keyboard. We offset
                 // by the 56px sticky app header so it remains visible above.
                 // On md+ these inline values are overridden by md:!top-auto etc.
-                top: vvTop + 56,
-                height: Math.max(0, vvHeight - 56),
+                top: `calc(${vvTop + 56}px + env(safe-area-inset-top))`,
+                height: `calc(${Math.max(0, vvHeight - 56)}px - env(safe-area-inset-top))`,
               }
             : undefined
         }

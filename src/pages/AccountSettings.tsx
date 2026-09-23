@@ -6,7 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { AtSign, KeyRound, User as UserIcon, ExternalLink } from "lucide-react";
+import { AtSign, KeyRound, User as UserIcon, ExternalLink, ShieldAlert, Trash2, Smartphone } from "lucide-react";
+import { TwoFactorSettings } from "@/components/TwoFactorSettings";
+import { friendlyErrorMessage } from "@/lib/errors";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const USERNAME_RE = /^[a-z0-9_-]{3,30}$/;
 
@@ -27,6 +40,11 @@ export default function AccountSettings() {
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [savingPw, setSavingPw] = useState(false);
+
+  // Delete account
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -61,7 +79,7 @@ export default function AccountSettings() {
     const { error } = await supabase.rpc("update_my_username", { p_new_username: clean });
     setSavingUsername(false);
     if (error) {
-      toast({ title: "Couldn't change handle", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't change handle", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     await refreshProfile();
@@ -83,7 +101,7 @@ export default function AccountSettings() {
       .eq("id", profile.id);
     setSavingDisplay(false);
     if (error) {
-      toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't save", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     await refreshProfile();
@@ -127,13 +145,39 @@ export default function AccountSettings() {
     const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
     setSavingPw(false);
     if (updErr) {
-      toast({ title: "Couldn't update password", description: updErr.message, variant: "destructive" });
+      toast({ title: "Couldn't update password", description: friendlyErrorMessage(updErr), variant: "destructive" });
       return;
     }
     setCurrentPw("");
     setNewPw("");
     setConfirmPw("");
     toast({ title: "Password updated", description: "Use your new password next time you sign in." });
+  };
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) {
+        toast({
+          title: "Couldn't delete account",
+          description: "Something went wrong. Please try again in a moment.",
+          variant: "destructive",
+        });
+        setDeleting(false);
+        return;
+      }
+      await supabase.auth.signOut();
+      toast({ title: "Account deleted", description: "Sorry to see you go." });
+      nav("/", { replace: true });
+    } catch {
+      toast({
+        title: "Couldn't delete account",
+        description: "Something went wrong. Please try again in a moment.",
+        variant: "destructive",
+      });
+      setDeleting(false);
+    }
   };
 
   return (
@@ -246,6 +290,48 @@ export default function AccountSettings() {
             </Button>
           </form>
         )}
+      </Section>
+
+      {/* Two-factor authentication */}
+      <Section icon={<Smartphone className="h-4 w-4" />} title="Two-factor authentication" description="Optional. Protect your account with a code from an authenticator app in addition to your password.">
+        <TwoFactorSettings />
+      </Section>
+
+      {/* Danger zone */}
+      <Section icon={<ShieldAlert className="h-4 w-4 text-destructive" />} title="Delete account" description="Permanently delete your account and all associated data. This can't be undone.">
+        <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmText(""); }}>
+          <AlertDialogTrigger asChild>
+            <Button type="button" variant="destructive">
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete my account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently deletes your profile, reviews, messages, and offers. It cannot be undone.
+                Type <span className="font-semibold text-foreground">DELETE</span> to confirm.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              autoComplete="off"
+              autoCapitalize="characters"
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deleteConfirmText !== "DELETE" || deleting}
+                onClick={(e) => { e.preventDefault(); void confirmDelete(); }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Deleting…" : "Permanently delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </Section>
     </div>
   );

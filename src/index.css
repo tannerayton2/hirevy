@@ -97,6 +97,20 @@
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     background-color: hsl(var(--background));
+    /* Keep content out from under the iPhone notch / status bar (needs viewport-fit=cover). */
+    padding-top: env(safe-area-inset-top);
+  }
+  /* Opaque strip behind the status bar so scrolled content never shows through the notch area. */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    background-color: hsl(var(--background));
+    z-index: 60;
+    pointer-events: none;
   }
   h1, h2, h3, h4 {
     font-family: 'Fraunces', 'Playfair Display', Georgia, serif;

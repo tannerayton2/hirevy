@@ -29,7 +29,7 @@ export default function HowVerificationWorks() {
         <Section
           icon={<FileCheck2 className="h-5 w-5" />}
           title="Proof-backed reviews require evidence and an account"
-          body="Proof-backed reviews are the highest trust tier. The reviewer must be signed in to a Aytopus account and attach evidence of the engagement — a receipt, deliverable, contract, screenshot, or similar. These reviews are labeled distinctly on the profile so buyers can tell them apart from public reviews at a glance."
+          body="Proof-backed reviews are the highest trust tier. The reviewer must be signed in to an Aytopus account and attach evidence of the engagement — a receipt, deliverable, contract, screenshot, or similar. These reviews are labeled distinctly on the profile so buyers can tell them apart from public reviews at a glance."
         />
         <Section
           icon={<Lock className="h-5 w-5" />}
@@ -39,7 +39,7 @@ export default function HowVerificationWorks() {
         <Section
           icon={<Scale className="h-5 w-5" />}
           title="Disputes are reviewed by a human"
-          body="If a provider believes a review is fake, defamatory, or off-topic, they can open a dispute. A Aytopus moderator reviews the submission, the evidence, and any reply thread before deciding. We remove reviews that clearly break the rules, and we leave the rest — negative reviews are not removed just for being negative."
+          body="If a provider believes a review is fake, defamatory, or off-topic, they can open a dispute. An Aytopus moderator reviews the submission, the evidence, and any reply thread before deciding. We remove reviews that clearly break the rules, and we leave the rest — negative reviews are not removed just for being negative."
         />
       </div>
 

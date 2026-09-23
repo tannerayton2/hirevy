@@ -7,6 +7,7 @@ import { Send } from "lucide-react";
 import logoUrl from "@/assets/aytopus-logo.png";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface TeamMessage {
@@ -76,7 +77,7 @@ export function TeamChatPane() {
     });
     setSending(false);
     if (error) {
-      toast({ title: "Couldn't send", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't send", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setBody("");

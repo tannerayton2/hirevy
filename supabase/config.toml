@@ -15,3 +15,5 @@ project_id = "gkayxohjywqyjbisxtit"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.delete-account]
+    verify_jwt = true

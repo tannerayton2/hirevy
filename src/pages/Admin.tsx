@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 
 import { BASE_COACH_CATEGORIES, useProfileCategories } from "@/lib/useProfileCategories";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 const COACH_CATEGORIES: readonly string[] = [...BASE_COACH_CATEGORIES, "Other"];
 
@@ -863,7 +864,7 @@ function ReportedProfilesPanel() {
 
   const dismiss = async (id: string) => {
     const { error } = await supabase.from("profile_reports").update({ status: "dismissed" }).eq("id", id);
-    if (error) { toast({ title: "Couldn't dismiss", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Couldn't dismiss", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -966,7 +967,7 @@ function ReviewQueuePanel() {
       p_review_id: r.id, p_review_type: r.review_type,
     } as never);
     setBusyId(null);
-    if (error) { toast({ title: "Verify failed", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Verify failed", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     toast({ title: "Review verified" });
     setRows((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "verified", verified_at: new Date().toISOString() } : x));
   };
@@ -977,7 +978,7 @@ function ReviewQueuePanel() {
       p_review_id: r.id, p_review_type: r.review_type,
     } as never);
     setBusyId(null);
-    if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Delete failed", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     toast({ title: "Review deleted" });
     setRows((prev) => prev.filter((x) => x.id !== r.id));
   };
@@ -1143,7 +1144,7 @@ function ClaimRequestsPanel() {
 
   const setStatus = async (id: string, status: "approved" | "rejected") => {
     const { error } = await supabase.from("claims_requests").update({ status }).eq("id", id);
-    if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Update failed", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setRows((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
   };
 
@@ -1306,7 +1307,7 @@ function TeamMessagesPanel() {
       body: body.slice(0, 4000),
     });
     setSendingFor(null);
-    if (error) { toast({ title: "Send failed", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Send failed", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setReplyDraft((prev) => ({ ...prev, [userId]: "" }));
     toast({ title: "Reply sent" });
     void load();
@@ -1424,7 +1425,7 @@ function UserManagementPanel({ users, onReload }: { users: AdminUserRow[]; onRel
     setBanningId(id);
     const { error } = await supabase.rpc("admin_set_banned" as never, { p_user: id, p_banned: true } as never);
     setBanningId(null);
-    if (error) { toast({ title: "Ban failed", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Ban failed", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     toast({ title: "User banned" });
     onReload();
   };
@@ -1906,7 +1907,7 @@ function BroadcastPanel() {
     );
     setSending(false);
     if (error) {
-      toast({ title: "Send failed", description: error.message, variant: "destructive" });
+      toast({ title: "Send failed", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     const count = (data as unknown as number) ?? 0;

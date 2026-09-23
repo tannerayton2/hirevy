@@ -6,6 +6,7 @@ import { TierGem } from "@/components/TierGem";
 import { tierForPoints } from "@/lib/tiers";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -61,7 +62,7 @@ export function OfferCard({
   const handleDelete = async () => {
     const { error } = await supabase.from("offers").delete().eq("id", offer.id);
     if (error) {
-      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      toast({ title: "Could not delete", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     toast({ title: "Offer deleted" });

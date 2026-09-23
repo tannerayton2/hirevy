@@ -12,6 +12,7 @@ import { ProviderReply } from "./ProviderReply";
 import { amountLabel } from "@/lib/proofReviews";
 import { BadgeCheck, FileLock2, ShieldCheck, Instagram, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { ReviewerIdentity } from "./ReviewerIdentity";
 
 export interface ReviewDetail {
@@ -80,7 +81,7 @@ export function ReviewDetailDialog({
     });
     setBusy(false);
     if (error) {
-      toast({ title: "Could not submit", description: error.message, variant: "destructive" });
+      toast({ title: "Could not submit", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setRequesting(false);

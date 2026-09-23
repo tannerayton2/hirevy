@@ -7,6 +7,7 @@ import { TierGem } from "@/components/TierGem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tierForPoints } from "@/lib/tiers";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 interface ProfileRow {
   id: string;
@@ -56,7 +57,7 @@ export default function Following() {
     if (!user) return;
     const { error } = await supabase.from("follows").delete()
       .eq("follower_id", user.id).eq("following_id", id);
-    if (error) { toast({ title: "Could not unfollow", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Could not unfollow", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setFollowing((prev) => prev.filter((p) => p.id !== id));
     setFollowingIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
   };
@@ -64,7 +65,7 @@ export default function Following() {
   const followBack = async (id: string) => {
     if (!user) return;
     const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: id });
-    if (error) { toast({ title: "Could not follow", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Could not follow", description: friendlyErrorMessage(error), variant: "destructive" }); return; }
     setFollowingIds((prev) => { const next = new Set(prev); next.add(id); return next; });
   };
 

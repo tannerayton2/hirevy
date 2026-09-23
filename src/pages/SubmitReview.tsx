@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { webOrigin } from "@/lib/platform";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
 import { tierColor, tierLabel } from "@/components/reviews/ReviewCompletenessShield";
@@ -314,7 +316,7 @@ export default function SubmitReview() {
 
       try {
         await supabase.functions.invoke("send-review-verification", {
-          body: { review_id: newId, review_type: "public", origin: window.location.origin },
+          body: { review_id: newId, review_type: "public", origin: webOrigin },
         });
       } catch { /* non-fatal */ }
 
@@ -324,8 +326,7 @@ export default function SubmitReview() {
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      toast({ title: "Couldn't submit", description: msg, variant: "destructive" });
+      toast({ title: "Couldn't submit", description: friendlyErrorMessage(err), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -378,7 +379,7 @@ export default function SubmitReview() {
   return (
     <>
       {/* Sticky completeness bar — sits directly below the app header */}
-      <div className="fixed inset-x-0 top-14 z-30 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur md:px-8">
+      <div className="fixed inset-x-0 top-[calc(3.5rem+env(safe-area-inset-top))] z-30 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur md:px-8">
         <div className="mx-auto max-w-2xl">
           <div className="h-5 w-full overflow-hidden rounded-md bg-muted/60">
             <div

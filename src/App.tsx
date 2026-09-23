@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { isNativeApp } from "@/lib/platform";
 import AppLayout from "@/components/AppLayout";
 import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
@@ -22,6 +23,7 @@ import ProofReviewSubmit from "./pages/ProofReviewSubmit.tsx";
 import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
 import AccountSettings from "./pages/AccountSettings.tsx";
+import NotificationSettings from "./pages/NotificationSettings.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
@@ -45,7 +47,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : <Landing />} />
             <Route path="/explore" element={<Index />} />
             <Route path="/marketplace" element={<Navigate to="/explore?tab=offers" replace />} />
             <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
@@ -71,6 +73,7 @@ const App = () => (
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
             <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
+            <Route path="/settings/notifications" element={<AppLayout><NotificationSettings /></AppLayout>} />
             <Route path="/settings/following" element={<AppLayout><Following /></AppLayout>} />
             <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
             <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />

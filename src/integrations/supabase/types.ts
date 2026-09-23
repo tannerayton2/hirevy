@@ -469,6 +469,42 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          announcements: boolean
+          claim_approved: boolean
+          created_at: string
+          follow: boolean
+          message: boolean
+          review_received: boolean
+          tier_reached: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          announcements?: boolean
+          claim_approved?: boolean
+          created_at?: string
+          follow?: boolean
+          message?: boolean
+          review_received?: boolean
+          tier_reached?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          announcements?: boolean
+          claim_approved?: boolean
+          created_at?: string
+          follow?: boolean
+          message?: boolean
+          review_received?: boolean
+          tier_reached?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

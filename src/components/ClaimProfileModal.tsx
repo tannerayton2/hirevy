@@ -7,6 +7,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { useAuth } from "@/hooks/useAuth";
 
 export function ClaimProfileModal({
@@ -54,7 +55,7 @@ export function ClaimProfileModal({
     });
     setSaving(false);
     if (error) {
-      toast({ title: "Couldn't send request", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't send request", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setSent(true);

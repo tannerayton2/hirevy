@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 const REASONS = [
   { value: "fake_or_impersonation", label: "Fake or impersonation" },
@@ -42,7 +43,7 @@ export function ReportProfileModal({
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Could not submit report", description: error.message, variant: "destructive" });
+      toast({ title: "Could not submit report", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     toast({ title: "Report submitted", description: "We review all reports within 48 hours." });

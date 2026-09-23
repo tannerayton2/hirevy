@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
+import { isNativeApp, webOrigin } from "@/lib/platform";
 import { Check, X, Loader2 } from "lucide-react";
 
 const USERNAME_RE = /^[a-z0-9_-]{3,30}$/;
@@ -84,7 +86,7 @@ export default function SignUp() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/explore`,
+          emailRedirectTo: `${webOrigin}/explore`,
           data: {
             username: cleanUsername,
             display_name: fullName.trim(),
@@ -104,8 +106,7 @@ export default function SignUp() {
       }
       nav("/explore", { replace: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Couldn't create account";
-      toast({ title: "Sign-up failed", description: message, variant: "destructive" });
+      toast({ title: "Sign-up failed", description: friendlyErrorMessage(err, "Couldn't create account"), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -120,7 +121,7 @@ export default function SignUp() {
       if (result.error) {
         toast({
           title: "Google sign-up failed",
-          description: result.error instanceof Error ? result.error.message : "Try again.",
+          description: friendlyErrorMessage(result.error, "Try again."),
           variant: "destructive",
         });
         setBusy(false);
@@ -129,8 +130,7 @@ export default function SignUp() {
       if (result.redirected) return;
       nav("/explore", { replace: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Google sign-up failed";
-      toast({ title: "Sign-up failed", description: message, variant: "destructive" });
+      toast({ title: "Sign-up failed", description: friendlyErrorMessage(err, "Google sign-up failed"), variant: "destructive" });
       setBusy(false);
     }
   };
@@ -146,22 +146,27 @@ export default function SignUp() {
           </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={handleGoogle}
-          disabled={busy}
-          variant="outline"
-          className="h-11 w-full"
-        >
-          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 16.3 4.5 9.7 8.7 6.3 14.7z"/><path fill="#4CAF50" d="M24 43.5c5.2 0 9.8-1.7 13.2-4.7l-6.1-5c-2 1.4-4.4 2.2-7.1 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.6 5.1C9.6 39.4 16.2 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.1 5c-.4.4 6.6-4.8 6.6-14.4 0-1.2-.1-2.3-.4-3.5z"/></svg>
-          Continue with Google
-        </Button>
+        {/* Google OAuth goes through a web-only broker that can't return into the native app. */}
+        {!isNativeApp && (
+          <>
+            <Button
+              type="button"
+              onClick={handleGoogle}
+              disabled={busy}
+              variant="outline"
+              className="h-11 w-full"
+            >
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 16.3 4.5 9.7 8.7 6.3 14.7z"/><path fill="#4CAF50" d="M24 43.5c5.2 0 9.8-1.7 13.2-4.7l-6.1-5c-2 1.4-4.4 2.2-7.1 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.6 5.1C9.6 39.4 16.2 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.1 5c-.4.4 6.6-4.8 6.6-14.4 0-1.2-.1-2.3-.4-3.5z"/></svg>
+              Continue with Google
+            </Button>
 
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">or</span>
-          <Separator className="flex-1" />
-        </div>
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">or</span>
+              <Separator className="flex-1" />
+            </div>
+          </>
+        )}
 
         <form onSubmit={submit} className="space-y-4">
           <Field label="Full name">

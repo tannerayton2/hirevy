@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { toast } from "@/hooks/use-toast";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 const goldStyle = {
   background: "linear-gradient(135deg,#FFE98A,#FFD700,#B8860B)",
@@ -94,7 +95,7 @@ export default function ResetPassword() {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setBusy(false);
-      toast({ title: "Couldn't update password", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't update password", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     // Sign out so the user explicitly signs in with their new password

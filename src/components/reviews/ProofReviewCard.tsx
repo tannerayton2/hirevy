@@ -13,6 +13,7 @@ import { ReviewCompletenessShield } from "./ReviewCompletenessShield";
 import { ExpandableReviewText } from "./ExpandableReviewText";
 import { amountLabel, dateRangeLabel, engagementLabel } from "@/lib/proofReviews";
 import { AlertTriangle, FileSearch, ShieldCheck } from "lucide-react";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { toast } from "@/hooks/use-toast";
 
 export interface ProofReview {
@@ -63,7 +64,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
       .eq("id", review.id);
     setDisputing(false);
     if (error) {
-      toast({ title: "Could not flag", description: error.message, variant: "destructive" });
+      toast({ title: "Could not flag", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setIsDisputed(true);
@@ -87,13 +88,13 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
     });
     setBusy(false);
     if (error) {
-      toast({ title: "Could not submit", description: error.message, variant: "destructive" });
+      toast({ title: "Could not submit", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setOpenFormalDispute(false);
     setDisputeReason("");
     setDisputeEvidence("");
-    toast({ title: "Dispute submitted", description: "A Aytopus admin will review your dispute." });
+    toast({ title: "Dispute submitted", description: "An Aytopus admin will review your dispute." });
   };
 
   const submitProofRequest = async () => {
@@ -110,7 +111,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
     });
     setBusy(false);
     if (error) {
-      toast({ title: "Could not submit", description: error.message, variant: "destructive" });
+      toast({ title: "Could not submit", description: friendlyErrorMessage(error), variant: "destructive" });
       return;
     }
     setRequesting(false);
@@ -216,7 +217,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
               <DialogHeader>
                 <DialogTitle>Submit a formal dispute</DialogTitle>
                 <DialogDescription>
-                  A Aytopus admin will review this. You'll be contacted at the email below.
+                  An Aytopus admin will review this. You'll be contacted at the email below.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">

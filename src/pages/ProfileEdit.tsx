@@ -11,6 +11,7 @@ import { useProfileCategories } from "@/lib/useProfileCategories";
 import { toast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { AvatarCropperDialog } from "@/components/AvatarCropper";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 import { normalizeSocialHandle } from "@/lib/socialHandles";
 import { KeywordsInput } from "@/components/KeywordsInput";
@@ -171,7 +172,7 @@ export default function ProfileEdit() {
     } catch (err) {
       toast({
         title: "Couldn't save",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: friendlyErrorMessage(err),
         variant: "destructive",
       });
     } finally {
