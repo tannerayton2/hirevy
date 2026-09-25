@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast";
 import { useState, type ReactNode } from "react";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { RightRail } from "@/components/RightRail";
+import { BackButton } from "@/components/BackButton";
+import { useGoBack } from "@/hooks/useGoBack";
 
 
 function UnreadBadge({ count }: { count: number }) {
@@ -80,6 +82,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const routeHandle = profileMatch?.[1]?.toLowerCase();
   const isOwnProfile = !!(user && myHandle && routeHandle && routeHandle === myHandle);
 
+  // Top-level tab screens get the notification bell; every other screen is a
+  // sub-screen and gets a back arrow in the same spot so it's never a dead end.
+  const isTabRoot = pathname === "/explore" || pathname === "/messages" || isOwnProfile;
+  const goBack = useGoBack();
+
   const copyReviewLink = async () => {
     if (!profile?.username) return;
     const url = shareReviewUrl(profile.username);
@@ -122,7 +129,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="relative mx-auto flex h-14 max-w-7xl items-center px-4">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={goBack}
               aria-label="Go back"
               className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-secondary"
             >
@@ -138,9 +145,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         ) : (
           <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4">
-            {/* Left: notification bell */}
+            {/* Left: notification bell on tab screens, back arrow on sub-screens */}
             <div className="flex items-center">
-              {user ? (
+              {!isTabRoot ? (
+                <BackButton />
+              ) : user ? (
                 <NotificationsBell />
               ) : (
                 <span className="h-9 w-9" aria-hidden />

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShieldCheck, Mail, FileCheck2, Lock, Scale } from "lucide-react";
 import { usePageMeta } from "@/lib/usePageMeta";
+import { BackButton } from "@/components/BackButton";
 
 export default function HowVerificationWorks() {
   usePageMeta(
@@ -9,7 +10,8 @@ export default function HowVerificationWorks() {
   );
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
+    <div className="mx-auto max-w-2xl px-4 py-4 md:py-14">
+      <BackButton fallback="/" className="-ml-2 mb-4" />
       <div className="mb-8 text-center">
         <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/30">
           <ShieldCheck className="h-6 w-6" />

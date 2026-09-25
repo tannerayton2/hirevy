@@ -150,7 +150,7 @@ export function ImportedTestimonialModal({ open, onOpenChange, providerId, initi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">
             {initial ? "Edit imported testimonial" : "Add imported testimonial"}

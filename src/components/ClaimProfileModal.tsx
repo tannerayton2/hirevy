@@ -71,7 +71,7 @@ export function ClaimProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
+      <DialogContent className="max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Claim this profile</DialogTitle>
           <DialogDescription>

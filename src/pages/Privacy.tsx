@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useGoBack } from "@/hooks/useGoBack";
 import { Logo } from "@/components/Logo";
 
 const sections: { title: string; body: string }[] = [
@@ -18,14 +19,15 @@ const sections: { title: string; body: string }[] = [
 ];
 
 export default function Privacy() {
+  const goBack = useGoBack("/");
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-5 py-10">
         <div className="mb-8 flex items-center justify-between">
           <Link to="/" aria-label="Home"><Logo /></Link>
-          <Link to="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={goBack} className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Back
-          </Link>
+          </button>
         </div>
         <h1 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">Privacy Policy</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: May 23, 2026</p>

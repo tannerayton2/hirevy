@@ -24,6 +24,7 @@ import MeRedirect from "./pages/MeRedirect.tsx";
 import ProfileEdit from "./pages/ProfileEdit.tsx";
 import AccountSettings from "./pages/AccountSettings.tsx";
 import NotificationSettings from "./pages/NotificationSettings.tsx";
+import Notifications from "./pages/Notifications.tsx";
 import OfferEditor from "./pages/OfferEditor.tsx";
 import Admin from "./pages/Admin.tsx";
 import OutboundRedirect from "./pages/OutboundRedirect.tsx";
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/out/:offerId" element={<OutboundRedirect />} />
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
+            <Route path="/notifications" element={<AppLayout><Notifications /></AppLayout>} />
 
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
