@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { AtSign, KeyRound, User as UserIcon, ExternalLink, ShieldAlert, Trash2, Smartphone } from "lucide-react";
+import { AtSign, KeyRound, User as UserIcon, ExternalLink, ShieldAlert, Trash2, Smartphone, LifeBuoy } from "lucide-react";
 import { TwoFactorSettings } from "@/components/TwoFactorSettings";
 import { friendlyErrorMessage } from "@/lib/errors";
 import {
@@ -295,6 +295,21 @@ export default function AccountSettings() {
       {/* Two-factor authentication */}
       <Section icon={<Smartphone className="h-4 w-4" />} title="Two-factor authentication" description="Optional. Protect your account with a code from an authenticator app in addition to your password.">
         <TwoFactorSettings />
+      </Section>
+
+      {/* Help & legal */}
+      <Section icon={<LifeBuoy className="h-4 w-4" />} title="Help & legal" description="Get support or review our policies.">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild type="button" variant="outline">
+            <Link to="/support">Help & Support</Link>
+          </Button>
+          <Button asChild type="button" variant="outline">
+            <Link to="/terms">Terms of Service</Link>
+          </Button>
+          <Button asChild type="button" variant="outline">
+            <Link to="/privacy">Privacy Policy</Link>
+          </Button>
+        </div>
       </Section>
 
       {/* Danger zone */}

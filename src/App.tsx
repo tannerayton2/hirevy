@@ -34,6 +34,7 @@ import SubmitReview from "./pages/SubmitReview.tsx";
 import Following from "./pages/Following.tsx";
 import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
+import Support from "./pages/Support.tsx";
 import HowVerificationWorks from "./pages/HowVerificationWorks.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/verify-review" element={<VerifyReview />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/how-verification-works" element={<HowVerificationWorks />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />

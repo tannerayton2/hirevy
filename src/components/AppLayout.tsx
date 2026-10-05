@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell, LifeBuoy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -233,6 +233,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                           className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                         >
                           <MessageCircle className="h-4 w-4" /> Send us a message
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMenuOpen(false); navigate("/support"); }}
+                          className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <LifeBuoy className="h-4 w-4" /> Help & Support
                         </button>
                         <div className="mt-2 mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Legal</div>
                         <button

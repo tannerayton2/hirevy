@@ -213,6 +213,8 @@ export default function Landing() {
             <Link to="/privacy" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Privacy Policy</Link>
             <span style={{ color: "var(--hv-line)" }}>•</span>
             <Link to="/how-verification-works" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>How Verification Works</Link>
+            <span style={{ color: "var(--hv-line)" }}>•</span>
+            <Link to="/support" style={{ color: "var(--hv-muted)", textDecoration: "none" }}>Support</Link>
           </div>
         </div>
       </footer>
