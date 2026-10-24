@@ -250,7 +250,14 @@ export default function ProofSettings() {
             {cards.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
-                  <p className="font-semibold">{headline(c)}</p>
+                  <p className="font-semibold">
+                    {headline(c)}
+                    {c.source !== "stripe" && (
+                      <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-destructive">
+                        Test
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Last {periodDays(c)} days · verified {new Date(c.verified_at).toLocaleDateString()}
                   </p>

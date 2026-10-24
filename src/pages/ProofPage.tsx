@@ -1,7 +1,7 @@
 // Public proof page: /p/:id
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { headline, periodDays, proofDb, type ProofSnapshot } from "@/lib/proof";
@@ -50,6 +50,7 @@ export default function ProofPage() {
   }
 
   const days = periodDays(snap);
+  const isTest = snap.source !== "stripe";
   const name = owner?.display_name || (owner ? `@${owner.username}` : "Aytopus seller");
   const verifiedDate = new Date(snap.verified_at).toLocaleDateString("en-US", {
     month: "short",
@@ -71,9 +72,15 @@ export default function ProofPage() {
             )}
             {owner && <p className="text-xs text-muted-foreground">@{owner.username}</p>}
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/30">
-            <ShieldCheck className="h-3.5 w-3.5" /> Verified
-          </span>
+          {isTest ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive ring-1 ring-destructive/30">
+              <AlertTriangle className="h-3.5 w-3.5" /> Test data
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/30">
+              <ShieldCheck className="h-3.5 w-3.5" /> Verified
+            </span>
+          )}
         </div>
 
         <p className="mt-8 text-xs uppercase tracking-[0.18em] text-muted-foreground">
@@ -88,10 +95,16 @@ export default function ProofPage() {
           </div>
         )}
 
-        <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
-          Pulled directly from Stripe on {verifiedDate} and locked by Aytopus. Refunds are already subtracted. Nobody,
-          including the seller, can edit these numbers.
-        </div>
+        {isTest ? (
+          <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs leading-relaxed text-destructive">
+            Test data, not real sales. These numbers came from a Stripe test account and don't represent real payments.
+          </div>
+        ) : (
+          <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
+            Pulled directly from Stripe on {verifiedDate} and locked by Aytopus. Refunds are already subtracted. Nobody,
+            including the seller, can edit these numbers.
+          </div>
+        )}
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
