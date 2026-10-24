@@ -43,6 +43,7 @@ import { ensureHttps, openSocialLink } from "@/lib/socialHandles";
 import { isAdminUsername } from "@/lib/admin";
 import { ShieldAlert } from "lucide-react";
 import { friendlyErrorMessage } from "@/lib/errors";
+import { ProfileProofCard } from "@/components/ProfileProofCard";
 
 type TabKey = "reviews" | "offers";
 type ReviewSubTab = "verified" | "imported";
@@ -691,6 +692,9 @@ export default function Profile() {
       )}
 
 
+
+      {/* Verified sales (latest live proof card) */}
+      {profile && <ProfileProofCard userId={profile.id} isMe={isMe} />}
 
       {/* Empty state for visitors on a brand-new profile */}
       {!hasAnyContent && !isMe && (
