@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { AtSign, KeyRound, User as UserIcon, ExternalLink, ShieldAlert, Trash2, Smartphone, LifeBuoy } from "lucide-react";
+import { AtSign, KeyRound, User as UserIcon, ExternalLink, ShieldAlert, ShieldCheck, Trash2, Smartphone, LifeBuoy } from "lucide-react";
 import { TwoFactorSettings } from "@/components/TwoFactorSettings";
 import { friendlyErrorMessage } from "@/lib/errors";
 import {
@@ -187,6 +187,13 @@ export default function AccountSettings() {
       <p className="mt-1 text-sm text-muted-foreground">
         Signed in as <span className="text-foreground">{email}</span>
       </p>
+
+      {/* Proof cards */}
+      <Section icon={<ShieldCheck className="h-4 w-4" />} title="Proof cards" description="Connect Stripe and turn your real sales into a verified link nobody can fake.">
+        <Button asChild>
+          <Link to="/settings/proof">Make a proof card</Link>
+        </Button>
+      </Section>
 
       {/* Handle */}
       <Section icon={<AtSign className="h-4 w-4" />} title="Handle" description="Your public URL: /@handle. Changing it will break links pointing at your old handle.">

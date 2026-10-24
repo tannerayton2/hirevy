@@ -38,6 +38,8 @@ import Support from "./pages/Support.tsx";
 import HowVerificationWorks from "./pages/HowVerificationWorks.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
+import ProofPage from "./pages/ProofPage.tsx";
+import ProofSettings from "./pages/ProofSettings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +69,7 @@ const App = () => (
             
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
+            <Route path="/p/:id" element={<AppLayout><ProofPage /></AppLayout>} />
 
 
             <Route path="/me" element={<MeRedirect />} />
@@ -77,6 +80,7 @@ const App = () => (
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
             <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
+            <Route path="/settings/proof" element={<AppLayout><ProofSettings /></AppLayout>} />
             <Route path="/settings/notifications" element={<AppLayout><NotificationSettings /></AppLayout>} />
             <Route path="/settings/following" element={<AppLayout><Following /></AppLayout>} />
             <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
