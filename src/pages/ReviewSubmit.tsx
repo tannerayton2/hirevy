@@ -107,6 +107,17 @@ export default function ReviewSubmit() {
             Your honest review helps other clients hire with confidence. Reviews are public; your email stays private.
           </p>
 
+          <button
+            type="button"
+            onClick={() => nav(`/r/${provider.username}/proof`)}
+            className="mt-4 w-full rounded-md border border-primary/40 bg-primary/5 px-4 py-3 text-left text-sm transition-colors hover:bg-primary/10"
+          >
+            <span className="font-semibold text-primary">Paid for their service?</span>{" "}
+            <span className="text-muted-foreground">
+              Attach a receipt or invoice to get the Purchase Verified badge →
+            </span>
+          </button>
+
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
               <Label className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground">Rating</Label>

@@ -1,7 +1,8 @@
 // /settings/proof — connect Stripe and make verified proof cards
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Copy, ExternalLink, Link2, ShieldCheck, Trash2, Zap } from "lucide-react";
+import { Copy, ExternalLink, Link2, MessageSquareQuote, ShieldCheck, Trash2, Zap } from "lucide-react";
+import { shareReviewUrl } from "@/lib/shareLinks";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ const selectClass =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary";
 
 export default function ProofSettings() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [conn, setConn] = useState<Connection | null>(null);
   const [cards, setCards] = useState<ProofSnapshot[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -127,10 +128,56 @@ export default function ProofSettings() {
     }
   };
 
+  const username = profile?.username ?? null;
+
+  const copyReviewLink = async () => {
+    if (!username) return;
+    const link = shareReviewUrl(username);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ title: "Review link copied", description: "Send it to your clients to collect verified reviews." });
+    } catch {
+      toast({ title: "Here's your review link", description: link });
+    }
+  };
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8 md:py-10">
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Settings</p>
-      <h1 className="font-display text-3xl font-bold">Proof cards</h1>
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.32em] text-primary">Your proof</p>
+      <h1 className="font-display text-3xl font-bold">Collect verified reviews</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Send your review link to clients. Reviews with proof of payment get the Purchase Verified badge.
+      </p>
+
+      {/* Review link */}
+      <Section
+        icon={<MessageSquareQuote className="h-4 w-4" />}
+        title="Your review link"
+        description="Text it, email it, or drop it in your client group chat."
+      >
+        {username ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="break-all font-mono text-sm">aytopus.com/r/{username}</p>
+            <div className="flex gap-2">
+              <Button onClick={copyReviewLink}>
+                <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy link
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to={`/@${username}`}>View my profile</Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">Pick a username first. It becomes your link.</p>
+            <Button asChild>
+              <Link to="/settings/profile">Set up my profile</Link>
+            </Button>
+          </div>
+        )}
+      </Section>
+
+      <h2 className="mt-12 font-display text-xl font-semibold">Revenue proof cards</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Turn your real Stripe sales into a verified link nobody can fake. Post it anywhere.
       </p>

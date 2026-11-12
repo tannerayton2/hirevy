@@ -1,37 +1,23 @@
 import { useEffect, useState } from "react";
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { tierForPoints, TIER_LABEL, TIER_COLOR, type Tier } from "@/lib/tiers";
 
-const CATEGORY_PILLS = [
-  "Business Coaching",
-  "Fitness & Health",
-  "Marketing",
-  "Sales",
-  "Mindset",
-  "Consulting",
-];
+const START_URL = "/signup?redirect=/settings/proof";
 
 export default function Landing() {
   const { user, loading } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
 
   usePageMeta(
-"Aytopus – Help us bring trust back to the info industry",    "Coaches and service providers ranked by what verified clients actually said.",
+    "Aytopus – Your testimonials, verified.",
+    "Free for coaches and service providers. Send one link, clients leave a review, and Aytopus verifies they actually paid you.",
   );
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    navigate(q ? `/explore?q=${encodeURIComponent(q)}` : "/explore");
-  };
-
   if (loading) return <div style={{ background: "#0a0705", minHeight: "100vh" }} />;
-  if (user) return <Navigate to="/explore" replace />;
+  if (user) return <Navigate to="/settings/proof" replace />;
 
   return (
     <div className="hv-landing">
@@ -45,77 +31,48 @@ export default function Landing() {
             <span className="hv-l-wordmark">AYTOPUS</span>
           </Link>
           <div className="hv-l-nav-center hv-l-fade hv-l-fade-1">
-            <Link to="/explore" className="hv-l-nav-link">Browse</Link>
-            <Link to="/how-verification-works" className="hv-l-nav-link">How it works</Link>
-            <Link to="/auth" className="hv-l-nav-link">For providers</Link>
+            <a href="#how" className="hv-l-nav-link">How it works</a>
+            <Link to="/how-verification-works" className="hv-l-nav-link">How verification works</Link>
           </div>
           <div className="hv-l-nav-actions hv-l-fade hv-l-fade-1">
-            <Link to="/auth" className="hv-l-nav-signin">Log in</Link>
-            <Link to="/auth" className="hv-l-nav-signup">Join free</Link>
+            <Link to="/auth" className="hv-l-nav-signin" style={{ whiteSpace: "nowrap" }}>Log in</Link>
+            <Link to={START_URL} className="hv-l-nav-signup" style={{ whiteSpace: "nowrap" }}>Get started</Link>
           </div>
         </div>
       </nav>
 
       {/* HERO */}
       <section className="hv-l-hero hv-l-container">
+        <div className="hv-l-section-label hv-l-fade hv-l-fade-2">Bringing trust back to the info industry</div>
         <h1 className="hv-l-fade hv-l-fade-2">
-  Help us bring trust back to the info industry.
-</h1>
+          Your testimonials, <span className="hv-l-italic">verified.</span>
+        </h1>
         <p className="hv-l-hero-sub hv-l-fade hv-l-fade-3">
-          Coaches and providers ranked by what verified clients actually said.
+          Send one link. Your clients leave a review. Aytopus proves they actually paid you. Put it anywhere. Free.
         </p>
 
-        <form className="hv-l-search hv-l-fade hv-l-fade-3" onSubmit={handleSearch}>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder='Try "business coach" or "YouTube growth"'
-            className="hv-l-search-input"
-            aria-label="Search"
-          />
-          <button type="submit" className="hv-l-search-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            Search
-          </button>
-        </form>
-
-        <div className="hv-l-cat-pills hv-l-fade hv-l-fade-4">
-          {CATEGORY_PILLS.map((c) => (
-            <Link
-              key={c}
-              to={`/explore?cats=${encodeURIComponent(c)}&type=both`}
-              className="hv-l-cat-pill"
-            >
-              {c}
-            </Link>
-          ))}
-        </div>
-
-        <div className="hv-l-hero-premium hv-l-fade hv-l-fade-4">
-          First 100 providers get Premium free — 67 spots remaining.
+        <div className="hv-l-cta-row hv-l-fade hv-l-fade-4">
+          <Link to={START_URL} className="hv-l-btn hv-l-btn-primary">Get my proof link →</Link>
         </div>
       </section>
-
-      
 
       {/* HOW IT WORKS — compact */}
       <section className="hv-l-how hv-l-container" id="how">
         <div className="hv-l-steps">
           <div className="hv-l-step">
             <div className="hv-l-step-num">01</div>
-            <h3 className="hv-l-step-title">Find providers</h3>
-            <p className="hv-l-step-desc">Search the network. Filter by category, tier, and offer.</p>
+            <h3 className="hv-l-step-title">Get your review link</h3>
+            <p className="hv-l-step-desc">Sign up free and get one link with your name on it.</p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">02</div>
-            <h3 className="hv-l-step-title">Verify with real reviews</h3>
-            <p className="hv-l-step-desc">Every review labeled Purchase Verified or Community. Reviews are the trust layer.</p>
+            <h3 className="hv-l-step-title">Send it to your clients</h3>
+            <p className="hv-l-step-desc">They leave a review and attach proof they paid, like a receipt or invoice.</p>
           </div>
           <div className="hv-l-step">
             <div className="hv-l-step-num">03</div>
-            <h3 className="hv-l-step-title">Message & hire</h3>
-            <p className="hv-l-step-desc">Message directly, compare offers, hire with confidence.</p>
+            <h3 className="hv-l-step-title">Show off verified proof</h3>
+            <p className="hv-l-step-desc">Reviews with proof get the Purchase Verified badge. Share your profile anywhere.</p>
           </div>
         </div>
       </section>
@@ -126,9 +83,13 @@ export default function Landing() {
       <section className="hv-l-features">
         <div className="hv-l-container">
           <div className="hv-l-section-head">
-            <div className="hv-l-section-label">What Makes Us Different</div>
-            <h2>A network <span className="hv-l-italic">built on proof.</span></h2>
-            <p className="hv-l-lead-in">The info industry is drowning in hype, fake screenshots, and "gurus" with unverifiable results. So we labeled every single review.</p>
+            <div className="hv-l-section-label">Why it works</div>
+            <h2>Anyone can fake a testimonial. <span className="hv-l-italic">Not this one.</span></h2>
+            <p className="hv-l-lead-in">Screenshots and quotes are easy to make up. A review tied to a real payment isn't. Every review on Aytopus is labeled, so people know exactly what they're reading.</p>
+          </div>
+
+          <div className="hv-l-proof-note" style={{ marginTop: 0, marginBottom: 16 }}>
+            Example reviews — not real clients.
           </div>
 
           <div className="hv-l-proof-compare">
@@ -136,57 +97,57 @@ export default function Landing() {
               badge="Purchase Verified"
               badgeVariant="gold"
               rating={5}
-              body="Booked her 3-month coaching offer via Aytopus. Uploaded my invoice + contract as proof. Went from 12k to 47k MRR in 90 days — she rebuilt my sales page and offer positioning."
-              reviewer="Marcus T."
-              handle="@marcust"
+              body="Booked her 3-month coaching offer. Uploaded my invoice as proof. She rebuilt my sales page and offer positioning, and my revenue more than tripled."
+              reviewer="Example client"
+              handle="@example"
               amount="$3k–$5k"
             />
             <MockReviewCard
               badge="Community Review"
               badgeVariant="muted"
               rating={4}
-              body="Followed his content for a year and joined a free workshop. Solid frameworks, helpful voice — haven't purchased a paid offer yet so I can't speak to results."
-              reviewer="Jamie K."
-              handle="@jamiek"
+              body="Followed his content for a year and joined a free workshop. Solid frameworks — haven't bought a paid offer yet, so I can't speak to results."
+              reviewer="Example follower"
+              handle="@example"
               amount={null}
             />
           </div>
 
           <div className="hv-l-proof-note">
-            Purchase Verified reviews require uploaded evidence of a paid engagement. Community Reviews are labeled as unverified so you always know what you're reading.
+            Purchase Verified reviews require proof of a paid engagement. Community Reviews are labeled as unverified.
           </div>
         </div>
       </section>
 
-      {/* WHO — unchanged */}
+      {/* WHAT YOU GET */}
       <section className="hv-l-who hv-l-container">
         <div className="hv-l-section-head">
-          <div className="hv-l-section-label">Who it's for</div>
-          <h2>Two sides, <span className="hv-l-italic">one trust layer.</span></h2>
+          <div className="hv-l-section-label">For coaches & service providers</div>
+          <h2>You do great work. <span className="hv-l-italic">Prove it.</span></h2>
         </div>
 
         <div className="hv-l-who-grid">
           <div className="hv-l-who-card hv-l-providers">
-            <div className="hv-l-who-tag">For Providers</div>
-            <h3>Prove your work. Get hired.</h3>
-            <p>Build a verified profile that lets your results speak louder than your marketing.</p>
+            <div className="hv-l-who-tag">What you get — free</div>
+            <h3>Proof that closes the sale.</h3>
+            <p>One link to send before every sales call, with reviews nobody can say you made up.</p>
             <ul className="hv-l-who-list">
-              <li>List paid offers with real pricing</li>
-              <li>Collect verified reviews from clients</li>
-              <li>Earn tier badges: Bronze, Silver, Gold</li>
-              <li>Get discovered by buyers actively looking</li>
+              <li>Your own review link to send clients</li>
+              <li>Purchase Verified badges on reviews with proof</li>
+              <li>A public proof profile to share anywhere</li>
+              <li>Verified revenue proof cards from Stripe</li>
             </ul>
           </div>
 
           <div className="hv-l-who-card hv-l-buyers">
-            <div className="hv-l-who-tag">For Buyers</div>
-            <h3>Hire without guessing.</h3>
-            <p>Stop gambling on coaches and consultants based on Instagram reels and sales pages.</p>
+            <div className="hv-l-who-tag">Coming soon</div>
+            <h3>More ways to show it off.</h3>
+            <p>We're building these next for our first providers.</p>
             <ul className="hv-l-who-list">
-              <li>See real reviews from real clients</li>
-              <li>Compare offers side-by-side</li>
-              <li>Message providers before you pay</li>
-              <li>Rank providers by what clients actually said</li>
+              <li>Automatic verification through Stripe</li>
+              <li>A review wall to embed on your sales page</li>
+              <li>Import your old testimonials and get them confirmed</li>
+              <li>Share-ready review images for Instagram and X</li>
             </ul>
           </div>
         </div>
@@ -195,11 +156,11 @@ export default function Landing() {
       {/* FINAL CTA */}
       <section className="hv-l-final hv-l-container">
         <div className="hv-l-section-label">Get Started</div>
-        <h2>Find your next coach <span className="hv-l-italic">or provider.</span></h2>
-        <p className="hv-l-final-sub">Open the network. See live offers. Hire someone whose work is already verified.</p>
+        <h2>Your work is real. <span className="hv-l-italic">Prove it.</span></h2>
+        <p className="hv-l-final-sub">Free for coaches and service providers. Takes two minutes to set up.</p>
 
         <div className="hv-l-cta-row" style={{ marginBottom: 0 }}>
-          <Link to="/explore" className="hv-l-btn hv-l-btn-primary">Open AYTOPUS →</Link>
+          <Link to={START_URL} className="hv-l-btn hv-l-btn-primary">Get my proof link →</Link>
         </div>
       </section>
 
