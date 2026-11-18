@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useNetworkAccess } from "@/lib/network";
 import { ProofScoreCard } from "@/components/ProofScoreCard";
 import { cardUrl, loadMyCard, refreshScore, timeAgo, type ProofCard, type ProofFlag } from "@/lib/proofScore";
 import { toast } from "@/hooks/use-toast";
@@ -41,6 +42,7 @@ export default function ProofSettings() {
   const [scoreCard, setScoreCard] = useState<ProofCard | null>(null);
   const [flags, setFlags] = useState<ProofFlag[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { canSeeNetwork } = useNetworkAccess();
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -205,9 +207,11 @@ export default function ProofSettings() {
               <Button onClick={copyReviewLink}>
                 <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy link
               </Button>
-              <Button variant="outline" asChild>
-                <Link to={`/@${username}`}>View my profile</Link>
-              </Button>
+              {canSeeNetwork && (
+                <Button variant="outline" asChild>
+                  <Link to={`/@${username}`}>View my profile</Link>
+                </Button>
+              )}
             </div>
           </div>
         ) : (

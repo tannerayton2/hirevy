@@ -360,7 +360,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Main */}
         <main className={cn(
           "min-h-[calc(100vh-56px)] min-w-0 flex-1 overflow-x-hidden",
-          isSubmitReview ? "pb-8" : "pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8",
+          isSubmitReview ? "pb-8" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8",
           !isSubmitReview && pathname !== "/messages" && "xl:mx-auto xl:max-w-[620px]",
         )}>
           {children}
