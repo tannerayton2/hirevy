@@ -1,5 +1,20 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/v/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawler|spider|facebookexternalhit|facebot|whatsapp|slack|discord|telegram|linkedin|skype|embedly|pinterest|iframely|vkshare|preview).*" }],
+      "destination": "/api/meta?path=v/:slug"
+    },
+    {
+      "source": "/proofcard",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawler|spider|facebookexternalhit|facebot|whatsapp|slack|discord|telegram|linkedin|skype|embedly|pinterest|iframely|vkshare|preview).*" }],
+      "destination": "/api/meta?path=proofcard"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawler|spider|facebookexternalhit|facebot|whatsapp|slack|discord|telegram|linkedin|skype|embedly|pinterest|iframely|vkshare|preview).*" }],
+      "destination": "/api/meta?path=proofcard"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

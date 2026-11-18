@@ -288,6 +288,12 @@ export default function MyCard() {
                     Disconnect
                   </button>
                 </div>
+                <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 text-xs text-muted-foreground">
+                  <span>{user?.email}</span>
+                  <Link to="/settings/account" className="underline underline-offset-4 hover:text-foreground">
+                    Account &amp; delete
+                  </Link>
+                </div>
               </div>
             </details>
           </div>
