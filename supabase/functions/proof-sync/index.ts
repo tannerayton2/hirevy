@@ -80,7 +80,7 @@ async function loadReviews(db: SupabaseClient, ownerId: string) {
 
 async function syncOne(db: SupabaseClient, ownerId: string) {
   await ensureCard(db, ownerId);
-  const { data: conn } = await db.from("stripe_connections").select("encrypted_key").eq("user_id", ownerId).maybeSingle();
+  const { data: conn } = await db.from("stripe_connections").select("encrypted_key, stripe_account_name").eq("user_id", ownerId).maybeSingle();
 
   if (!conn) {
     // Disconnected: the card can't stay "live". Keep the last score, mark paused.
@@ -112,6 +112,16 @@ async function syncOne(db: SupabaseClient, ownerId: string) {
     throw e;
   }
   if (!isTestKey) charges = charges.filter((c) => c.livemode !== false);
+
+  // Who the payments actually go to: Stripe's verified account name, or else the business
+  // name Stripe prints on customers' bank statements. Never typed in by the coach.
+  const descriptorCounts = new Map<string, number>();
+  for (const c of charges as Array<{ calculated_statement_descriptor?: string | null }>) {
+    const d = c.calculated_statement_descriptor?.trim();
+    if (d) descriptorCounts.set(d, (descriptorCounts.get(d) ?? 0) + 1);
+  }
+  const topDescriptor = [...descriptorCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const paidThrough = conn.stripe_account_name ?? topDescriptor;
 
   // The coach's own login email: payments from it are the coach paying themself.
   const { data: authUser } = await db.auth.admin.getUserById(ownerId);
@@ -146,6 +156,7 @@ async function syncOne(db: SupabaseClient, ownerId: string) {
       reviewAvg: m.reviewAvg === null ? null : Math.round(m.reviewAvg * 10) / 10,
       testData: isTestKey,
     },
+    paid_through: paidThrough,
     score_version: r.version,
     first_rated_at: prev?.first_rated_at ?? (r.status === "rated" ? iso : null),
     synced_at: iso,

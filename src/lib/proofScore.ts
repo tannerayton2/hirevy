@@ -26,6 +26,8 @@ export type ProofCard = {
     testData?: boolean;
   };
   show_stats: string[];
+  /** Business name payments go to, from Stripe. */
+  paid_through?: string | null;
   visibility: "public" | "private";
   paused_at: string | null;
   synced_at: string | null;
@@ -126,6 +128,7 @@ export const DEMO_CARD: ProofCard = {
   ],
   public_stats: { clients: 214, retention: 68, refunds: 1.9, monthsOnRecord: 8, reviews: 31, reviewAvg: 4.9 },
   show_stats: ["clients", "retention", "refunds"],
+  paid_through: "HALE FITNESS LLC",
   visibility: "public",
   paused_at: null,
   synced_at: new Date(Date.now() - 4 * 60_000).toISOString(),

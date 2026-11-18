@@ -183,6 +183,17 @@ export function ProofCardDetails({ card }: { card: ProofCard }) {
 
   return (
     <div className="space-y-8">
+      {card.paid_through && (
+        <section className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-card px-4 py-3.5">
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Payments go to</p>
+            <p className="mt-0.5 truncate text-[15px] font-semibold">{card.paid_through}</p>
+          </div>
+          <span className="shrink-0 rounded-full border border-emerald-500/30 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-emerald-500">
+            From Stripe
+          </span>
+        </section>
+      )}
       <section>
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tier</p>
         <div className="mt-3 grid grid-cols-5 gap-1">
