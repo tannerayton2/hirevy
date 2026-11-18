@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +12,10 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { friendlyErrorMessage } from "@/lib/errors";
 import { isNativeApp, webOrigin } from "@/lib/platform";
+
+// Google sign-in uses Supabase's own Google provider. It stays hidden until that provider
+// is set up in Supabase (Auth → Providers → Google) and VITE_GOOGLE_AUTH=true is set in Vercel.
+const GOOGLE_ENABLED = import.meta.env.VITE_GOOGLE_AUTH === "true";
 
 export default function SignUp() {
   const { user, loading } = useAuth();
@@ -58,14 +61,15 @@ export default function SignUp() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/card` });
-      if (result.error) {
-        toast({ title: "Google sign-up failed", description: friendlyErrorMessage(result.error, "Try again."), variant: "destructive" });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}${safeRedirect ?? "/card"}` },
+      });
+      if (error) {
+        toast({ title: "Google sign-up failed", description: friendlyErrorMessage(error, "Try again."), variant: "destructive" });
         setBusy(false);
-        return;
       }
-      if (result.redirected) return;
-      nav(safeRedirect ?? "/card", { replace: true });
+      // On success the browser leaves for Google and comes back signed in.
     } catch (err) {
       toast({ title: "Sign-up failed", description: friendlyErrorMessage(err, "Google sign-up failed"), variant: "destructive" });
       setBusy(false);
@@ -85,7 +89,7 @@ export default function SignUp() {
         </div>
 
         {/* Google OAuth goes through a web-only broker that can't return into the native app. */}
-        {!isNativeApp && (
+        {GOOGLE_ENABLED && !isNativeApp && (
           <>
             <Button type="button" onClick={handleGoogle} disabled={busy} variant="outline" size="lg" className="w-full">
               <svg className="mr-1 h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">

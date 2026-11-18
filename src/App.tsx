@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,6 +47,13 @@ import MyCard from "./pages/MyCard.tsx";
 import { NetworkGate } from "./components/NetworkGate";
 import { NETWORK_PUBLIC } from "./lib/network";
 
+
+/** "/" → "/proofcard", keeping any sign-in tokens Supabase puts in the address (#access_token…). */
+function RootRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={{ pathname: "/proofcard", search, hash }} replace />;
+}
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -56,7 +64,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : NETWORK_PUBLIC ? <Landing /> : <Navigate to="/proofcard" replace />} />
+            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : NETWORK_PUBLIC ? <Landing /> : <RootRedirect />} />
             <Route path="/proofcard" element={<ProofLanding />} />
             <Route path="/card" element={<MyCard />} />
             <Route path="/explore" element={<NetworkGate><Index /></NetworkGate>} />
