@@ -6,7 +6,7 @@ import { TIERS, pointsToNextTier, timeAgo, visibleStats } from "@/lib/proofScore
 
 const INK = "#F2F1EC";
 const MUTED = "#8C948F";
-const ACCENT = "#5BE3A4";
+const ACCENT = "#5BE3A4"; // live/verified signal stays mint everywhere
 const CARD_BG = "#0C0E0D";
 const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
 

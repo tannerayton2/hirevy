@@ -291,13 +291,13 @@ export default function Explore() {
       {/* Search */}
       <div ref={searchBoxRef} className="relative mx-auto max-w-2xl">
         <form onSubmit={onSearch} className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => { setQuery(e.target.value); setLiveOpen(true); }}
             onFocus={() => { if (query.trim().length > 0) setLiveOpen(true); }}
             placeholder="Search coaches, providers, and offers..."
-            className="h-12 pl-9"
+            className="h-[52px] rounded-full border-white/[0.12] bg-card pl-12 pr-5 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.6)]"
             aria-label="Search coaches, providers, and offers"
             autoComplete="off"
           />
@@ -375,7 +375,7 @@ export default function Explore() {
       </div>
 
       {/* Sub-tabs: People / Offers */}
-      <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center gap-1 border-b border-border">
+      <div className="mx-auto mt-4 flex max-w-sm items-center gap-1 rounded-full border border-white/[0.08] bg-card p-1">
         <TopTab active={subTab === "people"} onClick={() => setSubTab("people")} label="People" />
         <TopTab active={subTab === "offers"} onClick={() => setSubTab("offers")} label="Offers" />
       </div>
@@ -491,12 +491,13 @@ function TopTab({ active, onClick, label }: { active: boolean; onClick: () => vo
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "relative -mb-px px-5 py-2.5 text-sm font-semibold transition-colors",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        "h-9 flex-1 rounded-full text-sm font-semibold transition-colors",
+        active
+          ? "border border-primary/35 bg-primary/[0.12] text-primary"
+          : "border border-transparent text-muted-foreground hover:text-foreground",
       )}
     >
-      <span className="font-display tracking-wide">{label}</span>
-      {active && <span aria-hidden className="absolute inset-x-2 -bottom-px h-[2px] bg-primary" />}
+      <span className="font-display">{label}</span>
     </button>
   );
 }

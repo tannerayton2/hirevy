@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell, LifeBuoy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Logo } from "@/components/Logo";
+import { Logo, OctopusMark } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -373,7 +373,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         aria-label="Primary"
         style={{ bottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
         className={cn(
-          "fixed inset-x-0 z-40 mx-auto flex w-[min(92vw,360px)] items-center justify-around rounded-full border border-white/5 bg-background/70 px-2 py-2 shadow-[0_10px_40px_-10px_hsl(0_0%_0%/0.7)] backdrop-blur-xl md:hidden",
+          "fixed inset-x-0 z-40 mx-auto flex w-[min(92vw,340px)] items-center justify-around rounded-full border border-white/[0.12] bg-[#161618]/80 px-3 py-2 shadow-[0_18px_40px_-10px_rgba(0,0,0,0.75)] backdrop-blur-2xl md:hidden",
           (inOpenConversation || isSubmitReview) && "hidden",
         )}
       >
@@ -381,6 +381,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           const mobileTabs = [
             { to: "/messages", label: "Messages", icon: MessageSquare, authOnly: true, kind: "icon" as const },
             { to: "/explore", label: "Search", icon: Search, end: true, kind: "icon" as const },
+            { to: "/settings/proof", label: "Proof card", authOnly: true, kind: "mark" as const },
             { to: user ? profilePath : "/auth", label: "Profile", kind: "avatar" as const },
           ].filter((t) => !(t.authOnly && !user));
 
@@ -399,8 +400,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               {({ isActive }) => (
                 <>
-                  {isActive && tab.kind === "icon" && (
-                    <span className="absolute inset-1 rounded-full bg-primary/15" aria-hidden />
+                  {isActive && tab.kind !== "avatar" && (
+                    <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" aria-hidden />
                   )}
                   {tab.kind === "avatar" ? (
                     <span
@@ -415,6 +416,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         <span>{(profile?.username ?? "?").slice(0, 1)}</span>
                       )}
                     </span>
+                  ) : tab.kind === "mark" ? (
+                    <OctopusMark className="relative h-[26px] w-[26px]" strokeWidth={5} />
                   ) : (
                     <tab.icon className="relative h-[22px] w-[22px]" strokeWidth={1.75} />
                   )}

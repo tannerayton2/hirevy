@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ProfileScoreCard } from "@/components/ProfileScoreCard";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
@@ -481,6 +482,9 @@ export default function Profile() {
           @{profile.username}
         </p>
 
+        {/* Payment-verified proof card */}
+        <ProfileScoreCard ownerId={profile.id} name={providerDisplayName} subtitle={profile.service_category} />
+
 
 
         {/* Owner-only points progress */}
@@ -542,7 +546,7 @@ export default function Profile() {
 
 
         {/* Trust card — 3 stats */}
-        <div className="mt-5 grid grid-cols-3 items-center gap-2 rounded-lg border border-primary/30 bg-card/60 px-2 py-4 sm:px-4">
+        <div className="mt-5 grid grid-cols-3 items-center gap-2 rounded-2xl border border-white/[0.08] bg-card px-2 py-4 shadow-[0_12px_30px_-12px_rgba(0,0,0,0.6)] sm:px-4">
           <TrustStat
             value={avg > 0 ? avg.toFixed(1) : "—"}
             label="Avg rating"
