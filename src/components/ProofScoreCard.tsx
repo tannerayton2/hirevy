@@ -57,30 +57,42 @@ export function ProofScoreCard({
   subtitle,
   open,
   onToggle,
+  className,
+  hoverGrow = false,
 }: {
   card: ProofCard;
   name: string;
   subtitle?: string | null;
   open?: boolean;
   onToggle?: () => void;
+  /** Overrides the card's width, e.g. "max-w-[500px]". */
+  className?: string;
+  /** Grow when hovered (desktop). */
+  hoverGrow?: boolean;
 }) {
   const [tilt, setTilt] = useState({ rx: 6, ry: -9, gx: 30, gy: 20 });
-  const rest = () => setTilt({ rx: 6, ry: -9, gx: 30, gy: 20 });
+  const [hovered, setHovered] = useState(false);
+  const rest = () => {
+    setTilt({ rx: 6, ry: -9, gx: 30, gy: 20 });
+    setHovered(false);
+  };
   const move = (e: MouseEvent<HTMLButtonElement>) => {
     if (open) return;
     const r = e.currentTarget.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width;
     const py = (e.clientY - r.top) / r.height;
     setTilt({ ry: Math.round((px - 0.5) * 24), rx: Math.round((0.5 - py) * 18), gx: Math.round(px * 100), gy: Math.round(py * 100) });
+    if (!hovered) setHovered(true);
   };
   const rx = open ? 0 : tilt.rx;
   const ry = open ? 0 : tilt.ry;
+  const grow = hoverGrow && hovered && !open ? 1.14 : 1;
   const chip = statusChip(card);
   const stats = visibleStats(card).slice(0, 3);
   const rated = card.status === "rated" && card.tier;
 
   return (
-    <div style={{ perspective: 1000 }} className="w-full max-w-[400px]">
+    <div style={{ perspective: 1000 }} className={className ?? "w-full max-w-[400px]"}>
       <button
         type="button"
         onClick={onToggle}
@@ -92,8 +104,10 @@ export function ProofScoreCard({
         style={{
           aspectRatio: "1.6 / 1",
           borderRadius: 20,
-          transform: `rotateX(${rx}deg) rotateY(${ry}deg)`,
-          transition: "transform 160ms ease-out",
+          transform: `rotateX(${rx}deg) rotateY(${ry}deg) scale(${grow})`,
+          transition: "transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+          position: "relative",
+          zIndex: grow > 1 ? 20 : undefined,
           boxShadow:
             "0 1px 0 #1d2120, 0 2px 0 #181b1a, 0 3px 0 #131615, 0 4px 0 #0f1110, 0 22px 44px rgba(0,0,0,0.45)",
           cursor: onToggle ? "pointer" : "default",

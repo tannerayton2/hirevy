@@ -110,7 +110,7 @@ export default function ProofLanding() {
             ))}
           </g>
         </svg>
-        <div className="relative mx-auto grid max-w-6xl items-start gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.05fr_1fr] md:pb-24 md:pt-20">
+        <div className="relative mx-auto grid max-w-6xl items-start gap-12 px-5 pb-16 pt-14 md:grid-cols-[1fr_1.1fr] md:pb-24 md:pt-20">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-primary">Payment-verified proof cards</p>
             <h1 className="mt-4 text-[44px] font-semibold leading-[1.02] tracking-[-0.035em] md:text-[64px]">
@@ -171,12 +171,14 @@ export default function ProofLanding() {
               subtitle={DEMO_OWNER.service_category}
               open={open}
               onToggle={() => setOpen((o) => !o)}
+              className="w-full max-w-[400px] md:max-w-[500px]"
+              hoverGrow
             />
             <p className="mt-5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
               {open ? "Sample card · made-up numbers" : "Tap the card to open the record"}
             </p>
             {open && (
-              <div className="mt-6 w-full max-w-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mt-6 w-full max-w-[400px] md:max-w-[500px] animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <ProofCardDetails card={DEMO_CARD} />
               </div>
             )}
