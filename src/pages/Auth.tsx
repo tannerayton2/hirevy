@@ -32,7 +32,7 @@ export default function Auth() {
   const [pendingMfaCheck, setPendingMfaCheck] = useState(false);
 
   if (!loading && user && !mfaFactorId && !pendingMfaCheck) {
-    return <Navigate to={safeRedirect ?? "/settings/proof"} replace />;
+    return <Navigate to={safeRedirect ?? "/card"} replace />;
   }
 
   const submit = async (e: React.FormEvent) => {
@@ -54,7 +54,7 @@ export default function Auth() {
           return;
         }
       }
-      nav(safeRedirect ?? "/settings/proof", { replace: true });
+      nav(safeRedirect ?? "/card", { replace: true });
     } catch (err) {
       const message = friendlyErrorMessage(err, "Sign-in failed");
       toast({ title: "Couldn't sign in", description: message, variant: "destructive" });
@@ -80,7 +80,7 @@ export default function Auth() {
         toast({ title: "Incorrect code", description: "Check the 6-digit code and try again.", variant: "destructive" });
         return;
       }
-      nav(safeRedirect ?? "/settings/proof", { replace: true });
+      nav(safeRedirect ?? "/card", { replace: true });
     } catch (err) {
       const message = friendlyErrorMessage(err, "Verification failed");
       toast({ title: "Couldn't verify", description: message, variant: "destructive" });

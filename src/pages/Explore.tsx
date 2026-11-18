@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { GoldAvatar } from "@/components/GoldAvatar";
+import { SEAL_PATHS } from "@/components/ProofScoreCard";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,15 +39,7 @@ function initialsOf(name: string) {
 }
 
 function CoachAvatar({ name, url, size = 56 }: { name: string; url: string | null; size?: number }) {
-  if (url) return <img src={url} alt="" style={{ width: size, height: size }} className="shrink-0 rounded-full object-cover" />;
-  return (
-    <div
-      style={{ width: size, height: size }}
-      className="flex shrink-0 items-center justify-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary ring-1 ring-primary/30"
-    >
-      {initialsOf(name)}
-    </div>
-  );
+  return <GoldAvatar name={name} url={url} size={size} />;
 }
 
 const PROFILE_COLS = "id, username, display_name, avatar_url, service_category, review_count, rating_sum, score_sum, points, provider_type";
@@ -288,16 +282,24 @@ export default function Explore() {
 
   return (
     <div className="relative px-4 py-6 md:px-8 md:py-8">
+      {/* Heading */}
+      <div className="mx-auto mb-5 max-w-2xl">
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-primary">Verified coaches &amp; providers</p>
+        <h1 className="mt-1.5 text-[27px] font-semibold leading-[1.12] tracking-[-0.025em] md:text-4xl">
+          Find someone who's proven it.
+        </h1>
+      </div>
+
       {/* Search */}
       <div ref={searchBoxRef} className="relative mx-auto max-w-2xl">
         <form onSubmit={onSearch} className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => { setQuery(e.target.value); setLiveOpen(true); }}
             onFocus={() => { if (query.trim().length > 0) setLiveOpen(true); }}
             placeholder="Search coaches, providers, and offers..."
-            className="h-12 pl-9"
+            className="h-[52px] rounded-full border-white/[0.12] bg-card pl-12 pr-5 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.6)]"
             aria-label="Search coaches, providers, and offers"
             autoComplete="off"
           />
@@ -375,7 +377,7 @@ export default function Explore() {
       </div>
 
       {/* Sub-tabs: People / Offers */}
-      <div className="mx-auto mt-4 flex max-w-2xl items-center justify-center gap-1 border-b border-border">
+      <div className="mx-auto mt-4 flex max-w-sm items-center gap-1 rounded-full border border-white/[0.08] bg-card p-1">
         <TopTab active={subTab === "people"} onClick={() => setSubTab("people")} label="People" />
         <TopTab active={subTab === "offers"} onClick={() => setSubTab("offers")} label="Offers" />
       </div>
@@ -472,7 +474,7 @@ export default function Explore() {
               {offers.map((o) => <OfferCard key={o.id} offer={o} referrer="explore" />)}
             </div>
           ) : (
-            <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+            <div className="mx-auto max-w-md rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-8 text-center md:p-10">
               <p className="font-display text-lg font-semibold">No offers match your filters.</p>
               <p className="mt-2 text-sm text-muted-foreground">Try clearing filters or switching provider type.</p>
             </div>
@@ -491,12 +493,13 @@ function TopTab({ active, onClick, label }: { active: boolean; onClick: () => vo
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "relative -mb-px px-5 py-2.5 text-sm font-semibold transition-colors",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        "h-9 flex-1 rounded-full text-sm font-semibold transition-colors",
+        active
+          ? "border border-primary/35 bg-primary/[0.12] text-primary"
+          : "border border-transparent text-muted-foreground hover:text-foreground",
       )}
     >
-      <span className="font-display tracking-wide">{label}</span>
-      {active && <span aria-hidden className="absolute inset-x-2 -bottom-px h-[2px] bg-primary" />}
+      <span className="font-display">{label}</span>
     </button>
   );
 }
@@ -509,10 +512,10 @@ function RecentlyReviewed({
   if (loading) return null;
   return (
     <section className="mb-10">
-      <h2 className="mb-3 font-display text-lg font-semibold">Recently Active</h2>
+      <h2 className="mb-3 text-base font-semibold">Recently active</h2>
       {coaches.length === 0 ? (
         <div className="flex w-full justify-center">
-          <div className="flex w-[320px] flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center">
+          <div className="flex w-[320px] flex-col items-center gap-2 rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-6 text-center">
             <p className="text-sm font-semibold text-foreground">No active people here yet.</p>
             <p className="text-xs text-muted-foreground">Browse a category below to discover who's available to hire.</p>
           </div>
@@ -532,18 +535,29 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
   return (
     <Link
       to={`/@${coach.username}`}
-      className="flex w-[180px] shrink-0 flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition-colors hover:border-primary/40"
+      className="relative flex h-[148px] w-[236px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(140deg,#17171A,#0C0C0E)] p-3.5 shadow-[0_1px_0_#1d1d20,0_2px_0_#151517,0_14px_30px_-6px_rgba(0,0,0,0.6)] transition-transform hover:-translate-y-0.5"
     >
-      <CoachAvatar name={name} url={coach.avatar_url} size={72} />
-      <p className="line-clamp-1 flex w-full items-center justify-center text-sm font-bold">
-        <span className="truncate">{name}</span>
-        <TierGem tier={tier} />
-      </p>
-      <p className="line-clamp-1 w-full text-xs text-muted-foreground">@{coach.username}</p>
-
-      <p className="text-[11px] text-muted-foreground">
-        {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
-      </p>
+      <svg aria-hidden="true" viewBox="0 0 150 150" className="pointer-events-none absolute -bottom-20 -right-14 h-[210px] w-[210px] text-primary opacity-[0.08]">
+        <g fill="none" stroke="currentColor" strokeWidth={0.6}>
+          {SEAL_PATHS.map((d, i) => <path key={i} d={d} />)}
+        </g>
+      </svg>
+      <div className="relative flex items-center justify-between">
+        <span className="text-[8.5px] font-bold tracking-[0.3em]">AYTOPUS</span>
+        <span className="font-mono text-[8.5px] tracking-[0.14em] text-muted-foreground">
+          {coach.review_count} {coach.review_count === 1 ? "REVIEW" : "REVIEWS"}
+        </span>
+      </div>
+      <div className="relative flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          <p className="flex items-center gap-1 font-mono text-[8.5px] uppercase tracking-[0.16em] text-primary">
+            {tier === "unranked" ? "New" : tier} <TierGem tier={tier} />
+          </p>
+          <p className="truncate text-[17px] font-semibold tracking-[-0.01em]">{name}</p>
+          <p className="truncate text-[11px] text-muted-foreground">@{coach.username}</p>
+        </div>
+        <CoachAvatar name={name} url={coach.avatar_url} size={50} />
+      </div>
     </Link>
   );
 }
@@ -551,7 +565,7 @@ function RecentCoachCard({ coach }: { coach: CoachRow }) {
 function BrowseByCategory({ active, onPick }: { active: string; onPick: (c: string) => void }) {
   return (
     <section>
-      <h2 className="mb-3 font-display text-lg font-semibold">Browse by Category</h2>
+      <h2 className="mb-3 text-base font-semibold">Browse by category</h2>
       <div className="flex flex-wrap gap-2">
         {BROWSE_CATEGORIES.map((c) => {
           const isActive = active === c;
@@ -564,8 +578,8 @@ function BrowseByCategory({ active, onPick }: { active: string; onPick: (c: stri
               className={cn(
                 "rounded-full border px-3.5 py-2 text-xs font-medium transition-colors",
                 isActive
-                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border-border bg-card text-foreground/90 hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+                  ? "border-primary/40 bg-primary/[0.12] text-primary"
+                  : "border-white/[0.08] bg-card text-foreground/90 hover:border-primary/40 hover:text-primary",
               )}
             >
               {c}
@@ -583,9 +597,9 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
   return (
     <Link
       to={`/@${coach.username}`}
-      className="flex items-center gap-4 rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40"
+      className="flex items-center gap-3.5 rounded-2xl border border-white/[0.08] bg-card px-4 py-3 shadow-[0_12px_30px_-14px_rgba(0,0,0,0.7)] transition-colors hover:border-primary/40"
     >
-      <CoachAvatar name={name} url={coach.avatar_url} size={64} />
+      <CoachAvatar name={name} url={coach.avatar_url} size={48} />
       <div className="min-w-0 flex-1">
         <p className="flex min-w-0 items-center truncate font-bold">
           <span className="truncate">{name}</span>
@@ -604,7 +618,7 @@ function CoachResultCard({ coach }: { coach: CoachRow }) {
 
 function EmptyCategoryState() {
   return (
-    <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+    <div className="mx-auto max-w-md rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-lg font-semibold">No one in this category yet.</p>
       <p className="mt-2 text-sm text-muted-foreground">Try another category, or check the Offers tab to see what's available to hire.</p>
     </div>
@@ -613,7 +627,7 @@ function EmptyCategoryState() {
 
 function EmptySearchState({ name, onBrowse }: { name: string; onWriteReview?: () => void; onBrowse: () => void }) {
   return (
-    <div className="mx-auto max-w-md rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+    <div className="mx-auto max-w-md rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-8 text-center md:p-10">
       <p className="font-display text-2xl font-bold text-primary">{name}</p>
       <p className="mt-2 text-sm text-muted-foreground">
         No coaches or service providers matched that search yet.

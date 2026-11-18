@@ -489,7 +489,7 @@ export default function SubmitReview() {
         )}
 
         {linkedProfileId && offerOptions.length > 0 && (
-          <div className="rounded-md border border-border bg-card p-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-card p-4">
             <label className="mb-2 block text-sm font-semibold">
               Which offer is this review about? <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
@@ -613,7 +613,7 @@ export default function SubmitReview() {
             ) : null}
           </Field>
 
-          <div className="rounded-md border border-border bg-card/50 p-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-card/50 p-4">
             <label className="flex cursor-pointer items-start gap-3">
               <Checkbox checked={purchased} onCheckedChange={(v) => setPurchased(!!v)} className="mt-0.5" />
               <span className="text-sm">I purchased from this coach or bought their program</span>
@@ -645,7 +645,7 @@ export default function SubmitReview() {
 
           <Field label="Upload evidence — photos, PDFs, or documents (contracts, invoices, receipts)" hint={user ? `${files.length}/3` : "Sign in to attach"}>
             <label className={cn(
-              "flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-card/40 p-6 text-center transition-colors",
+              "flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-6 text-center transition-colors",
               user ? "cursor-pointer hover:border-primary/40" : "cursor-not-allowed opacity-60",
             )}>
               <Upload className="h-5 w-5 text-muted-foreground" />
@@ -748,7 +748,7 @@ function StrengthCard({ tier }: { tier: Tier }) {
   const tiers: Tier[] = ["basic", "verified", "evidenced"];
   const active = TIER_META[tier];
   return (
-    <div className="rounded-md border border-border bg-card p-4">
+    <div className="rounded-2xl border border-white/[0.08] bg-card p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Your review strength</p>
         <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]", active.badge)}>
@@ -792,7 +792,7 @@ function ConfirmModal({
           <DialogDescription className="sr-only">Confirm your review submission</DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-md border border-border bg-card/60 p-4">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 p-4">
           <div className="flex flex-col items-center gap-3 py-2 text-center">
             <div className="font-display text-5xl font-bold text-foreground">
               {Math.max(0, Math.min(100, Math.round(score)))}%

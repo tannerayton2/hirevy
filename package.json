@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:score": "node --experimental-strip-types supabase/functions/_shared/proof-score/test/coaches.test.ts && node --experimental-strip-types supabase/functions/_shared/proof-score/test/stripe.test.ts"
   },
   "dependencies": {
     "@capacitor/cli": "^8.5.2",

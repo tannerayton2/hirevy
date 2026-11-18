@@ -242,7 +242,7 @@ export default function ProofReviewSubmit() {
     return (
       <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
         <Logo />
-        <div className="mt-12 rounded-md border border-border bg-card p-6 text-center">
+        <div className="mt-12 rounded-2xl border border-white/[0.08] bg-card p-6 text-center">
           <ShieldCheck className="mx-auto h-12 w-12 text-primary" strokeWidth={1.5} />
           <h1 className="mt-4 font-display text-2xl font-semibold">Your proof-backed review is live</h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -435,7 +435,7 @@ export default function ProofReviewSubmit() {
           {files.length > 0 && (
             <ul className="space-y-2">
               {files.map((f, i) => (
-                <li key={i} className="flex items-center gap-3 rounded-md border border-border bg-card p-3">
+                <li key={i} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-card p-3">
                   {f.type.startsWith("image/") ? (
                     <ImageIcon className="h-5 w-5 shrink-0 text-muted-foreground" strokeWidth={1.5} />
                   ) : (
@@ -459,7 +459,7 @@ export default function ProofReviewSubmit() {
 
         {/* Section: Confirm */}
         <Section number="05" title="Confirm and submit">
-          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-4 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/[0.08] bg-card p-4 text-sm">
             <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(!!v)} className="mt-0.5" />
             <span className="text-foreground/90">
               I confirm everything I've submitted is accurate. I understand this review will be public and Aytopus may

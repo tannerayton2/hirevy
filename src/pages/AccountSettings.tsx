@@ -371,7 +371,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-8 rounded-md border border-border bg-card p-5 md:p-6">
+    <section className="mt-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
           {icon}

@@ -109,7 +109,7 @@ export function ProviderReply({ reviewId, reviewType, providerId, providerDispla
 
   if (composing) {
     return (
-      <div className="mt-3 ml-4 rounded-md border border-border bg-card p-3">
+      <div className="mt-3 ml-4 rounded-2xl border border-white/[0.08] bg-card p-3">
         <Textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}

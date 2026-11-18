@@ -83,14 +83,14 @@ export default function Following() {
 
         <TabsContent value="following" className="mt-4">
           {following.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
+            <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-10 text-center">
               <p className="text-sm text-muted-foreground">You're not following anyone yet.</p>
               <Button asChild className="mt-5">
                 <Link to="/explore">Browse Coaches</Link>
               </Button>
             </div>
           ) : (
-            <ul className="divide-y divide-border rounded-md border border-border bg-card">
+            <ul className="divide-y divide-border rounded-2xl border border-white/[0.08] bg-card">
               {following.map((p) => (
                 <PersonRow key={p.id} p={p} action={
                   <Button size="sm" variant="outline" onClick={() => unfollow(p.id)}>Unfollow</Button>
@@ -102,11 +102,11 @@ export default function Following() {
 
         <TabsContent value="followers" className="mt-4">
           {followers.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
+            <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-10 text-center">
               <p className="text-sm text-muted-foreground">No followers yet. Share your profile to get discovered.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-border rounded-md border border-border bg-card">
+            <ul className="divide-y divide-border rounded-2xl border border-white/[0.08] bg-card">
               {followers.map((p) => {
                 const iFollow = followingIds.has(p.id);
                 return (

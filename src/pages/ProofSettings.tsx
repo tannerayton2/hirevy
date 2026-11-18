@@ -1,12 +1,16 @@
 // /settings/proof — connect Stripe and make verified proof cards
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Copy, ExternalLink, Link2, MessageSquareQuote, ShieldCheck, Trash2, Zap } from "lucide-react";
+import { Award, Copy, ExternalLink, Link2, MessageSquareQuote, RefreshCw, ShieldCheck, Trash2, Zap } from "lucide-react";
 import { shareReviewUrl } from "@/lib/shareLinks";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useNetworkAccess } from "@/lib/network";
+import { ProofScoreCard } from "@/components/ProofScoreCard";
+import { cardUrl, loadMyCard, refreshScore, timeAgo, type ProofCard, type ProofFlag } from "@/lib/proofScore";
 import { toast } from "@/hooks/use-toast";
 import {
   callProofFunction,
@@ -35,6 +39,11 @@ export default function ProofSettings() {
   const [mode, setMode] = useState<ProofSnapshot["display_mode"]>("exact");
   const [creating, setCreating] = useState(false);
 
+  const [scoreCard, setScoreCard] = useState<ProofCard | null>(null);
+  const [flags, setFlags] = useState<ProofFlag[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const { canSeeNetwork } = useNetworkAccess();
+
   const load = useCallback(async () => {
     if (!user) return;
     const [{ data: c }, { data: s }] = await Promise.all([
@@ -51,6 +60,9 @@ export default function ProofSettings() {
     ]);
     setConn(c ?? null);
     setCards((s ?? []) as ProofSnapshot[]);
+    const mine = await loadMyCard(user.id);
+    setScoreCard(mine.card);
+    setFlags(mine.flags);
     setLoaded(true);
   }, [user]);
 
@@ -76,7 +88,7 @@ export default function ProofSettings() {
     try {
       await callProofFunction("connect-stripe", { body: { restricted_key: clean } });
       setKey("");
-      toast({ title: "Stripe connected" });
+      toast({ title: "Stripe connected", description: "Your proof score is ready below." });
       await load();
     } catch (err) {
       toast({ title: "Couldn't connect Stripe", description: (err as Error).message, variant: "destructive" });
@@ -117,6 +129,39 @@ export default function ProofSettings() {
       return;
     }
     setCards((cs) => cs.filter((c) => c.id !== id));
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshScore();
+      await load();
+      toast({ title: "Score refreshed" });
+    } catch (err) {
+      toast({ title: "Couldn't refresh", description: (err as Error).message, variant: "destructive" });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const updateCard = async (patch: Partial<Pick<ProofCard, "visibility" | "show_stats">>) => {
+    if (!user || !scoreCard) return;
+    setScoreCard({ ...scoreCard, ...patch });
+    const { error } = await proofDb.from("proof_cards").update(patch).eq("owner_id", user.id);
+    if (error) {
+      toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+      await load();
+    }
+  };
+
+  const copyCardLink = async () => {
+    if (!scoreCard) return;
+    try {
+      await navigator.clipboard.writeText(cardUrl(scoreCard.slug));
+      toast({ title: "Card link copied" });
+    } catch {
+      toast({ title: "Here's your link", description: cardUrl(scoreCard.slug) });
+    }
   };
 
   const copy = async (id: string, title = "Link copied") => {
@@ -162,9 +207,11 @@ export default function ProofSettings() {
               <Button onClick={copyReviewLink}>
                 <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy link
               </Button>
-              <Button variant="outline" asChild>
-                <Link to={`/@${username}`}>View my profile</Link>
-              </Button>
+              {canSeeNetwork && (
+                <Button variant="outline" asChild>
+                  <Link to={`/@${username}`}>View my profile</Link>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -177,9 +224,10 @@ export default function ProofSettings() {
         )}
       </Section>
 
-      <h2 className="mt-12 font-display text-xl font-semibold">Revenue proof cards</h2>
+      <h2 className="mt-12 font-display text-xl font-semibold">Your proof card</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Turn your real Stripe sales into a verified link nobody can fake. Post it anywhere.
+        Connect Stripe and Aytopus scores how your clients actually behave: do they stay, and do they ask for their money
+        back. Nobody can fake it, including you.
       </p>
 
       {/* Step 1: Stripe */}
@@ -189,7 +237,7 @@ export default function ProofSettings() {
         description={
           conn
             ? "Aytopus can read your sales. It can't move money or change anything in your account."
-            : "Read-only. Aytopus can see your sales totals, but can't move money or change anything."
+            : "Read-only. Aytopus can see your payment history, but can't move money or change anything."
         }
       >
         {conn ? (
@@ -218,7 +266,9 @@ export default function ProofSettings() {
               </li>
               <li>Name it "Aytopus".</li>
               <li>
-                Set <span className="font-medium text-foreground">Charges</span> to <span className="font-medium text-foreground">Read</span>. Leave everything else as None.
+                Set these to <span className="font-medium text-foreground">Read</span>:{" "}
+                <span className="font-medium text-foreground">Charges, Disputes, Subscriptions, Invoices</span>. Leave everything
+                else as None.
               </li>
               <li>Click Create key, copy it (starts with rk_live_), and paste it below.</li>
             </ol>
@@ -243,12 +293,97 @@ export default function ProofSettings() {
         )}
       </Section>
 
-      {/* Step 2: Make a card */}
+      {/* Step 2: Proof score */}
+      {scoreCard && (
+        <Section
+          icon={<Award className="h-4 w-4" />}
+          title="2. Your proof score"
+          description={`Updated ${timeAgo(scoreCard.synced_at)}. Refreshes on its own when someone views your card.`}
+        >
+          <div className="flex flex-col items-center gap-5">
+            <ProofScoreCard card={scoreCard} name={profile?.display_name || (username ? `@${username}` : "Your name")} subtitle={profile?.service_category} />
+            {scoreCard.status === "building" && (
+              <p className="text-center text-sm text-muted-foreground">
+                Your tier unlocks at 10+ paying clients and 3+ months of payment history.
+              </p>
+            )}
+          </div>
+
+          {flags.length > 0 && (
+            <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-amber-600">Holding your score back · only you see this</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-muted-foreground">
+                {flags.map((f) => (
+                  <li key={f.code}>{f.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button onClick={copyCardLink}>
+              <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy card link
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to={`/v/${scoreCard.slug}`}>View my card</Link>
+            </Button>
+            <Button variant="outline" onClick={refresh} disabled={refreshing || !conn}>
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> {refreshing ? "Refreshing…" : "Refresh score"}
+            </Button>
+          </div>
+
+          <div className="mt-6 space-y-4 border-t border-border pt-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label htmlFor="card-public" className="text-sm font-medium">Public card</Label>
+                <p className="text-xs text-muted-foreground">
+                  Turning this off hides your card. The pause is recorded and your score history is kept.
+                </p>
+              </div>
+              <Switch
+                id="card-public"
+                checked={scoreCard.visibility === "public"}
+                onCheckedChange={(on) => updateCard({ visibility: on ? "public" : "private" })}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Numbers to show on your card</p>
+              <p className="text-xs text-muted-foreground">Your score, tier and ratings always show. Revenue is never shown.</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[
+                  ["clients", "Verified clients"],
+                  ["retention", "Renewal rate"],
+                  ["refunds", "Refund rate"],
+                  ["plansPaid", "Plans paid off"],
+                  ["reviews", "Review rating"],
+                ].map(([key, label]) => {
+                  const on = scoreCard.show_stats.includes(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        updateCard({ show_stats: on ? scoreCard.show_stats.filter((k) => k !== key) : [...scoreCard.show_stats, key] })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground"}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
+
+      {/* Revenue snapshot (optional) */}
       {conn && (
         <Section
           icon={<Zap className="h-4 w-4" />}
-          title="Make a proof card"
-          description="Aytopus pulls your numbers from Stripe right now and locks them. Refunds are subtracted."
+          title="Revenue snapshot (optional)"
+          description="A separate one-off card showing sales for a period. Aytopus pulls your numbers from Stripe right now and locks them."
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -287,7 +422,7 @@ export default function ProofSettings() {
       {/* Step 3: Your cards */}
       <Section
         icon={<ShieldCheck className="h-4 w-4" />}
-        title="Your proof cards"
+        title="Your revenue snapshots"
         description={cards.length ? "Share the link in your bio, posts, or sales page." : "Cards you make will show up here."}
       >
         {cards.length === 0 ? (
@@ -341,7 +476,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-8 rounded-md border border-border bg-card p-5 md:p-6">
+    <section className="mt-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
           {icon}

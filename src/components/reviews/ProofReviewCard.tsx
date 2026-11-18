@@ -120,7 +120,7 @@ export function ProofReviewCard({ review, providerDisplayName, isProviderViewer 
   };
 
   return (
-    <article className="relative rounded-md border border-border bg-card p-4">
+    <article className="relative rounded-2xl border border-white/[0.08] bg-card p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-semibold">{review.reviewer_name}</p>

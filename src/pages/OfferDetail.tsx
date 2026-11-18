@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { ArrowUpRight, MessageSquare, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { shareOfferUrl } from "@/lib/shareLinks";
+import { GoldAvatar } from "@/components/GoldAvatar";
+import { SEAL_PATHS } from "@/components/ProofScoreCard";
 
 interface OfferDetail {
   id: string;
@@ -98,74 +100,86 @@ export default function OfferDetail() {
   const outHref = `/out/${offer.id}?ref=offer_detail`;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-10">
-      <Link to={`/@${offer.provider.username}`} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">
-        ← @{offer.provider.username}
-      </Link>
-
-      <div className="mt-4 overflow-hidden rounded-md border border-border bg-card">
-        {offer.cover_url && (
-          <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
-            <img src={offer.cover_url} alt={offer.title} className="h-full w-full object-cover" />
+    <div className="mx-auto max-w-4xl px-4 pb-36 pt-4 md:px-8 md:pb-10 md:pt-8">
+      {/* Cover: photo if the coach added one, otherwise the gold security pattern */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[linear-gradient(160deg,#221D12,#0C0C0E_70%)] shadow-[0_18px_40px_-16px_rgba(0,0,0,0.75)]">
+        {offer.cover_url ? (
+          <img src={offer.cover_url} alt="" className="aspect-[16/10] w-full object-cover md:aspect-[16/7]" />
+        ) : (
+          <div className="relative aspect-[16/10] w-full md:aspect-[16/7]">
+            <svg aria-hidden="true" viewBox="0 0 150 150" className="absolute -right-16 -top-10 h-[130%] text-primary opacity-[0.14]">
+              <g fill="none" stroke="currentColor" strokeWidth={0.6}>
+                {SEAL_PATHS.map((d, i) => <path key={i} d={d} />)}
+              </g>
+            </svg>
           </div>
         )}
-        <div className="p-5 md:p-7">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.2)_0%,rgba(10,10,11,0)_35%,rgba(10,10,11,0.88)_100%)]" />
+        <div className="absolute inset-x-3 top-3 flex justify-between">
+          <Link
+            to={`/@${offer.provider.username}`}
+            className="rounded-full border border-white/10 bg-black/40 px-3.5 py-2 text-xs font-medium backdrop-blur-md hover:bg-black/60"
+          >
+            ← @{offer.provider.username}
+          </Link>
+          <button
+            type="button"
+            onClick={copyShareLink}
+            aria-label="Copy share link"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md hover:bg-black/60"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="absolute inset-x-5 bottom-5">
           {offer.offer_tier && (
-            <span className="rounded-[3px] border border-primary/40 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+            <span className="inline-block rounded-full border border-primary/40 bg-black/30 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-primary backdrop-blur">
               {offer.offer_tier}
             </span>
           )}
-          <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">{offer.title}</h1>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Link to={`/@${offer.provider.username}`} className="flex items-center gap-2 text-sm font-semibold hover:text-primary">
-              <span>{offer.provider.display_name || `@${offer.provider.username}`}</span>
-              <TierGem tier={tier} />
-            </Link>
-            <StarRating value={avg} count={offer.provider.review_count} showValue size={13} />
-
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-y border-border py-4">
-            <Button variant="outline" onClick={copyShareLink}><Share2 className="mr-1.5 h-4 w-4" /> Share</Button>
-            {hasSalesUrl ? (
-              <Button asChild size="lg" className="font-bold uppercase tracking-[0.14em]">
-                <a href={outHref} target="_blank" rel="noopener noreferrer">
-                  Visit Sales Page <ArrowUpRight className="ml-1.5 h-4 w-4" />
-                </a>
-              </Button>
-            ) : (
-              <Button size="lg" onClick={startMessage} className="font-bold uppercase tracking-[0.14em]">
-                Contact for details <MessageSquare className="ml-1.5 h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <div className="prose prose-invert mt-6 max-w-none text-sm text-muted-foreground">
-            {offer.description.split("\n").map((p, i) => <p key={i}>{p}</p>)}
-          </div>
-
-          <div className="mt-8 rounded-md border border-primary/30 bg-primary/[0.04] p-5 text-center">
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              {hasSalesUrl ? "Ready to start?" : "Interested?"}
-            </p>
-            {hasSalesUrl ? (
-              <Button asChild size="lg" className="font-bold uppercase tracking-[0.14em]">
-                <a href={outHref} target="_blank" rel="noopener noreferrer">
-                  Visit Sales Page <ArrowUpRight className="ml-1.5 h-4 w-4" />
-                </a>
-              </Button>
-            ) : (
-              <Button size="lg" onClick={startMessage} className="font-bold uppercase tracking-[0.14em]">
-                Contact for details <MessageSquare className="ml-1.5 h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <h1 className="mt-2 text-[28px] font-semibold leading-[1.1] tracking-[-0.025em] md:text-4xl">{offer.title}</h1>
         </div>
       </div>
 
+      {/* Coach strip */}
+      <Link
+        to={`/@${offer.provider.username}`}
+        className="mt-4 flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-card px-4 py-3 shadow-[0_12px_30px_-14px_rgba(0,0,0,0.7)] transition-colors hover:border-primary/40"
+      >
+        <GoldAvatar name={offer.provider.display_name || offer.provider.username} url={offer.provider.avatar_url} size={44} />
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 truncate text-[15px] font-semibold">
+            {offer.provider.display_name || `@${offer.provider.username}`} <TierGem tier={tier} />
+          </p>
+          <StarRating value={avg} count={offer.provider.review_count} showValue size={12} />
+        </div>
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary">View profile</span>
+      </Link>
+
+      <div className="prose prose-invert mt-6 max-w-none text-[15px] leading-relaxed text-muted-foreground">
+        {offer.description.split("\n").map((p, i) => <p key={i}>{p}</p>)}
+      </div>
+
+      {/* Floating call to action: pinned above the bottom bar on phones, inline on desktop */}
+      <div
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 5.75rem)" }}
+        className="fixed inset-x-4 z-30 md:static md:mt-8 md:flex md:justify-end"
+      >
+        {hasSalesUrl ? (
+          <Button asChild size="lg" className="h-14 w-full text-[15.5px] md:w-auto md:px-10">
+            <a href={outHref} target="_blank" rel="noopener noreferrer">
+              Visit sales page <ArrowUpRight className="ml-1 h-4 w-4" />
+            </a>
+          </Button>
+        ) : (
+          <Button size="lg" onClick={startMessage} className="h-14 w-full text-[15.5px] md:w-auto md:px-10">
+            <MessageSquare className="mr-1 h-4 w-4" /> Contact for details
+          </Button>
+        )}
+      </div>
+
       <section className="mt-8">
-        <h2 className="font-display text-xl font-semibold">
+        <h2 className="text-lg font-semibold">
           Reviews for this offer <span className="text-muted-foreground">({offerReviews.length})</span>
         </h2>
         {offerReviews.length === 0 ? (
@@ -175,7 +189,7 @@ export default function OfferDetail() {
         ) : (
           <ul className="mt-4 space-y-3">
             {offerReviews.map((r) => (
-              <li key={r.id} className="rounded-md border border-border bg-card p-4">
+              <li key={r.id} className="rounded-2xl border border-white/[0.08] bg-card p-4">
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     to={r.reviewer_username ? `/@${r.reviewer_username}` : "#"}

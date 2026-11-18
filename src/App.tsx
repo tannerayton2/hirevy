@@ -40,6 +40,11 @@ import OAuthConsent from "./pages/OAuthConsent.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import ProofPage from "./pages/ProofPage.tsx";
 import ProofSettings from "./pages/ProofSettings.tsx";
+import ProofCardPage from "./pages/ProofCardPage.tsx";
+import ProofLanding from "./pages/ProofLanding.tsx";
+import MyCard from "./pages/MyCard.tsx";
+import { NetworkGate } from "./components/NetworkGate";
+import { NETWORK_PUBLIC } from "./lib/network";
 
 const queryClient = new QueryClient();
 
@@ -51,10 +56,12 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : <Landing />} />
-            <Route path="/explore" element={<Index />} />
-            <Route path="/marketplace" element={<Navigate to="/explore?tab=offers" replace />} />
-            <Route path="/submit-review" element={<AppLayout><SubmitReview /></AppLayout>} />
+            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : NETWORK_PUBLIC ? <Landing /> : <Navigate to="/proofcard" replace />} />
+            <Route path="/proofcard" element={<ProofLanding />} />
+            <Route path="/card" element={<MyCard />} />
+            <Route path="/explore" element={<NetworkGate><Index /></NetworkGate>} />
+            <Route path="/marketplace" element={<NetworkGate><Navigate to="/explore?tab=offers" replace /></NetworkGate>} />
+            <Route path="/submit-review" element={<NetworkGate><AppLayout><SubmitReview /></AppLayout></NetworkGate>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -70,32 +77,33 @@ const App = () => (
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
             <Route path="/p/:id" element={<AppLayout><ProofPage /></AppLayout>} />
+            <Route path="/v/:slug" element={<ProofCardPage />} />
 
 
             <Route path="/me" element={<MeRedirect />} />
             <Route path="/out/:offerId" element={<OutboundRedirect />} />
-            <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
+            <Route path="/messages" element={<NetworkGate><AppLayout><Messages /></AppLayout></NetworkGate>} />
             <Route path="/notifications" element={<AppLayout><Notifications /></AppLayout>} />
 
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
             <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
-            <Route path="/settings/proof" element={<AppLayout><ProofSettings /></AppLayout>} />
+            <Route path="/settings/proof" element={<Navigate to="/card" replace />} />
             <Route path="/settings/notifications" element={<AppLayout><NotificationSettings /></AppLayout>} />
-            <Route path="/settings/following" element={<AppLayout><Following /></AppLayout>} />
-            <Route path="/settings/offers/new" element={<AppLayout><OfferEditor /></AppLayout>} />
-            <Route path="/settings/offers/:offerId" element={<AppLayout><OfferEditor /></AppLayout>} />
+            <Route path="/settings/following" element={<NetworkGate><AppLayout><Following /></AppLayout></NetworkGate>} />
+            <Route path="/settings/offers/new" element={<NetworkGate><AppLayout><OfferEditor /></AppLayout></NetworkGate>} />
+            <Route path="/settings/offers/:offerId" element={<NetworkGate><AppLayout><OfferEditor /></AppLayout></NetworkGate>} />
 
             <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
 
             
 
-            <Route path="/@:username" element={<AppLayout><Profile /></AppLayout>} />
-            <Route path="/@:username/offers" element={<AppLayout><ProfileOffers /></AppLayout>} />
-            <Route path="/@:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
-            <Route path="/:username" element={<AppLayout><Profile /></AppLayout>} />
-            <Route path="/:username/offers" element={<AppLayout><ProfileOffers /></AppLayout>} />
-            <Route path="/:username/:slug" element={<AppLayout><OfferDetail /></AppLayout>} />
+            <Route path="/@:username" element={<NetworkGate><AppLayout><Profile /></AppLayout></NetworkGate>} />
+            <Route path="/@:username/offers" element={<NetworkGate><AppLayout><ProfileOffers /></AppLayout></NetworkGate>} />
+            <Route path="/@:username/:slug" element={<NetworkGate><AppLayout><OfferDetail /></AppLayout></NetworkGate>} />
+            <Route path="/:username" element={<NetworkGate><AppLayout><Profile /></AppLayout></NetworkGate>} />
+            <Route path="/:username/offers" element={<NetworkGate><AppLayout><ProfileOffers /></AppLayout></NetworkGate>} />
+            <Route path="/:username/:slug" element={<NetworkGate><AppLayout><OfferDetail /></AppLayout></NetworkGate>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

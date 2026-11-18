@@ -89,7 +89,7 @@ export default function ReviewSubmit() {
     <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
       <Logo />
       {done ? (
-        <div className="mt-12 rounded-md border border-border bg-card p-6 text-center">
+        <div className="mt-12 rounded-2xl border border-white/[0.08] bg-card p-6 text-center">
           <h1 className="font-display text-2xl font-semibold">Check your email</h1>
           <p className="mt-2 text-sm text-muted-foreground">Your review is pending email confirmation. Click the link we just sent to {email || "your email"} to publish it on @{provider.username}'s profile.</p>
           {emailDelayed && (
