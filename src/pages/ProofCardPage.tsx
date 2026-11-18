@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { ProofCardDetails, ProofScoreCard } from "@/components/ProofScoreCard";
 import { Logo } from "@/components/Logo";
-import { DEMO_CARD, DEMO_OWNER, loadCardBySlug, refreshScore, timeAgo, type ProofCard } from "@/lib/proofScore";
+import { DEMO_CARD, DEMO_OWNER, loadCardBySlug, refreshScore, shareCard, timeAgo, type ProofCard } from "@/lib/proofScore";
+import { Share2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { useNetworkAccess } from "@/lib/network";
 
 type Owner = { username: string; display_name: string | null; service_category: string | null };
@@ -82,6 +84,16 @@ export default function ProofCardPage() {
         <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {open ? `No. ${card.record_no} · checked ${timeAgo(card.synced_at)}` : "Tap the card to open the record"}
         </p>
+        <button
+          type="button"
+          onClick={async () => {
+            const r = await shareCard(card, name, false).catch(() => "cancelled" as const);
+            if (r === "copied") toast({ title: "Link copied" });
+          }}
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.03] px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+        >
+          <Share2 className="h-3.5 w-3.5" /> Share this card
+        </button>
       </div>
 
       <div
