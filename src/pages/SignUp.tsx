@@ -56,7 +56,7 @@ export default function SignUp() {
     return () => clearTimeout(t);
   }, [username]);
 
-  if (!loading && user) return <Navigate to={safeRedirect ?? "/settings/proof"} replace />;
+  if (!loading && user) return <Navigate to={safeRedirect ?? "/card"} replace />;
 
   const usernameMsg = useMemo(() => {
     switch (usernameStatus) {
@@ -86,7 +86,7 @@ export default function SignUp() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${webOrigin}/settings/proof`,
+          emailRedirectTo: `${webOrigin}/card`,
           data: {
             username: cleanUsername,
             display_name: fullName.trim(),
@@ -104,7 +104,7 @@ export default function SignUp() {
         nav("/auth", { replace: true });
         return;
       }
-      nav(safeRedirect ?? "/settings/proof", { replace: true });
+      nav(safeRedirect ?? "/card", { replace: true });
     } catch (err) {
       toast({ title: "Sign-up failed", description: friendlyErrorMessage(err, "Couldn't create account"), variant: "destructive" });
     } finally {
@@ -128,7 +128,7 @@ export default function SignUp() {
         return;
       }
       if (result.redirected) return;
-      nav(safeRedirect ?? "/settings/proof", { replace: true });
+      nav(safeRedirect ?? "/card", { replace: true });
     } catch (err) {
       toast({ title: "Sign-up failed", description: friendlyErrorMessage(err, "Google sign-up failed"), variant: "destructive" });
       setBusy(false);

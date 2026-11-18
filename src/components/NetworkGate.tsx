@@ -8,6 +8,6 @@ export function NetworkGate({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { canSeeNetwork, loading } = useNetworkAccess();
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
-  if (!canSeeNetwork) return <Navigate to={user ? "/settings/proof" : "/"} replace />;
+  if (!canSeeNetwork) return <Navigate to={user ? "/card" : "/proofcard"} replace />;
   return <>{children}</>;
 }

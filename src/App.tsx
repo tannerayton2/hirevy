@@ -42,6 +42,7 @@ import ProofPage from "./pages/ProofPage.tsx";
 import ProofSettings from "./pages/ProofSettings.tsx";
 import ProofCardPage from "./pages/ProofCardPage.tsx";
 import ProofLanding from "./pages/ProofLanding.tsx";
+import MyCard from "./pages/MyCard.tsx";
 import { NetworkGate } from "./components/NetworkGate";
 import { NETWORK_PUBLIC } from "./lib/network";
 
@@ -55,7 +56,9 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : NETWORK_PUBLIC ? <Landing /> : <ProofLanding />} />
+            <Route path="/" element={isNativeApp ? <Navigate to="/auth" replace /> : NETWORK_PUBLIC ? <Landing /> : <Navigate to="/proofcard" replace />} />
+            <Route path="/proofcard" element={<ProofLanding />} />
+            <Route path="/card" element={<MyCard />} />
             <Route path="/explore" element={<NetworkGate><Index /></NetworkGate>} />
             <Route path="/marketplace" element={<NetworkGate><Navigate to="/explore?tab=offers" replace /></NetworkGate>} />
             <Route path="/submit-review" element={<NetworkGate><AppLayout><SubmitReview /></AppLayout></NetworkGate>} />
@@ -74,7 +77,7 @@ const App = () => (
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
             <Route path="/p/:id" element={<AppLayout><ProofPage /></AppLayout>} />
-            <Route path="/v/:slug" element={<AppLayout><ProofCardPage /></AppLayout>} />
+            <Route path="/v/:slug" element={<ProofCardPage />} />
 
 
             <Route path="/me" element={<MeRedirect />} />
@@ -85,7 +88,7 @@ const App = () => (
             {/* Settings — must be above the catch-all username routes */}
             <Route path="/settings/profile" element={<AppLayout><ProfileEdit /></AppLayout>} />
             <Route path="/settings/account" element={<AppLayout><AccountSettings /></AppLayout>} />
-            <Route path="/settings/proof" element={<AppLayout><ProofSettings /></AppLayout>} />
+            <Route path="/settings/proof" element={<Navigate to="/card" replace />} />
             <Route path="/settings/notifications" element={<AppLayout><NotificationSettings /></AppLayout>} />
             <Route path="/settings/following" element={<NetworkGate><AppLayout><Following /></AppLayout></NetworkGate>} />
             <Route path="/settings/offers/new" element={<NetworkGate><AppLayout><OfferEditor /></AppLayout></NetworkGate>} />

@@ -13,5 +13,5 @@ export function useNetworkAccess() {
 
 /** Where "home" is for a signed-in person. */
 export function homePath(canSeeNetwork: boolean) {
-  return canSeeNetwork ? "/explore" : "/settings/proof";
+  return canSeeNetwork ? "/explore" : "/card";
 }

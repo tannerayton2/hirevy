@@ -46,7 +46,7 @@ type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean;
 
 const baseItems: NavItem[] = [
   { to: "/explore", icon: Search, label: "Search", end: true, network: true },
-  { to: "/settings/proof", icon: BadgeCheck, label: "Proof card", authOnly: true },
+  { to: "/card", icon: BadgeCheck, label: "Proof card", authOnly: true },
   { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true, network: true },
   { to: "/me", icon: User, label: "Profile", authOnly: true, kind: "avatar", network: true },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
@@ -88,7 +88,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   // Top-level tab screens get the notification bell; every other screen is a
   // sub-screen and gets a back arrow in the same spot so it's never a dead end.
-  const isTabRoot = pathname === "/explore" || pathname === "/messages" || pathname === "/settings/proof" || isOwnProfile;
+  const isTabRoot = pathname === "/explore" || pathname === "/messages" || pathname === "/card" || isOwnProfile;
   const goBack = useGoBack();
 
   const copyReviewLink = async () => {
@@ -385,7 +385,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           const mobileTabs = [
             { to: "/messages", label: "Messages", icon: MessageSquare, authOnly: true, network: true, kind: "icon" as const },
             { to: "/explore", label: "Search", icon: Search, end: true, network: true, kind: "icon" as const },
-            { to: "/settings/proof", label: "Proof card", authOnly: true, network: false, kind: "mark" as const },
+            { to: "/card", label: "Proof card", authOnly: true, network: false, kind: "mark" as const },
             { to: user ? (canSeeNetwork ? profilePath : "/settings/profile") : "/auth", label: "Profile", network: false, kind: "avatar" as const },
           ].filter((t) => !(t.authOnly && !user) && !(t.network && !canSeeNetwork));
 

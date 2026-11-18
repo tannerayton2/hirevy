@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
  * (e.g. the screen was opened from a deep link or a notification).
  * React Router's BrowserRouter stores the history index in history.state.idx.
  */
-export function useGoBack(fallback = NETWORK_PUBLIC ? "/explore" : "/settings/proof") {
+export function useGoBack(fallback = NETWORK_PUBLIC ? "/explore" : "/card") {
   const navigate = useNavigate();
   return useCallback(() => {
     const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;

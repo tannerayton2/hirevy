@@ -52,14 +52,14 @@ export default function ProofLanding() {
     "Connect Stripe and get a verified proof card scored from how your clients actually behave: retention, refunds and chargebacks.",
   );
 
-  if (!loading && user) return <Navigate to="/settings/proof" replace />;
+  if (!loading && user) return <Navigate to="/card" replace />;
 
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link to="/" aria-label="Aytopus home">
+          <Link to="/proofcard" aria-label="Aytopus home">
             <Logo />
           </Link>
           <div className="flex items-center gap-2">

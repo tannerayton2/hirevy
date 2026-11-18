@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { ProofCardDetails, ProofScoreCard } from "@/components/ProofScoreCard";
+import { Logo } from "@/components/Logo";
 import { DEMO_CARD, DEMO_OWNER, loadCardBySlug, refreshScore, timeAgo, type ProofCard } from "@/lib/proofScore";
 import { useNetworkAccess } from "@/lib/network";
 
@@ -69,7 +70,13 @@ export default function ProofCardPage() {
   const name = owner?.display_name || (owner ? `@${owner.username}` : "Aytopus coach");
 
   return (
-    <div className="mx-auto max-w-md px-4 py-10 md:py-14">
+    <div className="min-h-screen">
+    <header className="mx-auto flex h-16 max-w-md items-center justify-center px-5">
+      <Link to="/proofcard" aria-label="Aytopus">
+        <Logo />
+      </Link>
+    </header>
+    <div className="mx-auto max-w-md px-4 pb-14 pt-4 md:pt-8">
       <div className="flex flex-col items-center">
         <ProofScoreCard card={card} name={name} subtitle={owner?.service_category} open={open} onToggle={() => setOpen((o) => !o)} />
         <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -101,10 +108,11 @@ export default function ProofCardPage() {
 
       <p className="mt-10 text-center text-sm text-muted-foreground">
         Want proof nobody can fake?{" "}
-        <Link to="/signup" className="font-medium text-foreground underline underline-offset-4">
+        <Link to="/proofcard" className="font-medium text-foreground underline underline-offset-4">
           Get your proof card
         </Link>
       </p>
+    </div>
     </div>
   );
 }
