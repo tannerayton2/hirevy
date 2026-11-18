@@ -21,7 +21,7 @@ export default function VerifyReview() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
-      <div className="mt-16 rounded-md border border-border bg-card p-8 text-center">
+      <div className="mt-16 rounded-2xl border border-white/[0.08] bg-card p-8 text-center">
         {state === "loading" && (
           <>
             <Loader2 className="mx-auto h-10 w-10 animate-spin text-muted-foreground" />

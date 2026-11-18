@@ -100,7 +100,7 @@ export function TeamChatPane() {
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
         {msgs.length === 0 && (
-          <p className="mx-auto max-w-sm rounded-md border border-border bg-card/40 p-4 text-center text-sm text-muted-foreground">
+          <p className="mx-auto max-w-sm rounded-2xl border border-white/[0.08] bg-card/40 p-4 text-center text-sm text-muted-foreground">
             Hi! Send us a question, feedback, or anything else. The Aytopus team will reply here.
           </p>
         )}

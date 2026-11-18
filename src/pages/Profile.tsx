@@ -455,7 +455,7 @@ export default function Profile() {
       <div className="mx-auto max-w-xl border-b border-border pb-6">
         {/* Avatar */}
         <div className="flex justify-center">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-2xl text-muted-foreground ring-2 ring-primary ring-offset-2 ring-offset-background">
+          <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(145deg,#26231C,#121214)] font-display text-2xl font-semibold text-foreground shadow-[0_0_0_3px_#0A0A0B,0_0_0_5px_#EDC967,0_12px_34px_-6px_rgba(237,201,103,0.35)]">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -602,17 +602,14 @@ export default function Profile() {
               <Button
                 variant="outline"
                 onClick={toggleFollow}
-                className={cn(
-                  "flex-1 border-primary text-primary hover:bg-primary/10",
-                  following && "bg-primary/10",
-                )}
+                className={cn("flex-1", following && "border-primary/40 text-primary")}
               >
                 {following ? "Following" : "Follow"}
               </Button>
               <Button
                 variant="outline"
                 onClick={startMessage}
-                className="flex-1 border-primary text-primary hover:bg-primary/10"
+                className="flex-1"
               >
                 <MessageSquare className="mr-1.5 h-4 w-4" /> Message
               </Button>
@@ -622,7 +619,7 @@ export default function Profile() {
                     variant="outline"
                     size="icon"
                     aria-label="More options"
-                    className="shrink-0 border-primary text-primary hover:bg-primary/10"
+                    className="shrink-0"
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
@@ -644,7 +641,7 @@ export default function Profile() {
             {/* Leave a Review CTA */}
             <Button
               asChild
-              className="mt-3 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="mt-3 w-full"
             >
               <Link to={`/submit-review?coach=${encodeURIComponent(profile.username)}`}>
                 ✎ Leave a Review
@@ -702,7 +699,7 @@ export default function Profile() {
 
       {/* Empty state for visitors on a brand-new profile */}
       {!hasAnyContent && !isMe && (
-        <div className="mt-8 rounded-md border border-dashed border-border bg-card/40 p-10 text-center">
+        <div className="mt-8 rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-10 text-center">
           <p className="font-display text-xl font-semibold">{providerDisplayName} is just getting started on Aytopus.</p>
           <p className="mt-2 text-sm text-muted-foreground">Check back soon — offers and reviews will appear here.</p>
         </div>
@@ -881,7 +878,7 @@ export default function Profile() {
                   tabIndex={0}
                   onClick={() => setDetailReview(u.data)}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetailReview(u.data); } }}
-                  className="relative cursor-pointer rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  className="relative cursor-pointer rounded-2xl border border-white/[0.08] bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <ReviewerIdentity
@@ -989,7 +986,7 @@ export default function Profile() {
                 )}
                 {imported.length === 0 ? (
                   isMe ? (
-                    <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+                    <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-8 text-center md:p-10">
                       <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
                         Drop your best testimonials here — old DMs, client emails, video testimonials,
                         anywhere you have proof of your work. These appear on your profile clearly
@@ -1004,7 +1001,7 @@ export default function Profile() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+                    <p className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-6 text-center text-sm text-muted-foreground">
                       {providerDisplayName} hasn't imported any testimonials yet.
                     </p>
                   )
@@ -1056,7 +1053,7 @@ export default function Profile() {
               )}
             </div>
             {offers.length === 0 && isMe ? (
-              <div className="rounded-md border border-dashed border-border bg-card/40 p-8 text-center md:p-10">
+              <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-8 text-center md:p-10">
                 <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
                   Publish your first offer so clients can hire you directly from your profile.
                 </p>
@@ -1157,7 +1154,7 @@ function SortMenu({ value, onChange }: { value: SortKey; onChange: (k: SortKey) 
 }
 
 function Empty({ msg }: { msg: string }) {
-  return <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">{msg}</p>;
+  return <p className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-6 text-center text-sm text-muted-foreground">{msg}</p>;
 }
 
 function StatItem({ children }: { children: React.ReactNode }) {
@@ -1323,7 +1320,7 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
         active ? "text-primary/80" : "text-muted-foreground/60",
       ].join(" ")}>· {count}</span>
       {active && (
-        <span aria-hidden className="absolute inset-x-0 -bottom-px h-[2.5px] bg-primary" />
+        <span aria-hidden className="absolute inset-x-6 -bottom-px h-[2px] rounded-full" style={{ background: "var(--metal-gold)" }} />
       )}
     </button>
   );

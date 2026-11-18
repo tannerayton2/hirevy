@@ -20,7 +20,7 @@ function ring(R: number, a: number, k: number, ph: number, n = 120) {
   }
   return `M${pts.join(" L")}Z`;
 }
-const SEAL_PATHS = [
+export const SEAL_PATHS = [
   ...Array.from({ length: 6 }, (_, i) => ring(54, 9, 12, (i * Math.PI) / 6)),
   ...Array.from({ length: 3 }, (_, i) => ring(69, 2.2, 36, (i * Math.PI) / 3, 240)),
 ];

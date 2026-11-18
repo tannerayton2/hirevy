@@ -19,7 +19,7 @@ export function OffersPanel({
 }: Props) {
   if (offers.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+      <p className="rounded-2xl border border-dashed border-white/[0.1] bg-card/40 p-6 text-center text-sm text-muted-foreground">
         {isOwner ? "No offers yet. Create one to get started." : "No offers yet."}
       </p>
     );

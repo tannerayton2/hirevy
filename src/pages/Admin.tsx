@@ -804,7 +804,7 @@ export default function Admin() {
 
 function EmptyState({ icon: Icon, message }: { icon: typeof Users; message: string }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-border bg-card/30 px-6 py-10 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/[0.1] bg-card/30 px-6 py-10 text-center">
       <Icon className="h-5 w-5 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>
@@ -880,7 +880,7 @@ function ReportedProfilesPanel() {
   return (
     <div className="space-y-2">
       {pending.map((r) => (
-        <div key={r.id} className="rounded-md border border-border bg-card/60 p-4">
+        <div key={r.id} className="rounded-2xl border border-white/[0.08] bg-card/60 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm">
@@ -1021,7 +1021,7 @@ function ReviewQueuePanel() {
       ) : (
         <div className="space-y-2">
           {filtered.map((r) => (
-            <div key={`${r.review_type}-${r.id}`} className="rounded-md border border-border bg-card/60 p-4">
+            <div key={`${r.review_type}-${r.id}`} className="rounded-2xl border border-white/[0.08] bg-card/60 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -1185,7 +1185,7 @@ function ClaimRequestsPanel() {
 
 function ClaimRow({ row, onApprove, onReject, resolved }: { row: ClaimRow; onApprove?: () => void; onReject?: () => void; resolved?: boolean }) {
   return (
-    <div className={`rounded-md border border-border bg-card/60 p-4 ${resolved ? "opacity-70" : ""}`}>
+    <div className={`rounded-2xl border border-white/[0.08] bg-card/60 p-4 ${resolved ? "opacity-70" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{row.full_name}</p>
