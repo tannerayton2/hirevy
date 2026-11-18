@@ -11,18 +11,20 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { callProofFunction, proofDb } from "@/lib/proof";
+import { supabase } from "@/integrations/supabase/client";
 import { cardUrl, loadMyCard, refreshScore, timeAgo, type ProofCard, type ProofFlag } from "@/lib/proofScore";
 import { usePageMeta } from "@/lib/usePageMeta";
 
 type Connection = { key_last4: string; stripe_account_name: string | null };
 
 export default function MyCard() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const [conn, setConn] = useState<Connection | null>(null);
   const [card, setCard] = useState<ProofCard | null>(null);
   const [flags, setFlags] = useState<ProofFlag[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [key, setKey] = useState("");
+  const [cardName, setCardName] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -49,10 +51,17 @@ export default function MyCard() {
 
   const name =
     profile?.display_name || (profile?.username ? `@${profile.username}` : user?.email?.split("@")[0] ?? "Your name");
+  // The database fills display_name with the email's first part; don't prefill that as a "name".
+  const suggestedName = profile?.display_name && profile.display_name !== profile.username ? profile.display_name : "";
+  const nameValue = cardName ?? suggestedName;
 
   const connect = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = key.trim();
+    if (nameValue.trim().length < 2) {
+      toast({ title: "Add the name for your card", variant: "destructive" });
+      return;
+    }
     if (!clean.startsWith("rk_")) {
       toast({
         title: "That's not a restricted key",
@@ -63,6 +72,10 @@ export default function MyCard() {
     }
     setConnecting(true);
     try {
+      if (user && nameValue.trim() !== (profile?.display_name ?? "")) {
+        await supabase.from("profiles").update({ display_name: nameValue.trim() }).eq("id", user.id);
+        await refreshProfile();
+      }
       await callProofFunction("connect-stripe", { body: { restricted_key: clean } });
       setKey("");
       await load();
@@ -133,7 +146,7 @@ export default function MyCard() {
         ) : !conn ? (
           /* ---------- Not connected: one step ---------- */
           <div>
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-primary">Create your card</p>
+            <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-primary">Step 2 of 2</p>
             <h1 className="mt-2 text-[30px] font-semibold leading-[1.08] tracking-[-0.03em]">Connect Stripe.</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
               Read-only. Aytopus can see your payment history, but can't move money, refund anyone or change anything.
@@ -158,6 +171,18 @@ export default function MyCard() {
               <li>4. Create the key, copy it, and paste it below.</li>
             </ol>
             <form onSubmit={connect} className="mt-6 space-y-3">
+              <Label htmlFor="card-name" className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+                Name on your card
+              </Label>
+              <Input
+                id="card-name"
+                value={nameValue}
+                onChange={(e) => setCardName(e.target.value)}
+                placeholder="Your name or business name"
+                maxLength={60}
+                autoComplete="name"
+                className="h-12 rounded-full px-5"
+              />
               <Label htmlFor="rk" className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
                 Restricted key
               </Label>
