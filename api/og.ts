@@ -17,7 +17,9 @@ async function font(url: string) {
 }
 
 export default async function handler(req: Request) {
-  const slug = new URL(req.url).searchParams.get("slug");
+  const params = new URL(req.url).searchParams;
+  const slug = params.get("slug");
+  const download = params.get("dl") === "1";
   let data: CardImageData | null = null;
   if (slug) data = await loadPublicCard(slug);
 
@@ -37,6 +39,9 @@ export default async function handler(req: Request) {
     width: 1200,
     height: 630,
     fonts,
-    headers: { "Cache-Control": "public, max-age=3600, s-maxage=3600" },
+    headers: {
+      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      ...(download ? { "Content-Disposition": 'attachment; filename="aytopus-proof-card.png"' } : {}),
+    },
   });
 }

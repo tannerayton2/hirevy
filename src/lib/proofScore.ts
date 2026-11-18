@@ -135,3 +135,30 @@ export const DEMO_CARD: ProofCard = {
   updated_at: new Date().toISOString(),
 };
 export const DEMO_OWNER = { username: "demo", display_name: "Marcus Hale", service_category: "Strength & fat-loss coaching" };
+
+/** Picture of the card (1200×630) for Instagram stories/posts. */
+export function cardImageUrl(slug: string, download = false) {
+  return `${window.location.origin}/api/og?slug=${encodeURIComponent(slug)}${download ? "&dl=1" : ""}`;
+}
+
+/**
+ * Opens the phone's share sheet (Messages, Instagram, WhatsApp…) with a ready caption.
+ * Falls back to copying caption + link where the share sheet isn't available (most desktops).
+ */
+export async function shareCard(card: ProofCard, name: string, own: boolean): Promise<"shared" | "copied" | "cancelled"> {
+  const url = cardUrl(card.slug);
+  const rated = card.status === "rated" && card.tier;
+  const text = own
+    ? `My clients' results, verified from real payment data${rated ? ` (${card.tier} · ${card.score})` : ""}. Tap to see the live record:`
+    : `${name}'s verified proof card${rated ? ` (${card.tier} · ${card.score})` : ""}, scored from real payment data:`;
+  if (typeof navigator !== "undefined" && "share" in navigator) {
+    try {
+      await navigator.share({ title: `${name} | Aytopus proof card`, text, url });
+      return "shared";
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") return "cancelled";
+    }
+  }
+  await navigator.clipboard.writeText(`${text} ${url}`);
+  return "copied";
+}

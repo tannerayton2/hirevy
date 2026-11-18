@@ -1,7 +1,7 @@
 // /card — the only screen a signed-in coach needs: connect Stripe once, then it's just your live card.
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Copy, ExternalLink, RefreshCw } from "lucide-react";
+import { Copy, Download, ExternalLink, RefreshCw, Share2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ProofCardDetails, ProofScoreCard } from "@/components/ProofScoreCard";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { callProofFunction, proofDb } from "@/lib/proof";
 import { supabase } from "@/integrations/supabase/client";
-import { cardUrl, loadMyCard, refreshScore, timeAgo, type ProofCard, type ProofFlag } from "@/lib/proofScore";
+import { cardImageUrl, cardUrl, loadMyCard, refreshScore, shareCard, timeAgo, type ProofCard, type ProofFlag } from "@/lib/proofScore";
 import { usePageMeta } from "@/lib/usePageMeta";
 
 type Connection = { key_last4: string; stripe_account_name: string | null };
@@ -104,6 +104,16 @@ export default function MyCard() {
     try {
       await navigator.clipboard.writeText(cardUrl(card.slug));
       toast({ title: "Card link copied" });
+    } catch {
+      toast({ title: "Here's your link", description: cardUrl(card.slug) });
+    }
+  };
+
+  const share = async () => {
+    if (!card) return;
+    try {
+      const r = await shareCard(card, name, true);
+      if (r === "copied") toast({ title: "Caption and link copied", description: "Paste it anywhere." });
     } catch {
       toast({ title: "Here's your link", description: cardUrl(card.slug) });
     }
@@ -234,13 +244,26 @@ export default function MyCard() {
             )}
 
             <div className="mt-8 flex w-full gap-2">
-              <Button size="lg" className="flex-1" onClick={copyLink}>
-                <Copy className="h-4 w-4" /> Copy card link
+              <Button size="lg" className="flex-1" onClick={share}>
+                <Share2 className="h-4 w-4" /> Share my card
               </Button>
-              <Button size="lg" variant="outline" onClick={refresh} disabled={refreshing} aria-label="Refresh score">
+              <Button size="lg" variant="outline" onClick={copyLink} aria-label="Copy card link" title="Copy link">
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline" asChild aria-label="Save card image" title="Save image for Instagram">
+                <a href={cardImageUrl(card.slug, true)} download="aytopus-proof-card.png">
+                  <Download className="h-4 w-4" />
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" onClick={refresh} disabled={refreshing} aria-label="Refresh score" title="Refresh score">
                 <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
               </Button>
             </div>
+            <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+              Put the link in your Instagram or TikTok bio. It always shows your live score.
+              <br />
+              The download button saves a picture of your card for stories and posts.
+            </p>
 
             <details className="mt-6 w-full rounded-2xl border border-white/[0.08] bg-card/60 px-5 py-3 text-sm">
               <summary className="cursor-pointer select-none py-1 text-muted-foreground">Card settings</summary>
