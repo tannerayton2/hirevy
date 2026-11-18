@@ -86,7 +86,7 @@ export default function SignUp() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${webOrigin}/explore`,
+          emailRedirectTo: `${webOrigin}/settings/proof`,
           data: {
             username: cleanUsername,
             display_name: fullName.trim(),

@@ -4,34 +4,12 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageMeta } from "@/lib/usePageMeta";
 import { ProofCardDetails, ProofScoreCard } from "@/components/ProofScoreCard";
-import { loadCardBySlug, refreshScore, timeAgo, type ProofCard } from "@/lib/proofScore";
+import { DEMO_CARD, DEMO_OWNER, loadCardBySlug, refreshScore, timeAgo, type ProofCard } from "@/lib/proofScore";
+import { useNetworkAccess } from "@/lib/network";
 
 type Owner = { username: string; display_name: string | null; service_category: string | null };
 
-/** /v/demo — a sample card with made-up numbers, so anyone can see what a proof card looks like. */
-const DEMO_CARD: ProofCard = {
-  owner_id: "demo",
-  record_no: "AYT-0042",
-  slug: "demo",
-  score: 812,
-  tier: "Platinum",
-  status: "rated",
-  factors: [
-    { key: "retention", label: "Client retention", question: "Do clients keep paying?", band: "Excellent" },
-    { key: "refunds", label: "Refunds & chargebacks", question: "Do clients ask for, or fight for, their money back?", band: "Excellent" },
-    { key: "clients", label: "Verified client base", question: "Real, unique people who paid", band: "Strong" },
-    { key: "consistency", label: "Consistency", question: "Steady month to month, no spikes", band: "Strong" },
-    { key: "track", label: "Time on record", question: "8 months of connected data", band: "Fair" },
-    { key: "reviews", label: "Verified reviews", question: "31 reviews from paying clients", band: "Excellent" },
-  ],
-  public_stats: { clients: 214, retention: 68, refunds: 1.9, monthsOnRecord: 8, reviews: 31, reviewAvg: 4.9 },
-  show_stats: ["clients", "retention", "refunds"],
-  visibility: "public",
-  paused_at: null,
-  synced_at: new Date(Date.now() - 4 * 60_000).toISOString(),
-  updated_at: new Date().toISOString(),
-};
-const DEMO_OWNER: Owner = { username: "demo", display_name: "Marcus Hale", service_category: "Strength & fat-loss coaching" };
+
 
 export default function ProofCardPage() {
   const { slug = "" } = useParams();
@@ -39,6 +17,7 @@ export default function ProofCardPage() {
   const [owner, setOwner] = useState<Owner | null>(null);
   const [missing, setMissing] = useState(false);
   const [open, setOpen] = useState(false);
+  const { canSeeNetwork } = useNetworkAccess();
 
   usePageMeta("Verified proof card | Aytopus", "A coach's track record, scored from real payment data. It can't be edited.");
 
@@ -109,7 +88,7 @@ export default function ProofCardPage() {
               Sample card. Marcus Hale is made up and every number is an example.
             </p>
           )}
-          {owner && slug !== "demo" && (
+          {owner && slug !== "demo" && canSeeNetwork && (
             <Link
               to={`/@${owner.username}`}
               className="mt-8 flex h-12 items-center justify-center rounded-lg bg-foreground text-sm font-semibold text-background"

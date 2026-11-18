@@ -1,7 +1,8 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell, LifeBuoy } from "lucide-react";
+import { ArrowLeft, Compass, MessagesSquare, User, LogIn, ShieldAlert, Store, Menu, Settings as SettingsIcon, Link as LinkIcon, UserCheck, LogOut, MessageCircle, FileText, Shield, Search, MessageSquare, MoreVertical, Share2, Bell, LifeBuoy, BadgeCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo, OctopusMark } from "@/components/Logo";
+import { homePath, useNetworkAccess } from "@/lib/network";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -41,12 +42,13 @@ function SoonPill() {
 }
 
 type NavKind = "icon" | "avatar";
-type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean; soon?: boolean; kind?: NavKind };
+type NavItem = { to: string; icon: typeof Compass; label: string; end?: boolean; authOnly?: boolean; admin?: boolean; soon?: boolean; kind?: NavKind; network?: boolean };
 
 const baseItems: NavItem[] = [
-  { to: "/explore", icon: Search, label: "Search", end: true },
-  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true },
-  { to: "/me", icon: User, label: "Profile", authOnly: true, kind: "avatar" },
+  { to: "/explore", icon: Search, label: "Search", end: true, network: true },
+  { to: "/settings/proof", icon: BadgeCheck, label: "Proof card", authOnly: true },
+  { to: "/messages", icon: MessageSquare, label: "Messages", authOnly: true, network: true },
+  { to: "/me", icon: User, label: "Profile", authOnly: true, kind: "avatar", network: true },
   { to: "/admin", icon: ShieldAlert, label: "Admin", authOnly: true, admin: true },
 ];
 
@@ -69,7 +71,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const isSubmitReview = pathname === "/submit-review";
 
+  const { canSeeNetwork } = useNetworkAccess();
   const items = baseItems.filter((i) => {
+    if (i.network && !canSeeNetwork) return false;
     if (i.admin && !isAdmin) return false;
     if (i.authOnly && !user) return false;
     return true;
@@ -84,7 +88,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   // Top-level tab screens get the notification bell; every other screen is a
   // sub-screen and gets a back arrow in the same spot so it's never a dead end.
-  const isTabRoot = pathname === "/explore" || pathname === "/messages" || isOwnProfile;
+  const isTabRoot = pathname === "/explore" || pathname === "/messages" || pathname === "/settings/proof" || isOwnProfile;
   const goBack = useGoBack();
 
   const copyReviewLink = async () => {
@@ -136,7 +140,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
             <NavLink
-              to={user ? "/explore" : "/"}
+              to={user ? homePath(canSeeNetwork) : "/"}
               aria-label="Aytopus home"
               className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
             >
@@ -158,7 +162,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
             {/* Center: logo */}
             <NavLink
-              to={user ? "/explore" : "/"}
+              to={user ? homePath(canSeeNetwork) : "/"}
               aria-label="Aytopus home"
               className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
             >
@@ -363,7 +367,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </main>
 
         {/* Desktop right rail — search + top coaches */}
-        {!isSubmitReview && pathname !== "/messages" && (
+        {!isSubmitReview && pathname !== "/messages" && canSeeNetwork && (
           <RightRail className="hidden lg:block" hideSearch={pathname === "/explore"} />
         )}
       </div>
@@ -379,11 +383,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       >
         {(() => {
           const mobileTabs = [
-            { to: "/messages", label: "Messages", icon: MessageSquare, authOnly: true, kind: "icon" as const },
-            { to: "/explore", label: "Search", icon: Search, end: true, kind: "icon" as const },
-            { to: "/settings/proof", label: "Proof card", authOnly: true, kind: "mark" as const },
-            { to: user ? profilePath : "/auth", label: "Profile", kind: "avatar" as const },
-          ].filter((t) => !(t.authOnly && !user));
+            { to: "/messages", label: "Messages", icon: MessageSquare, authOnly: true, network: true, kind: "icon" as const },
+            { to: "/explore", label: "Search", icon: Search, end: true, network: true, kind: "icon" as const },
+            { to: "/settings/proof", label: "Proof card", authOnly: true, network: false, kind: "mark" as const },
+            { to: user ? (canSeeNetwork ? profilePath : "/settings/profile") : "/auth", label: "Profile", network: false, kind: "avatar" as const },
+          ].filter((t) => !(t.authOnly && !user) && !(t.network && !canSeeNetwork));
 
           return mobileTabs.map((tab) => (
             <NavLink
