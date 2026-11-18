@@ -27,6 +27,34 @@ const STEPS = [
   },
 ];
 
+const READ_GUIDE = [
+  {
+    n: "01",
+    title: "The score",
+    body: "Out of 1,000, calculated from the coach's own payment records. Nobody types it in, including the coach.",
+  },
+  {
+    n: "02",
+    title: "The tier",
+    body: "Bronze to Diamond. The top tiers need a long, broad track record, so a few good months can't fake their way up.",
+  },
+  {
+    n: "03",
+    title: "The ratings",
+    body: "Each part of the score shows a rating instead of the raw number. Buyers see the truth, coaches keep their business private.",
+  },
+  {
+    n: "04",
+    title: "The live signal",
+    body: "The record re-checks itself. If a coach disconnects or their clients start leaving, the card shows it.",
+  },
+  {
+    n: "05",
+    title: "What's never shown",
+    body: "Revenue, client names and payment amounts. A proof card proves how clients are treated, not how much was sold.",
+  },
+];
+
 const HARD_TO_FAKE = [
   { icon: Repeat, title: "Refunds and chargebacks both count", body: "A strict no-refund policy can't hide unhappy clients. A chargeback counts the same as a refund." },
   { icon: Ban, title: "Paying yourself doesn't count", body: "Your own card and tiny test payments are excluded. Only real, unique clients count." },
@@ -82,7 +110,7 @@ export default function ProofLanding() {
             ))}
           </g>
         </svg>
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.05fr_1fr] md:pb-24 md:pt-20">
+        <div className="relative mx-auto grid max-w-6xl items-start gap-12 px-5 pb-16 pt-14 md:grid-cols-[1.05fr_1fr] md:pb-24 md:pt-20">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-primary">Payment-verified proof cards</p>
             <h1 className="mt-4 text-[44px] font-semibold leading-[1.02] tracking-[-0.035em] md:text-[64px]">
@@ -107,9 +135,36 @@ export default function ProofLanding() {
             <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               Free · Read-only · Revenue stays private
             </p>
+
+            {/* Revealed when the card is opened: a guide that scrolls alongside the record */}
+            {open && (
+              <div className="mt-14 hidden animate-in fade-in slide-in-from-bottom-4 duration-700 md:block">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">How to read a card</p>
+                <ol className="mt-6 space-y-7">
+                  {READ_GUIDE.map((g) => (
+                    <li key={g.n} className="flex gap-5">
+                      <span className="font-mono text-[11px] tracking-[0.2em] text-primary">{g.n}</span>
+                      <div>
+                        <p className="text-[17px] font-semibold tracking-[-0.01em]">{g.title}</p>
+                        <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">{g.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-10 max-w-md rounded-3xl border border-primary/25 bg-primary/[0.05] p-6">
+                  <p className="text-lg font-semibold tracking-[-0.01em]">Your clients already proved it.</p>
+                  <p className="mt-1.5 text-sm text-muted-foreground">Get your card in five minutes. Free, read-only, revenue never shown.</p>
+                  <Button className="mt-5" asChild>
+                    <Link to="/signup">
+                      Get your proof card <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center md:pt-6">
             <ProofScoreCard
               card={DEMO_CARD}
               name={DEMO_OWNER.display_name}
