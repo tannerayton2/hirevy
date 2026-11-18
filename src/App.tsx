@@ -40,6 +40,7 @@ import OAuthConsent from "./pages/OAuthConsent.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import ProofPage from "./pages/ProofPage.tsx";
 import ProofSettings from "./pages/ProofSettings.tsx";
+import ProofCardPage from "./pages/ProofCardPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/r/:username" element={<ReviewSubmit />} />
             <Route path="/r/:username/proof" element={<ProofReviewSubmit />} />
             <Route path="/p/:id" element={<AppLayout><ProofPage /></AppLayout>} />
+            <Route path="/v/:slug" element={<AppLayout><ProofCardPage /></AppLayout>} />
 
 
             <Route path="/me" element={<MeRedirect />} />
